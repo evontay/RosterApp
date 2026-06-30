@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  password   String
+  role       UserRole
+  createdAt  DateTime   @default(now())
+  businesses Business[]
+  partTimer  PartTimer?
+}
+
+enum UserRole {
+  owner
+  part_timer
+}
+
+model Business {
+  id            String             @id @default(cuid())
+  name          String
+  owner         User               @relation(fields: [ownerUserId], references: [id])
+  ownerUserId   String
+  createdAt     DateTime           @default(now())
+  rosterMembers RosterMembership[]
+  shifts        Shift[]
+}
+
+model PartTimer {
+  id           String             @id @default(cuid())
+  user         User               @relation(fields: [userId], references: [id])
+  userId       String             @unique
+  name         String
+  phone        String?
+  email        String
+  profilePhoto String?
+  createdAt    DateTime           @default(now())
+  skills       PartTimerSkill[]
+  availability Availability[]
+  memberships  RosterMembership[]
+  assignments  ShiftAssignment[]
+}
+
+model RosterMembership {
+  id          String           @id @default(cuid())
+  business    Business         @relation(fields: [businessId], references: [id])
+  businessId  String
+  partTimer   PartTimer        @relation(fields: [partTimerId], references: [id])
+  partTimerId String
+  invitedAt   DateTime         @default(now())
+  status      MembershipStatus @default(invited)
+  inviteToken String?          @unique
+
+  @@unique([businessId, partTimerId])
+}
+
+enum MembershipStatus {
+  invited
+  active
+  removed
+}
+
+model Skill {
+  id         String           @id @default(cuid())
+  label      String           @unique
+  partTimers PartTimerSkill[]
+  shiftRoles ShiftRole[]
+}
+
+model PartTimerSkill {
+  partTimer   PartTimer @relation(fields: [partTimerId], references: [id])
+  partTimerId String
+  skill       Skill     @relation(fields: [skillId], references: [id])
+  skillId     String
+
+  @@id([partTimerId, skillId])
+}
+
+model Availability {
+  id          String    @id @default(cuid())
+  partTimer   PartTimer @relation(fields: [partTimerId], references: [id])
+  partTimerId String
+  dayOfWeek   DayOfWeek
+  startTime   String
+  endTime     String
+}
+
+enum DayOfWeek {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+  Sat
+  Sun
+}
+
+model Shift {
+  id          String            @id @default(cuid())
+  business    Business          @relation(fields: [businessId], references: [id])
+  businessId  String
+  title       String
+  shiftDate   DateTime
+  startTime   String
+  endTime     String
+  payType     PayType
+  payRate     Decimal           @db.Decimal(10, 2)
+  status      ShiftStatus       @default(draft)
+  createdAt   DateTime          @default(now())
+  assignments ShiftAssignment[]
+  roles       ShiftRole[]
+}
+
+model ShiftRole {
+  id      String @id @default(cuid())
+  shift   Shift  @relation(fields: [shiftId], references: [id])
+  shiftId String
+  skill   Skill  @relation(fields: [skillId], references: [id])
+  skillId String
+  count   Int    @default(1)
+}
+
+enum PayType {
+  hourly
+  flat_session
+}
+
+enum ShiftStatus {
+  draft
+  open
+  filled
+  completed
+  cancelled
+}
+
+model ShiftAssignment {
+  id            String           @id @default(cuid())
+  shift         Shift            @relation(fields: [shiftId], references: [id])
+  shiftId       String
+  partTimer     PartTimer        @relation(fields: [partTimerId], references: [id])
+  partTimerId   String
+  status        AssignmentStatus @default(assigned)
+  hoursLogged   Decimal?         @db.Decimal(5, 2)
+  payAmount     Decimal?         @db.Decimal(10, 2)
+  paymentStatus PaymentStatus    @default(unpaid)
+  paidAt        DateTime?
+  createdAt     DateTime         @default(now())
+}
+
+enum AssignmentStatus {
+  assigned
+  completed
+  cancelled
+}
+
+enum PaymentStatus {
+  unpaid
+  paid
+}
