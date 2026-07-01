@@ -6,6 +6,7 @@ import { HoursForm } from "./HoursForm";
 import { MarkPaidButton } from "./MarkPaidButton";
 import { ShiftStatusControl } from "./ShiftStatusControl";
 import { UnassignButton } from "./UnassignButton";
+import { EditShiftForm } from "./EditShiftForm";
 
 export default async function ShiftDetailPage({
   params,
@@ -29,6 +30,8 @@ export default async function ShiftDetailPage({
   });
   if (!shift) notFound();
 
+  const skills = await prisma.skill.findMany({ orderBy: { label: "asc" } });
+
   const activeMembers = await prisma.rosterMembership.findMany({
     where: { businessId: business.id, status: "active" },
     include: { partTimer: true },
@@ -41,10 +44,25 @@ export default async function ShiftDetailPage({
     <div className="max-w-2xl">
       <div className="flex items-start justify-between mb-1">
         <h1 className="text-2xl font-bold text-gray-800">{shift.title}</h1>
-        <ShiftStatusControl
-          shiftId={shift.id}
-          currentStatus={shift.status as "draft" | "open" | "filled" | "completed" | "cancelled"}
-        />
+        <div className="flex items-center gap-2">
+          <EditShiftForm
+            shift={{
+              id: shift.id,
+              title: shift.title,
+              shiftDate: shift.shiftDate.toISOString(),
+              startTime: shift.startTime,
+              endTime: shift.endTime,
+              payType: shift.payType,
+              payRate: Number(shift.payRate),
+              roles: shift.roles.map((r) => ({ skillId: r.skillId, count: r.count })),
+            }}
+            skills={skills}
+          />
+          <ShiftStatusControl
+            shiftId={shift.id}
+            currentStatus={shift.status as "draft" | "open" | "filled" | "completed" | "cancelled"}
+          />
+        </div>
       </div>
       <p className="text-sm text-gray-500 mb-6">
         {new Date(shift.shiftDate).toLocaleDateString("en-SG", {

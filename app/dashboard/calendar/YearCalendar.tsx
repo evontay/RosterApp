@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { RolesEditor } from "@/components/RolesEditor";
 
 interface Skill { id: string; label: string }
 interface ShiftRole { id: string; skillId: string; skillLabel: string; count: number }
@@ -338,21 +339,12 @@ function ShiftForm({
     shift?.roles.map((r) => ({ skillId: r.skillId, count: r.count })) ??
     [{ skillId: skills[0]?.id ?? "", count: 1 }]
   );
+  const [currentSkills, setCurrentSkills] = useState<Skill[]>(skills);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   function setField(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
-  }
-
-  function updateRole(i: number, field: keyof RoleRow, value: string | number) {
-    setRoles((prev) => prev.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
-  }
-
-  function addRole() {
-    const used = new Set(roles.map((r) => r.skillId));
-    const next = skills.find((s) => !used.has(s.id));
-    if (next) setRoles((prev) => [...prev, { skillId: next.id, count: 1 }]);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -424,33 +416,11 @@ function ShiftForm({
       {/* Roles */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Roles needed</label>
-        <div className="space-y-1.5">
-          {roles.map((role, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <select
-                value={role.skillId}
-                onChange={(e) => updateRole(i, "skillId", e.target.value)}
-                className="flex-1 border border-gray-300 rounded px-2 py-1.5 text-sm"
-              >
-                {skills.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-              </select>
-              <span className="text-sm text-gray-400">×</span>
-              <input
-                type="number" min="1" max="99" value={role.count}
-                onChange={(e) => updateRole(i, "count", parseInt(e.target.value) || 1)}
-                className="w-14 border border-gray-300 rounded px-2 py-1.5 text-sm text-center"
-              />
-              {roles.length > 1 && (
-                <button type="button" onClick={() => setRoles((p) => p.filter((_, idx) => idx !== i))}
-                  className="text-gray-400 hover:text-red-500">×</button>
-              )}
-            </div>
-          ))}
-        </div>
-        {roles.length < skills.length && (
-          <button type="button" onClick={addRole}
-            className="mt-1 text-xs text-blue-600 hover:underline">+ Add role</button>
-        )}
+        <RolesEditor
+          skills={currentSkills}
+          roles={roles}
+          onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
