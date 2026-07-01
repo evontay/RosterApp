@@ -5,6 +5,7 @@ import { AssignForm } from "./AssignForm";
 import { HoursForm } from "./HoursForm";
 import { MarkPaidButton } from "./MarkPaidButton";
 import { ShiftStatusControl } from "./ShiftStatusControl";
+import { UnassignButton } from "./UnassignButton";
 
 export default async function ShiftDetailPage({
   params,
@@ -64,33 +65,42 @@ export default async function ShiftDetailPage({
           )}
         </div>
 
-        {shift.assignments.length === 0 ? (
+        {shift.assignments.filter((a) => a.status !== "cancelled").length === 0 ? (
           <p className="text-sm text-gray-400">No one assigned yet.</p>
         ) : (
           <div className="space-y-4">
-            {shift.assignments.map((a) => (
+            {shift.assignments.filter((a) => a.status !== "cancelled").map((a) => (
               <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                 <div>
-                  <p className="font-medium text-gray-800 text-sm">{a.partTimer.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-gray-800 text-sm">{a.partTimer.name}</p>
+                    {a.status === "cancelled" && (
+                      <span className="text-xs bg-red-100 text-red-500 px-1.5 py-0.5 rounded">removed</span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500">
                     {a.hoursLogged != null
                       ? `${a.hoursLogged} hrs · $${a.payAmount}`
                       : "Hours not logged"}
-                    {" · "}
-                    <span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>
-                      {a.paymentStatus}
-                    </span>
+                    {a.status !== "cancelled" && (
+                      <>{" · "}<span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>{a.paymentStatus}</span></>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <HoursForm
-                    assignmentId={a.id}
-                    payType={shift.payType}
-                    payRate={Number(shift.payRate)}
-                    currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
-                  />
-                  {a.paymentStatus === "unpaid" && a.hoursLogged != null && (
+                  {a.status !== "cancelled" && (
+                    <HoursForm
+                      assignmentId={a.id}
+                      payType={shift.payType}
+                      payRate={Number(shift.payRate)}
+                      currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
+                    />
+                  )}
+                  {a.paymentStatus === "unpaid" && a.hoursLogged != null && a.status !== "cancelled" && (
                     <MarkPaidButton assignmentId={a.id} />
+                  )}
+                  {a.status !== "cancelled" && (
+                    <UnassignButton assignmentId={a.id} />
                   )}
                 </div>
               </div>

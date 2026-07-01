@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { InviteForm } from "./InviteForm";
+import { RemoveButton } from "./RemoveButton";
 
 export default async function RosterPage() {
   const session = await auth();
@@ -33,6 +34,7 @@ export default async function RosterPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Skills</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -46,11 +48,14 @@ export default async function RosterPage() {
                 <td className="px-4 py-3">
                   <StatusBadge status={m.status} />
                 </td>
+                <td className="px-4 py-3 text-right">
+                  {m.status !== "removed" && <RemoveButton membershipId={m.id} />}
+                </td>
               </tr>
             ))}
             {members.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
                   No roster members yet. Invite someone to get started.
                 </td>
               </tr>
