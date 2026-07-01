@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { RolesEditor } from "@/components/RolesEditor";
+import { RolesEditor, RoleRow } from "@/components/RolesEditor";
 
-interface Skill { id: string; label: string }
-interface ShiftRole { id: string; skillId: string; skillLabel: string; count: number }
+interface Skill { id: string; label: string; defaultPayType?: string | null; defaultPayRate?: number | null }
+interface ShiftRole { id: string; skillId: string; skillLabel: string; count: number; payType: string; payRate: number }
 interface Assignment { id: string; name: string }
 interface Shift {
   id: string; title: string; shiftDate: string;
   startTime: string; endTime: string; status: string;
-  payType: string; payRate: number;
   roles: ShiftRole[]; assignments: Assignment[];
 }
 type Slot = "AM" | "PM";
@@ -309,8 +308,6 @@ function SlotModal({
   );
 }
 
-interface RoleRow { skillId: string; count: number }
-
 function ShiftForm({
   mode, businessId, skills, defaultDate, defaultSlot, shift, cancelLabel, onCancel, onSaved,
 }: {
@@ -332,12 +329,10 @@ function ShiftForm({
     shiftDate: shift ? toDateStr(shift.shiftDate) : (defaultDate ?? ""),
     startTime: shift?.startTime ?? defaultStart,
     endTime: shift?.endTime ?? defaultEnd,
-    payType: shift?.payType ?? "hourly",
-    payRate: shift?.payRate?.toString() ?? "",
   });
   const [roles, setRoles] = useState<RoleRow[]>(
-    shift?.roles.map((r) => ({ skillId: r.skillId, count: r.count })) ??
-    [{ skillId: skills[0]?.id ?? "", count: 1 }]
+    shift?.roles.map((r) => ({ skillId: r.skillId, count: r.count, payType: r.payType, payRate: r.payRate.toString() })) ??
+    [{ skillId: skills[0]?.id ?? "", count: 1, payType: skills[0]?.defaultPayType ?? "hourly", payRate: skills[0]?.defaultPayRate?.toString() ?? "" }]
   );
   const [currentSkills, setCurrentSkills] = useState<Skill[]>(skills);
   const [error, setError] = useState("");
@@ -350,6 +345,7 @@ function ShiftForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (roles.length === 0) { setError("Add at least one role"); return; }
+    if (roles.some((r) => !r.payRate)) { setError("Enter a pay rate for each role"); return; }
     setLoading(true);
     setError("");
 
@@ -415,29 +411,12 @@ function ShiftForm({
 
       {/* Roles */}
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Roles needed</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Roles & pay</label>
         <RolesEditor
           skills={currentSkills}
           roles={roles}
           onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
         />
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Pay type</label>
-          <select value={form.payType} onChange={(e) => setField("payType", e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm">
-            <option value="hourly">Hourly</option>
-            <option value="flat_session">Flat session</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Rate ($)</label>
-          <input type="number" min="0" step="0.01" value={form.payRate}
-            onChange={(e) => setField("payRate", e.target.value)}
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm" required />
-        </div>
       </div>
 
       {error && <p className="text-red-500 text-xs">{error}</p>}

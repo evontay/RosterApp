@@ -66,10 +66,12 @@ enum MembershipStatus {
 }
 
 model Skill {
-  id         String           @id @default(cuid())
-  label      String           @unique
-  partTimers PartTimerSkill[]
-  shiftRoles ShiftRole[]
+  id             String           @id @default(cuid())
+  label          String           @unique
+  defaultPayType PayType?
+  defaultPayRate Decimal?         @db.Decimal(10, 2)
+  partTimers     PartTimerSkill[]
+  shiftRoles     ShiftRole[]
 }
 
 model PartTimerSkill {
@@ -108,8 +110,6 @@ model Shift {
   shiftDate   DateTime
   startTime   String
   endTime     String
-  payType     PayType
-  payRate     Decimal           @db.Decimal(10, 2)
   status      ShiftStatus       @default(draft)
   createdAt   DateTime          @default(now())
   assignments ShiftAssignment[]
@@ -117,12 +117,14 @@ model Shift {
 }
 
 model ShiftRole {
-  id      String @id @default(cuid())
-  shift   Shift  @relation(fields: [shiftId], references: [id])
+  id      String  @id @default(cuid())
+  shift   Shift   @relation(fields: [shiftId], references: [id])
   shiftId String
-  skill   Skill  @relation(fields: [skillId], references: [id])
+  skill   Skill   @relation(fields: [skillId], references: [id])
   skillId String
-  count   Int    @default(1)
+  count   Int     @default(1)
+  payType PayType
+  payRate Decimal @db.Decimal(10, 2)
 }
 
 enum PayType {

@@ -31,14 +31,13 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, shiftDate, startTime, endTime, payType, payRate, roles } = await req.json();
+  const { title, shiftDate, startTime, endTime, roles } = await req.json();
 
   const shift = await prisma.shift.findFirst({
     where: { id, business: { ownerUserId: session.user.id } },
   });
   if (!shift) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Replace roles: delete existing, create new
   await prisma.shiftRole.deleteMany({ where: { shiftId: id } });
 
   const updated = await prisma.shift.update({
@@ -48,12 +47,12 @@ export async function PUT(
       shiftDate: new Date(shiftDate),
       startTime,
       endTime,
-      payType,
-      payRate,
       roles: {
-        create: (roles as { skillId: string; count: number }[]).map((r) => ({
+        create: (roles as { skillId: string; count: number; payType: string; payRate: number }[]).map((r) => ({
           skillId: r.skillId,
           count: r.count,
+          payType: r.payType as "hourly" | "flat_session",
+          payRate: r.payRate,
         })),
       },
     },

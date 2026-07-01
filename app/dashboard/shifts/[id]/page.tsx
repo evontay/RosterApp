@@ -30,15 +30,26 @@ export default async function ShiftDetailPage({
   });
   if (!shift) notFound();
 
-  const skills = await prisma.skill.findMany({ orderBy: { label: "asc" } });
+  const skills = await prisma.skill.findMany({
+    orderBy: { label: "asc" },
+    select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+  });
 
   const activeMembers = await prisma.rosterMembership.findMany({
     where: { businessId: business.id, status: "active" },
     include: { partTimer: true },
   });
 
-  const assignedIds = new Set(shift.assignments.map((a) => a.partTimerId));
+  const assignedIds = new Set(
+    shift.assignments.filter((a) => a.status !== "cancelled").map((a) => a.partTimerId)
+  );
   const assignableMembers = activeMembers.filter((m) => !assignedIds.has(m.partTimerId));
+
+  const roleOptions = shift.roles.map((r) => ({
+    label: r.skill.label,
+    payType: r.payType,
+    payRate: Number(r.payRate),
+  }));
 
   return (
     <div className="max-w-2xl">
@@ -52,11 +63,19 @@ export default async function ShiftDetailPage({
               shiftDate: shift.shiftDate.toISOString(),
               startTime: shift.startTime,
               endTime: shift.endTime,
-              payType: shift.payType,
-              payRate: Number(shift.payRate),
-              roles: shift.roles.map((r) => ({ skillId: r.skillId, count: r.count })),
+              roles: shift.roles.map((r) => ({
+                skillId: r.skillId,
+                count: r.count,
+                payType: r.payType,
+                payRate: Number(r.payRate),
+              })),
             }}
-            skills={skills}
+            skills={skills.map((s) => ({
+              id: s.id,
+              label: s.label,
+              defaultPayType: s.defaultPayType,
+              defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
+            }))}
           />
           <ShiftStatusControl
             shiftId={shift.id}
@@ -66,14 +85,23 @@ export default async function ShiftDetailPage({
       </div>
       <p className="text-sm text-gray-500 mb-6">
         {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
+          weekday: "long", day: "numeric", month: "long", year: "numeric",
         })}{" "}
-        · {shift.startTime}–{shift.endTime} · {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")} ·{" "}
-        {shift.payType === "hourly" ? `$${shift.payRate}/hr` : `$${shift.payRate} flat`}
+        · {shift.startTime}–{shift.endTime}
       </p>
+
+      {/* Roles summary */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {shift.roles.map((r) => (
+          <div key={r.id} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <span className="font-medium text-gray-800">{r.skill.label}</span>
+            <span className="text-gray-400 mx-1">×{r.count}</span>
+            <span className="text-gray-500">
+              {r.payType === "hourly" ? `$${Number(r.payRate)}/hr` : `$${Number(r.payRate)} flat`}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
         <div className="flex items-center justify-between mb-4">
@@ -90,36 +118,25 @@ export default async function ShiftDetailPage({
             {shift.assignments.filter((a) => a.status !== "cancelled").map((a) => (
               <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-800 text-sm">{a.partTimer.name}</p>
-                    {a.status === "cancelled" && (
-                      <span className="text-xs bg-red-100 text-red-500 px-1.5 py-0.5 rounded">removed</span>
-                    )}
-                  </div>
+                  <p className="font-medium text-gray-800 text-sm">{a.partTimer.name}</p>
                   <p className="text-xs text-gray-500">
-                    {a.hoursLogged != null
-                      ? `${a.hoursLogged} hrs · $${a.payAmount}`
-                      : "Hours not logged"}
-                    {a.status !== "cancelled" && (
-                      <>{" · "}<span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>{a.paymentStatus}</span></>
-                    )}
+                    {a.hoursLogged != null ? `${a.hoursLogged} hrs · $${a.payAmount}` : "Hours not logged"}
+                    {" · "}
+                    <span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>
+                      {a.paymentStatus}
+                    </span>
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {a.status !== "cancelled" && (
-                    <HoursForm
-                      assignmentId={a.id}
-                      payType={shift.payType}
-                      payRate={Number(shift.payRate)}
-                      currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
-                    />
-                  )}
-                  {a.paymentStatus === "unpaid" && a.hoursLogged != null && a.status !== "cancelled" && (
+                  <HoursForm
+                    assignmentId={a.id}
+                    roles={roleOptions}
+                    currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
+                  />
+                  {a.paymentStatus === "unpaid" && a.hoursLogged != null && (
                     <MarkPaidButton assignmentId={a.id} />
                   )}
-                  {a.status !== "cancelled" && (
-                    <UnassignButton assignmentId={a.id} />
-                  )}
+                  <UnassignButton assignmentId={a.id} />
                 </div>
               </div>
             ))}

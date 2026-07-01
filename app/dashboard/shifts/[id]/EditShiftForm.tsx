@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RolesEditor } from "@/components/RolesEditor";
+import { RolesEditor, RoleRow } from "@/components/RolesEditor";
 
-interface Skill { id: string; label: string }
-interface RoleRow { skillId: string; count: number }
+interface Skill {
+  id: string;
+  label: string;
+  defaultPayType?: string | null;
+  defaultPayRate?: number | null;
+}
 
 export function EditShiftForm({
   shift,
@@ -17,9 +21,7 @@ export function EditShiftForm({
     shiftDate: string;
     startTime: string;
     endTime: string;
-    payType: string;
-    payRate: number;
-    roles: { skillId: string; count: number }[];
+    roles: { skillId: string; count: number; payType: string; payRate: number }[];
   };
   skills: Skill[];
 }) {
@@ -30,11 +32,14 @@ export function EditShiftForm({
     shiftDate: new Date(shift.shiftDate).toISOString().split("T")[0],
     startTime: shift.startTime,
     endTime: shift.endTime,
-    payType: shift.payType,
-    payRate: shift.payRate.toString(),
   });
   const [roles, setRoles] = useState<RoleRow[]>(
-    shift.roles.map((r) => ({ skillId: r.skillId, count: r.count }))
+    shift.roles.map((r) => ({
+      skillId: r.skillId,
+      count: r.count,
+      payType: r.payType,
+      payRate: r.payRate.toString(),
+    }))
   );
   const [currentSkills, setCurrentSkills] = useState<Skill[]>(skills);
   const [error, setError] = useState("");
@@ -47,6 +52,7 @@ export function EditShiftForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (roles.length === 0) { setError("Add at least one role"); return; }
+    if (roles.some((r) => !r.payRate)) { setError("Enter a pay rate for each role"); return; }
     setLoading(true);
     setError("");
 
@@ -68,10 +74,8 @@ export function EditShiftForm({
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="text-sm text-gray-500 hover:text-gray-800 border border-gray-300 rounded px-3 py-1 hover:bg-gray-50"
-      >
+      <button onClick={() => setOpen(true)}
+        className="text-sm text-gray-500 hover:text-gray-800 border border-gray-300 rounded px-3 py-1 hover:bg-gray-50">
         Edit shift
       </button>
     );
@@ -80,20 +84,17 @@ export function EditShiftForm({
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
       <h2 className="font-semibold text-gray-700 mb-4">Edit shift</h2>
-
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
           <input type="text" value={form.title} onChange={(e) => setField("title", e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
         </div>
-
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
           <input type="date" value={form.shiftDate} onChange={(e) => setField("shiftDate", e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
         </div>
-
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Start time</label>
@@ -106,41 +107,19 @@ export function EditShiftForm({
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
           </div>
         </div>
-
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Roles needed</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Roles & pay</label>
           <RolesEditor
             skills={currentSkills}
             roles={roles}
             onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
           />
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Pay type</label>
-            <select value={form.payType} onChange={(e) => setField("payType", e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-              <option value="hourly">Hourly</option>
-              <option value="flat_session">Flat session</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Rate ($)</label>
-            <input type="number" min="0" step="0.01" value={form.payRate}
-              onChange={(e) => setField("payRate", e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
-          </div>
-        </div>
       </div>
-
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-
       <div className="flex gap-2 mt-4">
         <button type="button" onClick={() => setOpen(false)}
-          className="flex-1 border border-gray-300 text-gray-600 py-2 rounded text-sm">
-          Cancel
-        </button>
+          className="flex-1 border border-gray-300 text-gray-600 py-2 rounded text-sm">Cancel</button>
         <button type="submit" disabled={loading}
           className="flex-1 bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
           {loading ? "Saving..." : "Save changes"}

@@ -46,9 +46,9 @@ export default async function ShiftsPage() {
                   · {shift.startTime}–{shift.endTime} · {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {shift.payType === "hourly"
-                    ? `$${shift.payRate}/hr`
-                    : `$${shift.payRate} flat`}
+                  {shift.roles.map((r) =>
+                    r.payType === "hourly" ? `$${Number(r.payRate)}/hr` : `$${Number(r.payRate)} flat`
+                  ).join(", ")}
                 </p>
               </div>
               <div className="flex items-center gap-2">

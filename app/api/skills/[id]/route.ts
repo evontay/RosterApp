@@ -12,16 +12,26 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { label } = await req.json();
-  const trimmed = label?.trim();
-  if (!trimmed) return NextResponse.json({ error: "Label is required" }, { status: 400 });
+  const { label, defaultPayType, defaultPayRate } = await req.json();
 
-  const existing = await prisma.skill.findUnique({ where: { label: trimmed } });
-  if (existing && existing.id !== id) {
-    return NextResponse.json({ error: "A role with that name already exists" }, { status: 400 });
+  // Rename
+  if (label !== undefined) {
+    const trimmed = label?.trim();
+    if (!trimmed) return NextResponse.json({ error: "Label is required" }, { status: 400 });
+    const existing = await prisma.skill.findUnique({ where: { label: trimmed } });
+    if (existing && existing.id !== id) {
+      return NextResponse.json({ error: "A role with that name already exists" }, { status: 400 });
+    }
   }
 
-  const skill = await prisma.skill.update({ where: { id }, data: { label: trimmed } });
+  const skill = await prisma.skill.update({
+    where: { id },
+    data: {
+      ...(label !== undefined && { label: label.trim() }),
+      ...(defaultPayType !== undefined && { defaultPayType: defaultPayType || null }),
+      ...(defaultPayRate !== undefined && { defaultPayRate: defaultPayRate ? parseFloat(defaultPayRate) : null }),
+    },
+  });
   return NextResponse.json(skill);
 }
 

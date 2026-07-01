@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { RolesEditor, RoleRow } from "@/components/RolesEditor";
 
 interface Skill {
   id: string;
   label: string;
-}
-
-interface RoleRow {
-  skillId: string;
-  count: number;
+  defaultPayType?: string | null;
+  defaultPayRate?: number | null;
 }
 
 export function NewShiftForm({
@@ -28,10 +26,14 @@ export function NewShiftForm({
     shiftDate: defaultDate ?? "",
     startTime: "",
     endTime: "",
-    payType: "hourly",
-    payRate: "",
   });
-  const [roles, setRoles] = useState<RoleRow[]>([{ skillId: skills[0]?.id ?? "", count: 1 }]);
+  const [roles, setRoles] = useState<RoleRow[]>([{
+    skillId: skills[0]?.id ?? "",
+    count: 1,
+    payType: skills[0]?.defaultPayType ?? "hourly",
+    payRate: skills[0]?.defaultPayRate?.toString() ?? "",
+  }]);
+  const [currentSkills, setCurrentSkills] = useState<Skill[]>(skills);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -39,23 +41,10 @@ export function NewShiftForm({
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  function updateRole(index: number, field: keyof RoleRow, value: string | number) {
-    setRoles((prev) => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
-  }
-
-  function addRole() {
-    const usedIds = new Set(roles.map((r) => r.skillId));
-    const next = skills.find((s) => !usedIds.has(s.id));
-    if (next) setRoles((prev) => [...prev, { skillId: next.id, count: 1 }]);
-  }
-
-  function removeRole(index: number) {
-    setRoles((prev) => prev.filter((_, i) => i !== index));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (roles.length === 0) { setError("Add at least one role"); return; }
+    if (roles.some((r) => !r.payRate)) { setError("Enter a pay rate for each role"); return; }
     setLoading(true);
     setError("");
 
@@ -121,79 +110,13 @@ export function NewShiftForm({
         </div>
       </div>
 
-      {/* Roles */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Roles needed</label>
-        <div className="space-y-2">
-          {roles.map((role, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <select
-                value={role.skillId}
-                onChange={(e) => updateRole(i, "skillId", e.target.value)}
-                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
-              >
-                {skills.map((s) => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
-                ))}
-              </select>
-              <div className="flex items-center gap-1">
-                <span className="text-sm text-gray-500">×</span>
-                <input
-                  type="number"
-                  min="1"
-                  max="99"
-                  value={role.count}
-                  onChange={(e) => updateRole(i, "count", parseInt(e.target.value) || 1)}
-                  className="w-16 border border-gray-300 rounded px-2 py-2 text-sm text-center"
-                />
-              </div>
-              {roles.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeRole(i)}
-                  className="text-gray-400 hover:text-red-500 text-lg leading-none"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        {roles.length < skills.length && (
-          <button
-            type="button"
-            onClick={addRole}
-            className="mt-2 text-sm text-blue-600 hover:underline"
-          >
-            + Add another role
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Pay type</label>
-          <select
-            value={form.payType}
-            onChange={(e) => setField("payType", e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          >
-            <option value="hourly">Hourly</option>
-            <option value="flat_session">Flat session</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Rate ($)</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.payRate}
-            onChange={(e) => setField("payRate", e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            required
-          />
-        </div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Roles & pay</label>
+        <RolesEditor
+          skills={currentSkills}
+          roles={roles}
+          onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
+        />
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

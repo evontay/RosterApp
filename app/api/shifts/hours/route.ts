@@ -11,15 +11,13 @@ export async function POST(req: NextRequest) {
   const { assignmentId, hours, payType, payRate } = await req.json();
 
   const payAmount =
-    payType === "hourly" ? parseFloat(hours) * parseFloat(payRate) : parseFloat(payRate);
+    payType === "hourly"
+      ? parseFloat(hours) * parseFloat(payRate)
+      : parseFloat(payRate);
 
   const assignment = await prisma.shiftAssignment.update({
     where: { id: assignmentId },
-    data: {
-      hoursLogged: hours,
-      payAmount,
-      status: "completed",
-    },
+    data: { hoursLogged: hours, payAmount, status: "completed" },
   });
 
   return NextResponse.json(assignment);

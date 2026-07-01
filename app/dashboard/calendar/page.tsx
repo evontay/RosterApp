@@ -12,7 +12,10 @@ export default async function CalendarPage({
 
   const [business, skills] = await Promise.all([
     prisma.business.findFirst({ where: { ownerUserId: session!.user.id } }),
-    prisma.skill.findMany({ orderBy: { label: "asc" } }),
+    prisma.skill.findMany({
+      orderBy: { label: "asc" },
+      select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+    }),
   ]);
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
@@ -36,7 +39,7 @@ export default async function CalendarPage({
     <YearCalendar
       businessId={business.id}
       year={displayYear}
-      skills={skills.map((s) => ({ id: s.id, label: s.label }))}
+      skills={skills.map((s) => ({ id: s.id, label: s.label, defaultPayType: s.defaultPayType, defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null }))}
       shifts={shifts.map((s) => ({
         id: s.id,
         title: s.title,
@@ -44,9 +47,7 @@ export default async function CalendarPage({
         startTime: s.startTime,
         endTime: s.endTime,
         status: s.status,
-        payType: s.payType,
-        payRate: Number(s.payRate),
-        roles: s.roles.map((r) => ({ id: r.id, skillId: r.skillId, skillLabel: r.skill.label, count: r.count })),
+        roles: s.roles.map((r) => ({ id: r.id, skillId: r.skillId, skillLabel: r.skill.label, count: r.count, payType: r.payType, payRate: Number(r.payRate) })),
         assignments: s.assignments.map((a) => ({ id: a.id, name: a.partTimer.name })),
       }))}
     />

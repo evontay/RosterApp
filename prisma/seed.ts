@@ -92,10 +92,13 @@ async function main() {
       shiftDate: new Date("2026-07-05"),
       startTime: "10:00",
       endTime: "13:00",
-      payType: "hourly",
-      payRate: 25,
       status: "open",
-      roles: { create: [{ skillId: facilitator.id, count: 2 }, { skillId: foh.id, count: 1 }] },
+      roles: {
+        create: [
+          { skillId: facilitator.id, count: 2, payType: "hourly", payRate: 25 },
+          { skillId: foh.id, count: 1, payType: "hourly", payRate: 20 },
+        ],
+      },
     },
   });
 
@@ -106,10 +109,8 @@ async function main() {
       shiftDate: new Date("2026-07-08"),
       startTime: "18:00",
       endTime: "21:00",
-      payType: "flat_session",
-      payRate: 60,
       status: "filled",
-      roles: { create: [{ skillId: logistics.id, count: 1 }] },
+      roles: { create: [{ skillId: logistics.id, count: 1, payType: "flat_session", payRate: 60 }] },
     },
   });
 

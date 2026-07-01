@@ -10,12 +10,23 @@ export default async function NewShiftPage() {
 
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
-  const skills = await prisma.skill.findMany({ orderBy: { label: "asc" } });
+  const skills = await prisma.skill.findMany({
+    orderBy: { label: "asc" },
+    select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+  });
 
   return (
     <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">New Shift</h1>
-      <NewShiftForm businessId={business.id} skills={skills} />
+      <NewShiftForm
+        businessId={business.id}
+        skills={skills.map((s) => ({
+          id: s.id,
+          label: s.label,
+          defaultPayType: s.defaultPayType,
+          defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
+        }))}
+      />
     </div>
   );
 }
