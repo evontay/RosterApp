@@ -22,7 +22,7 @@ export default async function MyProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-6">
-        <span className="font-bold text-gray-800">RosterApp</span>
+        <span className="font-bold text-gray-800">MyCrew</span>
         <a href="/my-shifts" className="text-sm text-gray-600 hover:text-gray-900">My Shifts</a>
         <a href="/my-profile" className="text-sm text-gray-600 hover:text-gray-900">Profile</a>
       </nav>

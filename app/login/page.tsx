@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">RosterApp</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">MyCrew</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
