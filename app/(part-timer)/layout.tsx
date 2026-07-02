@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { signOut } from "@/lib/auth";
 
 export default async function PartTimerLayout({
   children,
