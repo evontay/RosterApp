@@ -1,4 +1,4 @@
-# Roster App — Build Context for Claude Code
+# MyCrew — Build Context for Claude Code
 
 ## What this app is
 
@@ -16,6 +16,141 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs 
 they can only see and respond to offers from businesses that have added them to
 their roster.
 
+---
+
+## Tech stack (as built)
+
+- **Framework:** Next.js 16 (App Router), TypeScript, Tailwind CSS
+- **Database:** PostgreSQL via Postgres.app (local)
+- **ORM:** Prisma v7 with `@prisma/adapter-pg` driver adapter (no native engine)
+- **Auth:** NextAuth.js v5 beta (Auth.js) — Credentials provider, JWT sessions
+- **Prisma config:** URL lives in `prisma.config.ts`, not in `schema.prisma`
+- **Migrations:** Manual SQL via `prisma migrate deploy` (non-interactive env)
+- **GitHub:** `https://github.com/evontay/RosterApp` (private)
+
+### Key Prisma v7 notes
+- No bundled engine — requires `@prisma/adapter-pg` + `pg`
+- Client instantiated with adapter: `new PrismaClient({ adapter })`
+- `DATABASE_URL` set in `prisma.config.ts` under `datasource.url`, not in `schema.prisma`
+- After any schema change: kill dev server → `npx prisma generate` → restart
+
+---
+
+## Current state (Phase 1 — complete)
+
+### Features built
+- Owner auth (email + password login)
+- Part-timer auth (email + password)
+- Business + roster management (invite, activate, remove members)
+- Shift creation, editing, status management
+- Multi-role shifts (each role has its own skill, headcount, pay type, pay rate)
+- Shift assignment (assign/unassign part-timers to shifts)
+- Hours logging + pay calculation per assignment
+- Mark as paid
+- Year calendar view (AM/PM slots, click to create/edit shifts)
+- Part-timer shift view (`/my-shifts`)
+- Settings → Role types (rename, delete, set default pay type/rate)
+
+### Role (Skill) management
+- Skills are defined globally (not per-business in Phase 1)
+- Each skill can have a `defaultPayType` and `defaultPayRate` — pre-fills when
+  selected in shift creation
+- New custom roles can be created inline from the shift form
+- Rename/delete is in Settings → Role types (delete blocked if skill is in use)
+
+---
+
+## Entity Relationship Diagram (current schema)
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                           MyCrew ERD                                │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌──────────────┐          ┌──────────────────┐
+│     User     │          │     Business     │
+│──────────────│          │──────────────────│
+│ id (PK)      │ 1      * │ id (PK)          │
+│ email        │◄─────────│ ownerUserId (FK) │
+│ password     │          │ name             │
+│ role         │          │ createdAt        │
+│ createdAt    │          └────────┬─────────┘
+└──────┬───────┘                   │
+       │ 1                         │ 1
+       │                           │
+       │ 0..1                      │ *
+┌──────▼───────┐          ┌────────▼─────────┐
+│  PartTimer   │          │     Shift        │
+│──────────────│          │──────────────────│
+│ id (PK)      │          │ id (PK)          │
+│ userId (FK)  │          │ businessId (FK)  │
+│ name         │          │ title            │
+│ email        │          │ shiftDate        │
+│ phone        │          │ startTime        │
+│ profilePhoto │          │ endTime          │
+│ createdAt    │          │ status           │
+└──┬──┬──┬────┘          └──────┬──┬────────┘
+   │  │  │                      │  │
+   │  │  │                      │  │
+   │  │  │ *              *     │  │ *
+   │  │  │   ┌──────────────────┘  │
+   │  │  │   │                     │
+   │  │  │   ▼                     ▼
+   │  │  │  ┌──────────────┐  ┌────────────────────┐
+   │  │  │  │  ShiftRole   │  │  ShiftAssignment   │
+   │  │  │  │──────────────│  │────────────────────│
+   │  │  │  │ id (PK)      │  │ id (PK)            │
+   │  │  │  │ shiftId (FK) │  │ shiftId (FK)       │
+   │  │  │  │ skillId (FK) │  │ partTimerId (FK)   │
+   │  │  │  │ count        │  │ status             │
+   │  │  │  │ payType      │  │ hoursLogged        │
+   │  │  │  │ payRate      │  │ payAmount          │
+   │  │  │  └──────┬───────┘  │ paymentStatus      │
+   │  │  │         │          │ paidAt             │
+   │  │  │       * │          └────────────────────┘
+   │  │  │         │                   ▲
+   │  │  │ *    1  ▼                   │ *
+   │  │  └──►┌──────────────┐          │
+   │  │       │    Skill     │      PartTimer (above)
+   │  │       │──────────────│
+   │  │       │ id (PK)      │
+   │  │       │ label        │
+   │  │       │ defaultPayType│
+   │  │       │ defaultPayRate│
+   │  │       └──────────────┘
+   │  │
+   │  │ *
+   │  └──────────────────────────────────┐
+   │                                     ▼
+   │ *                        ┌────────────────────┐
+   └─────────────────────────►│  RosterMembership  │
+                               │────────────────────│
+                               │ id (PK)            │
+                               │ businessId (FK)    │◄── Business
+                               │ partTimerId (FK)   │
+                               │ status             │
+                               │ inviteToken        │
+                               │ invitedAt          │
+                               └────────────────────┘
+   │ *
+   ├──► PartTimerSkill (partTimerId FK + skillId FK) ──► Skill
+   │
+   └──► Availability (partTimerId FK, dayOfWeek, startTime, endTime)
+```
+
+### Enums
+| Enum | Values |
+|------|--------|
+| `UserRole` | `owner`, `part_timer` |
+| `MembershipStatus` | `invited`, `active`, `removed` |
+| `ShiftStatus` | `draft`, `open`, `filled`, `completed`, `cancelled` |
+| `PayType` | `hourly`, `flat_session` |
+| `AssignmentStatus` | `assigned`, `completed`, `cancelled` |
+| `PaymentStatus` | `unpaid`, `paid` |
+| `DayOfWeek` | `Mon`–`Sun` |
+
+---
+
 ## Why this document exists
 
 This is Phase 1 of a multi-phase build. Later phases will add: explicit-accept
@@ -30,6 +165,8 @@ structure should anticipate that `ObjectiveRecord`, `SubjectiveNote`, and
 `TrustRating` will be added as related tables later, scoped per business per
 part-timer. Don't build those tables yet — just don't paint the schema into a
 corner that makes them awkward to bolt on.
+
+---
 
 ## Competitive positioning (context, not a build requirement)
 
@@ -74,199 +211,60 @@ though most aren't relevant to Phase 1's build itself:
    any specific external system's schema — just keep this app's own data
    model clean, portable, and not locked in.
 
-None of this changes the Phase 1 build below. It's here so that as Phase 2+
-gets built (in future sessions/context documents), the reasoning behind
-keeping declines penalty-free, keeping rewards personal rather than
-gamified, and keeping Trust Rating tied to selection rather than treated as
-a standalone score is already on record.
+---
 
-## Phase 1 scope (build this now)
+## Phase roadmap
 
-1. **Business** entity — the business owner's account/org.
-2. **PartTimer** entity — a person who can be added to a business's roster.
-3. **RosterMembership** — join table linking a PartTimer to a Business (invite-only,
-   closed pool). A part-timer should only ever see data for businesses where they
-   have an active membership.
-4. **PartTimer profile** — name, contact info, skills (start with a simple fixed
-   tag list, e.g. "facilitator", "logistics/setup", "front of house" — don't build
-   owner-customizable tags yet), availability (simple recurring weekly pattern:
-   day of week + start/end time, no exception calendar yet).
-5. **Shift** entity — created by the owner: title, date, time, role needed (skill
-   tag), pay type (hourly or flat session rate), pay rate, status.
-6. **ShiftAssignment** — links a Shift to a PartTimer. For Phase 1, assignment is
-   a **direct push** by the owner (not yet an offer requiring explicit accept —
-   that's Phase 2). Status enum should still exist: `assigned`, `completed`,
-   `cancelled`. Keep it simple but as an enum, not a boolean, so it's easy to
-   extend later.
-7. **Hours + pay tracking** — manual hours entry (no clock-in/out yet), pay
-   auto-calculated from Shift.pay_type × hours (or flat amount for session-based
-   shifts), and a manual "mark as paid" action. No payment processing — just
-   tracking, to be reconciled against actual bank transfers outside the app.
+### Phase 1 — complete ✅
+Owner manages roster, creates shifts with per-role pay, assigns part-timers,
+logs hours, marks paid. Part-timer views their shifts. Year calendar view.
+Settings for role type management.
 
-## Explicitly OUT of scope for Phase 1 (do not build yet)
+### Phase 2 — next
+Explicit accept/decline flow for shifts. Richer `ShiftAssignment` status:
+`offered`, `accepted`, `declined`, `cancelled_early`, `cancelled_late`,
+`no_show`. **Declines must never factor into any scoring/rating logic.**
 
-- Explicit accept/decline flow for shifts (Phase 2)
-- ObjectiveRecord, SubjectiveNote, TrustRating, or any scoring/rating system
-  (Phase 3)
-- Milestone detection, retention nudges, RewardLog (Phase 4)
-- Team-fit/pairing notes, owner-customizable tags (Phase 5)
-- In-app payment processing (manual tracking only, indefinitely — this may never
-  be built; payment stays a tracking/reconciliation feature)
-- Clock-in/clock-out (manual hours entry is enough for Phase 1)
-- Open marketplace / discovery features of any kind — this app is closed-roster
-  only, permanently, by design
+### Phase 3
+ObjectiveRecord, SubjectiveNote, TrustRating tables — scoped per business per
+part-timer. Trust Rating visible to owner only.
 
-## Tech stack preferences
+### Phase 4
+Milestone detection, retention nudges, RewardLog. Rewards stay personal and
+owner-authored — no automated points-catalogue system.
 
-- Multi-tenant from day one: every relevant table should be scoped by
-  `business_id`, even though there's currently only one real business using it.
-  This is a hard requirement, not a nice-to-have — retrofitting tenancy later is
-  expensive.
-- A real backend with a proper database (Postgres preferred) and an API layer —
-  not a no-code tool's data layer as the source of truth.
-- Suggest a stack appropriate for a solo non-professional developer building with
-  Claude Code: something like Next.js (App Router) + Postgres (e.g. via Supabase
-  or a simple hosted Postgres) + an ORM (Prisma or Drizzle) is a reasonable
-  default unless there's a strong reason to deviate — propose your recommended
-  stack and explain the tradeoffs briefly before scaffolding, since I'm
-  semi-technical and building this myself for the first time at this scope.
-- Two distinct UI surfaces eventually (owner dashboard, part-timer mobile-first
-  view) — for Phase 1, a responsive web app covering both is fine; native mobile
-  is not needed yet.
+### Phase 5
+Team-fit / pairing notes layer. Owner-customizable skill tags.
 
-### Local-first — no deployment yet
+---
 
-Keep everything fully local for now. No hosting, no deployed database, no
-production deployment of any kind at this stage — that's a deliberate later step,
-not part of this build.
+## Explicitly OUT of scope (do not build)
 
-- Run Postgres locally (e.g. via Docker Compose, or a local Postgres install —
-  propose whichever is simpler to set up and explain the tradeoff briefly).
-  Don't default to a hosted/cloud Postgres provider (e.g. Supabase, Neon, RDS)
-  even though those are mentioned above as eventual options — for Phase 1,
-  local-only.
-- Auth should work locally without requiring a third-party hosted auth provider
-  to be configured. A simple local auth implementation (e.g. NextAuth with a
-  credentials provider, or an equivalent) is preferable to wiring up a hosted
-  auth service right now.
-- No environment variables pointing at production services, no deployment
-  config (e.g. vercel.json, Dockerfile for prod) needs to be created yet — keep
-  the setup focused on `npm run dev` (or equivalent) working cleanly on my
-  machine.
-- It's fine, and expected, that the architecture is chosen to be easy to deploy
-  later (e.g. using Postgres rather than SQLite, since that transfers cleanly to
-  a hosted Postgres down the line) — just don't actually set up or configure any
-  deployment yet.
-- Seed data: include a simple seed script so I can populate a test business,
-  a few part-timers, and a couple of shifts locally without manually creating
-  everything through the UI each time I reset the database.
+- Open marketplace / discovery — closed-roster only, permanently, by design
+- In-app payment processing — tracking only, reconciled externally
+- Clock-in/clock-out — manual hours entry is sufficient
+- Native mobile app — responsive web covers both surfaces for now
 
-## Data model reference (Phase 1 tables)
+---
 
-```
-Business
-  - business_id (PK)
-  - name
-  - owner_user_id (FK -> auth/user)
-  - created_at
+## Key design principles
 
-PartTimer
-  - part_timer_id (PK)
-  - name
-  - phone
-  - email
-  - profile_photo (nullable)
-  - created_at
+1. **Closed roster, not a marketplace.** Enforce via `RosterMembership.status = 'active'`
+   at the API level, not just the UI.
+2. **Schema anticipates Phase 2-5 without building them.** Enums over booleans,
+   separate tables over flattened fields, business-scoped records.
+3. **No payment processing.** Tracks what's owed and marks paid manually.
+4. **Multi-tenant from day one.** Every relevant table scoped by `businessId`.
+5. **See "Competitive positioning" above** for product principles that guide
+   Phase 2+ (declines stay free, trust signals inform decisions, rewards stay
+   personal).
 
-RosterMembership
-  - roster_membership_id (PK)
-  - business_id (FK)
-  - part_timer_id (FK)
-  - invited_at
-  - status (enum: invited / active / removed)
+---
 
-Skill
-  - skill_id (PK)
-  - label
-  (fixed seed list for Phase 1: "Facilitator", "Logistics/Setup", "Front of House" —
-  still model this as a proper table, not a hardcoded string list, so it's easy to
-  expand later)
+## Seed accounts (local dev)
 
-PartTimerSkill
-  - part_timer_id (FK)
-  - skill_id (FK)
-
-Availability
-  - availability_id (PK)
-  - part_timer_id (FK)
-  - day_of_week (enum: Mon-Sun)
-  - start_time
-  - end_time
-
-Shift
-  - shift_id (PK)
-  - business_id (FK)
-  - title
-  - shift_date
-  - start_time
-  - end_time
-  - role_needed (FK -> skill_id)
-  - pay_type (enum: hourly / flat_session)
-  - pay_rate (decimal)
-  - status (enum: draft / open / filled / completed / cancelled)
-
-ShiftAssignment
-  - assignment_id (PK)
-  - shift_id (FK)
-  - part_timer_id (FK)
-  - status (enum: assigned / completed / cancelled)  -- keep as enum, expect more
-    values to be added in Phase 2 (offered, accepted, declined, cancelled_early,
-    cancelled_late, no_show). NOTE for Phase 2: "declined" must never factor into
-    any future scoring/rating logic — see Competitive positioning principle #1
-    above. Only post-acceptance outcomes (cancelled_late, no_show) should ever
-    negatively affect a future trust signal.
-  - hours_logged (decimal, nullable until entered)
-  - pay_amount (decimal, calculated)
-  - payment_status (enum: unpaid / paid)
-  - paid_at (timestamp, nullable)
-  - created_at
-```
-
-## Key design principles to respect throughout
-
-1. **Closed roster, not a marketplace.** A part-timer should never be able to see
-   or be matched with a business they haven't been explicitly invited by. Enforce
-   this at the query/API level via `RosterMembership.status = 'active'`, not just
-   in the UI.
-2. **Schema should anticipate Phase 2-5 without building them.** Use enums over
-   booleans, separate tables over flattened fields, and business-scoped records
-   over global ones, so later phases are additive rather than migrations that
-   touch existing data.
-3. **No payment processing.** This app tracks what's owed and marks it paid
-   manually. Do not integrate Stripe/PayNow/etc. unless explicitly asked later.
-4. **I am semi-technical, building this myself with Claude Code.** Explain
-   architectural decisions briefly as you make them (a sentence or two, not an
-   essay) so I understand what's being built and why, especially around anything
-   that would be expensive to undo later (schema choices, auth approach, hosting).
-5. **See "Competitive positioning" above for the product principles** (declines
-   stay free, trust signals inform decisions rather than becoming a points
-   economy, rewards stay personal not catalogue-based) that should guide Phase
-   2+ even though they're not part of this Phase 1 build.
-
-## First build instruction
-
-Please:
-1. Propose a concrete tech stack (with brief reasoning) based on the preferences
-   above.
-2. Scaffold the project structure.
-3. Set up the database schema for the Phase 1 tables listed above, including the
-   `business_id` scoping on every relevant table.
-4. Build basic auth (owner login at minimum; part-timer login can use a simple
-   invite-link-based flow for now).
-5. Build the core owner flows: create a shift, view roster, invite a part-timer,
-   assign a part-timer to a shift, enter hours, mark as paid.
-6. Build the core part-timer flows: view profile (edit skills/availability), view
-   assigned shifts.
-
-Confirm the stack and schema with me before scaffolding if anything above is
-ambiguous or if you'd recommend a meaningfully different approach.
+| Role | Email | Password |
+|------|-------|----------|
+| Owner | owner@craftworkshop.com | password123 |
+| Part-timer | sarah@example.com | password123 |
+| Part-timer | james@example.com | password123 |
