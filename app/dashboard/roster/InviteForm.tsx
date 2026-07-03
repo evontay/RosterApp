@@ -40,7 +40,7 @@ export function InviteForm({ businessId }: { businessId: string }) {
         onClick={() => setOpen(true)}
         className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
       >
-        + Invite part-timer
+        + Invite employee
       </button>
     );
   }
@@ -48,7 +48,7 @@ export function InviteForm({ businessId }: { businessId: string }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Invite Part-Timer</h2>
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Invite Employee</h2>
 
         {inviteLink ? (
           <div>

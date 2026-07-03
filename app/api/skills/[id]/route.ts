@@ -56,7 +56,7 @@ export async function DELETE(
   const partTimerUse = await prisma.partTimerSkill.findFirst({ where: { skillId: id } });
   if (partTimerUse) {
     return NextResponse.json(
-      { error: "This role is assigned to part-timers and can't be deleted" },
+      { error: "This role is assigned to employees and can't be deleted" },
       { status: 400 }
     );
   }

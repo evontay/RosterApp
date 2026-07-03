@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     where: { businessId: shift.businessId, partTimerId, status: "active" },
   });
   if (!membership) {
-    return NextResponse.json({ error: "Part-timer not on active roster" }, { status: 400 });
+    return NextResponse.json({ error: "Employee not on active roster" }, { status: 400 });
   }
 
   const assignment = await prisma.shiftAssignment.create({

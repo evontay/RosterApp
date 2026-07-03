@@ -105,7 +105,7 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
                   {" · "}
                   {[
                     skill.shiftCount > 0 && `${skill.shiftCount} shift${skill.shiftCount !== 1 ? "s" : ""}`,
-                    skill.partTimerCount > 0 && `${skill.partTimerCount} part-timer${skill.partTimerCount !== 1 ? "s" : ""}`,
+                    skill.partTimerCount > 0 && `${skill.partTimerCount} employee${skill.partTimerCount !== 1 ? "s" : ""}`,
                   ].filter(Boolean).join(" · ") || "Not in use"}
                 </p>
               </div>

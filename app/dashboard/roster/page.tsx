@@ -3,16 +3,15 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { InviteForm } from "./InviteForm";
 import { RemoveButton } from "./RemoveButton";
+import { ShowRemovedToggle } from "./ShowRemovedToggle";
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Returns the next date (from today) matching a given DayOfWeek label
 function nextDateForDay(dayLabel: string): Date {
-  const todayJs = new Date().getDay(); // 0=Sun
-  const target = DAY_ORDER.indexOf(dayLabel); // 0=Mon
-  // Convert JS day (0=Sun) to Mon-based index
+  const todayJs = new Date().getDay();
+  const target = DAY_ORDER.indexOf(dayLabel);
   const todayMon = (todayJs + 6) % 7;
-  const daysAhead = (target - todayMon + 7) % 7 || 7; // if today, show next week
+  const daysAhead = (target - todayMon + 7) % 7 || 7;
   const d = new Date();
   d.setDate(d.getDate() + daysAhead);
   return d;
@@ -26,7 +25,14 @@ function nextAvailability(availability: { dayOfWeek: string; startTime: string }
   return upcoming.date.toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" });
 }
 
-export default async function RosterPage() {
+export default async function RosterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ showRemoved?: string }>;
+}) {
+  const { showRemoved } = await searchParams;
+  const showRemovedBool = showRemoved === "true";
+
   const session = await auth();
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
@@ -35,7 +41,10 @@ export default async function RosterPage() {
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
   const members = await prisma.rosterMembership.findMany({
-    where: { businessId: business.id },
+    where: {
+      businessId: business.id,
+      ...(!showRemovedBool && { status: { not: "removed" } }),
+    },
     include: {
       partTimer: {
         include: {
@@ -51,11 +60,20 @@ export default async function RosterPage() {
     orderBy: { invitedAt: "desc" },
   });
 
+  const removedCount = await prisma.rosterMembership.count({
+    where: { businessId: business.id, status: "removed" },
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Roster</h1>
-        <InviteForm businessId={business.id} />
+        <div className="flex items-center gap-3">
+          {removedCount > 0 && (
+            <ShowRemovedToggle showRemoved={showRemovedBool} count={removedCount} />
+          )}
+          <InviteForm businessId={business.id} />
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -72,7 +90,7 @@ export default async function RosterPage() {
           </thead>
           <tbody>
             {members.map((m) => (
-              <tr key={m.id} className="border-b border-gray-100 last:border-0">
+              <tr key={m.id} className={`border-b border-gray-100 last:border-0 ${m.status === "removed" ? "opacity-50" : ""}`}>
                 <td className="px-4 py-3">
                   <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-gray-800 hover:text-blue-600">
                     {m.partTimer.name}
@@ -99,7 +117,7 @@ export default async function RosterPage() {
             {members.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                  No roster members yet. Invite someone to get started.
+                  {showRemovedBool ? "No removed employees." : "No employees yet. Invite someone to get started."}
                 </td>
               </tr>
             )}
