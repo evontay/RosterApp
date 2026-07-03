@@ -71,6 +71,9 @@ export default async function PartTimerProfilePage({
           <p className="text-sm text-gray-500 mt-0.5">
             {partTimer.email}{partTimer.phone ? ` · ${partTimer.phone}` : ""}
           </p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Member since {membership.invitedAt.toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}
+          </p>
         </div>
         <span className={`px-2 py-1 rounded text-xs font-medium ${
           membership.status === "active" ? "bg-green-100 text-green-700" :

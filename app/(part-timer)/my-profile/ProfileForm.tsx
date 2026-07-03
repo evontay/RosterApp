@@ -17,7 +17,7 @@ interface PartTimer {
   }[];
 }
 
-export function ProfileForm({ partTimer }: { partTimer: PartTimer }) {
+export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; memberSince: Date | null }) {
   const router = useRouter();
   const [name, setName] = useState(partTimer.name);
   const [phone, setPhone] = useState(partTimer.phone ?? "");
@@ -73,6 +73,14 @@ export function ProfileForm({ partTimer }: { partTimer: PartTimer }) {
             required
           />
         </div>
+        {memberSince && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Member since</label>
+            <p className="text-sm text-gray-500">
+              {memberSince.toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
           <input

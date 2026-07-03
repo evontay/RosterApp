@@ -9,15 +9,20 @@ export default async function MyProfilePage() {
 
   const partTimer = await prisma.partTimer.findFirst({
     where: { userId: session.user.id },
-    include: { availability: true },
+    include: {
+      availability: true,
+      memberships: { orderBy: { invitedAt: "asc" }, take: 1 },
+    },
   });
 
   if (!partTimer) redirect("/login");
 
+  const memberSince = partTimer.memberships[0]?.invitedAt ?? null;
+
   return (
     <>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
-      <ProfileForm partTimer={partTimer} />
+      <ProfileForm partTimer={partTimer} memberSince={memberSince} />
     </>
   );
 }
