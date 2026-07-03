@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, phone, skillIds, availability } = await req.json();
+  const { name, phone, availability } = await req.json();
 
   const partTimer = await prisma.partTimer.findFirst({
     where: { userId: session.user.id },
@@ -19,14 +19,6 @@ export async function POST(req: NextRequest) {
     where: { id: partTimer.id },
     data: { name, phone: phone || null },
   });
-
-  // Replace skills
-  await prisma.partTimerSkill.deleteMany({ where: { partTimerId: partTimer.id } });
-  if (skillIds.length > 0) {
-    await prisma.partTimerSkill.createMany({
-      data: skillIds.map((skillId: string) => ({ partTimerId: partTimer.id, skillId })),
-    });
-  }
 
   // Replace availability
   await prisma.availability.deleteMany({ where: { partTimerId: partTimer.id } });

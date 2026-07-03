@@ -39,7 +39,7 @@ export default async function RosterPage() {
     include: {
       partTimer: {
         include: {
-          skills: { include: { skill: true } },
+          skills: { where: { businessId: business.id }, include: { skill: true } },
           availability: true,
           assignments: {
             where: { status: { not: "cancelled" }, shift: { businessId: business.id } },

@@ -9,20 +9,15 @@ export default async function MyProfilePage() {
 
   const partTimer = await prisma.partTimer.findFirst({
     where: { userId: session.user.id },
-    include: {
-      skills: { include: { skill: true } },
-      availability: true,
-    },
+    include: { availability: true },
   });
 
   if (!partTimer) redirect("/login");
 
-  const allSkills = await prisma.skill.findMany({ orderBy: { label: "asc" } });
-
   return (
     <>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">My Profile</h1>
-      <ProfileForm partTimer={partTimer} allSkills={allSkills} />
+      <ProfileForm partTimer={partTimer} />
     </>
   );
 }

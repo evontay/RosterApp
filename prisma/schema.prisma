@@ -27,8 +27,9 @@ model Business {
   owner         User               @relation(fields: [ownerUserId], references: [id])
   ownerUserId   String
   createdAt     DateTime           @default(now())
-  rosterMembers RosterMembership[]
-  shifts        Shift[]
+  rosterMembers   RosterMembership[]
+  shifts          Shift[]
+  partTimerSkills PartTimerSkill[]
 }
 
 model PartTimer {
@@ -79,8 +80,10 @@ model PartTimerSkill {
   partTimerId String
   skill       Skill     @relation(fields: [skillId], references: [id])
   skillId     String
+  business    Business  @relation(fields: [businessId], references: [id])
+  businessId  String
 
-  @@id([partTimerId, skillId])
+  @@id([partTimerId, skillId, businessId])
 }
 
 model Availability {

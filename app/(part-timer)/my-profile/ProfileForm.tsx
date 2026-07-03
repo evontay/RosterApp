@@ -5,16 +5,10 @@ import { useRouter } from "next/navigation";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
-interface Skill {
-  id: string;
-  label: string;
-}
-
 interface PartTimer {
   id: string;
   name: string;
   phone: string | null;
-  skills: { skill: Skill }[];
   availability: {
     id: string;
     dayOfWeek: string;
@@ -23,19 +17,10 @@ interface PartTimer {
   }[];
 }
 
-export function ProfileForm({
-  partTimer,
-  allSkills,
-}: {
-  partTimer: PartTimer;
-  allSkills: Skill[];
-}) {
+export function ProfileForm({ partTimer }: { partTimer: PartTimer }) {
   const router = useRouter();
   const [name, setName] = useState(partTimer.name);
   const [phone, setPhone] = useState(partTimer.phone ?? "");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(
-    partTimer.skills.map((s) => s.skill.id)
-  );
   const [availability, setAvailability] = useState(
     partTimer.availability.map((a) => ({
       dayOfWeek: a.dayOfWeek,
@@ -45,12 +30,6 @@ export function ProfileForm({
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  function toggleSkill(skillId: string) {
-    setSelectedSkills((prev) =>
-      prev.includes(skillId) ? prev.filter((s) => s !== skillId) : [...prev, skillId]
-    );
-  }
 
   function toggleDay(day: string) {
     if (availability.find((a) => a.dayOfWeek === day)) {
@@ -72,7 +51,7 @@ export function ProfileForm({
     await fetch("/api/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, skillIds: selectedSkills, availability }),
+      body: JSON.stringify({ name, phone, availability }),
     });
     setSaving(false);
     setSaved(true);
@@ -102,26 +81,6 @@ export function ProfileForm({
             onChange={(e) => setPhone(e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
           />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="font-semibold text-gray-700 mb-3">Skills</h2>
-        <div className="flex gap-2 flex-wrap">
-          {allSkills.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => toggleSkill(s.id)}
-              className={`px-3 py-1.5 rounded text-sm font-medium border transition-colors ${
-                selectedSkills.includes(s.id)
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
         </div>
       </div>
 

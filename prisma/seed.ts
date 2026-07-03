@@ -55,21 +55,21 @@ async function main() {
     create: { userId: ptUser2.id, name: "James Lim", email: "james@example.com", phone: "98765432" },
   });
 
-  // Skills for part-timers
+  // Skills for part-timers (scoped per business)
   await prisma.partTimerSkill.upsert({
-    where: { partTimerId_skillId: { partTimerId: pt1.id, skillId: facilitator.id } },
+    where: { partTimerId_skillId_businessId: { partTimerId: pt1.id, skillId: facilitator.id, businessId: business.id } },
     update: {},
-    create: { partTimerId: pt1.id, skillId: facilitator.id },
+    create: { partTimerId: pt1.id, skillId: facilitator.id, businessId: business.id },
   });
   await prisma.partTimerSkill.upsert({
-    where: { partTimerId_skillId: { partTimerId: pt2.id, skillId: logistics.id } },
+    where: { partTimerId_skillId_businessId: { partTimerId: pt2.id, skillId: logistics.id, businessId: business.id } },
     update: {},
-    create: { partTimerId: pt2.id, skillId: logistics.id },
+    create: { partTimerId: pt2.id, skillId: logistics.id, businessId: business.id },
   });
   await prisma.partTimerSkill.upsert({
-    where: { partTimerId_skillId: { partTimerId: pt2.id, skillId: foh.id } },
+    where: { partTimerId_skillId_businessId: { partTimerId: pt2.id, skillId: foh.id, businessId: business.id } },
     update: {},
-    create: { partTimerId: pt2.id, skillId: foh.id },
+    create: { partTimerId: pt2.id, skillId: foh.id, businessId: business.id },
   });
 
   // Roster memberships (active)

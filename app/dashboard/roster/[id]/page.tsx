@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { SkillEditor } from "./SkillEditor";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -18,17 +19,23 @@ export default async function PartTimerProfilePage({
   });
   if (!business) notFound();
 
-  const membership = await prisma.rosterMembership.findFirst({
-    where: { partTimerId: id, businessId: business.id },
-    include: {
-      partTimer: {
-        include: {
-          skills: { include: { skill: true } },
-          availability: { orderBy: { dayOfWeek: "asc" } },
+  const [membership, allSkills] = await Promise.all([
+    prisma.rosterMembership.findFirst({
+      where: { partTimerId: id, businessId: business.id },
+      include: {
+        partTimer: {
+          include: {
+            skills: {
+              where: { businessId: business.id },
+              include: { skill: true },
+            },
+            availability: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.skill.findMany({ orderBy: { label: "asc" }, select: { id: true, label: true } }),
+  ]);
   if (!membership) notFound();
 
   const assignments = await prisma.shiftAssignment.findMany({
@@ -42,8 +49,7 @@ export default async function PartTimerProfilePage({
   const { partTimer } = membership;
 
   const totalEarned = assignments.reduce(
-    (sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0),
-    0
+    (sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0
   );
   const totalPaid = assignments
     .filter((a) => a.paymentStatus === "paid")
@@ -62,7 +68,9 @@ export default async function PartTimerProfilePage({
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">{partTimer.name}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{partTimer.email}{partTimer.phone ? ` · ${partTimer.phone}` : ""}</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {partTimer.email}{partTimer.phone ? ` · ${partTimer.phone}` : ""}
+          </p>
         </div>
         <span className={`px-2 py-1 rounded text-xs font-medium ${
           membership.status === "active" ? "bg-green-100 text-green-700" :
@@ -77,17 +85,11 @@ export default async function PartTimerProfilePage({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <h2 className="text-sm font-semibold text-gray-700 mb-3">Skills</h2>
-          {partTimer.skills.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {partTimer.skills.map((s) => (
-                <span key={s.skill.id} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
-                  {s.skill.label}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400">No skills set</p>
-          )}
+          <SkillEditor
+            partTimerId={id}
+            allSkills={allSkills}
+            currentSkillIds={partTimer.skills.map((s) => s.skillId)}
+          />
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
