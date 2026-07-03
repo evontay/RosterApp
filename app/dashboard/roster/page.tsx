@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import { InviteForm } from "./InviteForm";
 import { RemoveButton } from "./RemoveButton";
 
@@ -40,7 +41,11 @@ export default async function RosterPage() {
           <tbody>
             {members.map((m) => (
               <tr key={m.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-4 py-3 font-medium text-gray-800">{m.partTimer.name}</td>
+                <td className="px-4 py-3 font-medium text-gray-800">
+                  <Link href={`/dashboard/roster/${m.partTimer.id}`} className="hover:text-blue-600">
+                    {m.partTimer.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-gray-600">{m.partTimer.email}</td>
                 <td className="px-4 py-3 text-gray-600">
                   {m.partTimer.skills.map((s) => s.skill.label).join(", ") || "—"}
