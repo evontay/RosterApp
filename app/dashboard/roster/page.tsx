@@ -4,6 +4,28 @@ import Link from "next/link";
 import { InviteForm } from "./InviteForm";
 import { RemoveButton } from "./RemoveButton";
 
+const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Returns the next date (from today) matching a given DayOfWeek label
+function nextDateForDay(dayLabel: string): Date {
+  const todayJs = new Date().getDay(); // 0=Sun
+  const target = DAY_ORDER.indexOf(dayLabel); // 0=Mon
+  // Convert JS day (0=Sun) to Mon-based index
+  const todayMon = (todayJs + 6) % 7;
+  const daysAhead = (target - todayMon + 7) % 7 || 7; // if today, show next week
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d;
+}
+
+function nextAvailability(availability: { dayOfWeek: string; startTime: string }[]): string {
+  if (availability.length === 0) return "—";
+  const upcoming = availability
+    .map((a) => ({ ...a, date: nextDateForDay(a.dayOfWeek) }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+  return upcoming.date.toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" });
+}
+
 export default async function RosterPage() {
   const session = await auth();
   const business = await prisma.business.findFirst({
@@ -15,7 +37,16 @@ export default async function RosterPage() {
   const members = await prisma.rosterMembership.findMany({
     where: { businessId: business.id },
     include: {
-      partTimer: { include: { skills: { include: { skill: true } } } },
+      partTimer: {
+        include: {
+          skills: { include: { skill: true } },
+          availability: true,
+          assignments: {
+            where: { status: { not: "cancelled" }, shift: { businessId: business.id } },
+            select: { id: true },
+          },
+        },
+      },
     },
     orderBy: { invitedAt: "desc" },
   });
@@ -32,8 +63,9 @@ export default async function RosterPage() {
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Skills</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Jobs done</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Next available</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
               <th className="px-4 py-3" />
             </tr>
@@ -41,14 +73,20 @@ export default async function RosterPage() {
           <tbody>
             {members.map((m) => (
               <tr key={m.id} className="border-b border-gray-100 last:border-0">
-                <td className="px-4 py-3 font-medium text-gray-800">
-                  <Link href={`/dashboard/roster/${m.partTimer.id}`} className="hover:text-blue-600">
+                <td className="px-4 py-3">
+                  <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-gray-800 hover:text-blue-600">
                     {m.partTimer.name}
                   </Link>
+                  <p className="text-xs text-gray-400">{m.partTimer.email}</p>
                 </td>
-                <td className="px-4 py-3 text-gray-600">{m.partTimer.email}</td>
                 <td className="px-4 py-3 text-gray-600">
                   {m.partTimer.skills.map((s) => s.skill.label).join(", ") || "—"}
+                </td>
+                <td className="px-4 py-3 text-gray-800 font-medium">
+                  {m.partTimer.assignments.length}
+                </td>
+                <td className="px-4 py-3 text-gray-600">
+                  {nextAvailability(m.partTimer.availability)}
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={m.status} />
@@ -60,7 +98,7 @@ export default async function RosterPage() {
             ))}
             {members.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                   No roster members yet. Invite someone to get started.
                 </td>
               </tr>
