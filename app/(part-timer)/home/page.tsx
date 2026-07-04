@@ -78,7 +78,11 @@ export default async function EmployeeHomePage() {
         </h2>
         <div className="space-y-3">
           {activeAssignments.map((a) => (
-            <div key={a.id} className="bg-white rounded-lg border border-gray-200 p-4">
+            <Link
+              key={a.id}
+              href={`/shifts/${a.shift.id}`}
+              className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors"
+            >
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-medium text-gray-800">{a.shift.title}</p>
@@ -101,7 +105,7 @@ export default async function EmployeeHomePage() {
                   </p>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
           {activeAssignments.length === 0 && (
             <div className="bg-white rounded-lg border border-gray-200 p-6 text-center text-gray-400 text-sm">
