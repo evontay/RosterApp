@@ -167,7 +167,6 @@ export function YearCalendar({
             year={year}
             monthIdx={monthIdx}
             monthName={MONTHS[monthIdx]}
-            showYear={year !== startYear}
             todayStr={todayStr}
             shiftMap={shiftMap}
             onSlotClick={openSlot}
@@ -196,9 +195,9 @@ export function YearCalendar({
 }
 
 function MonthGrid({
-  year, monthIdx, monthName, showYear, todayStr, shiftMap, onSlotClick,
+  year, monthIdx, monthName, todayStr, shiftMap, onSlotClick,
 }: {
-  year: number; monthIdx: number; monthName: string; showYear: boolean; todayStr: string;
+  year: number; monthIdx: number; monthName: string; todayStr: string;
   shiftMap: Map<string, { AM: Shift[]; PM: Shift[] }>;
   onSlotClick: (dateStr: string, slot: Slot) => void;
 }) {
@@ -214,7 +213,7 @@ function MonthGrid({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3">
       <h3 className="text-sm font-semibold text-gray-700 mb-2">
-        {monthName}{showYear && <span className="text-gray-400 font-normal ml-1">{year}</span>}
+        {monthName} <span className="text-gray-400 font-normal">{year}</span>
       </h3>
       <div className="grid grid-cols-7 gap-px text-center mb-1">
         {["M","T","W","T","F","S","S"].map((d, i) => (
