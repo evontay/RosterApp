@@ -47,12 +47,14 @@ export function YearCalendar({
   const [creating, setCreating] = useState(false);
 
   const shiftMap = new Map<string, { AM: Shift[]; PM: Shift[] }>();
+  const statusCounts: Record<string, number> = {};
   for (const s of shifts) {
     const key = toDateStr(s.shiftDate);
     if (!shiftMap.has(key)) shiftMap.set(key, { AM: [], PM: [] });
     const bucket = shiftMap.get(key)!;
     if (isMorning(s.startTime)) bucket.AM.push(s);
     else bucket.PM.push(s);
+    statusCounts[s.status] = (statusCounts[s.status] ?? 0) + 1;
   }
 
   function navigate(offsetMonths: number) {
@@ -148,6 +150,7 @@ export function YearCalendar({
           <div key={s} className="flex items-center gap-1.5">
             <div className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
             <span className="text-xs text-gray-600 capitalize">{s}</span>
+            <span className="text-xs text-gray-400">({statusCounts[s] ?? 0})</span>
           </div>
         ))}
         <div className="flex items-center gap-1.5 ml-4">

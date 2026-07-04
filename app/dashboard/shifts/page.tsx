@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShiftLegend, ShiftStepBadge } from "./ShiftProgress";
 import { ArchiveButton } from "./ArchiveButton";
 import { ArchivedSection } from "./ArchivedSection";
+import { StatusLegend } from "./StatusLegend";
 
 export default async function ShiftsPage() {
   const session = await auth();
@@ -28,6 +29,11 @@ export default async function ShiftsPage() {
   const active = shifts.filter((s) => !s.archived);
   const archived = shifts.filter((s) => s.archived);
 
+  const statusCounts = shifts.reduce<Record<string, number>>((acc, s) => {
+    acc[s.status] = (acc[s.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -40,8 +46,9 @@ export default async function ShiftsPage() {
         </Link>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 space-y-2">
         <ShiftLegend />
+        <StatusLegend counts={statusCounts} />
       </div>
 
       <div className="space-y-3">
