@@ -22,32 +22,30 @@ const STATUS_DOT: Record<string, string> = {
 };
 
 function isMorning(t: string) { return t < "12:00"; }
-
-function toDateStr(iso: string) {
-  return new Date(iso).toISOString().split("T")[0];
-}
-
+function toDateStr(iso: string) { return new Date(iso).toISOString().split("T")[0]; }
 function localDateStr(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 }
 
+const YEAR_RANGE = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i);
+
 export function YearCalendar({
-  businessId, year, skills, shifts,
+  businessId, startYear, startMonth, skills, shifts,
 }: {
-  businessId: string; year: number; skills: Skill[]; shifts: Shift[];
+  businessId: string;
+  startYear: number;
+  startMonth: number; // 0-indexed
+  skills: Skill[];
+  shifts: Shift[];
 }) {
   const router = useRouter();
   const today = new Date();
   const todayStr = localDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const [modal, setModal] = useState<{
-    dateStr: string; slot: Slot; shifts: Shift[];
-  } | null>(null);
-
+  const [modal, setModal] = useState<{ dateStr: string; slot: Slot; shifts: Shift[] } | null>(null);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const [creating, setCreating] = useState(false);
 
-  // Map dateStr -> { AM: Shift[], PM: Shift[] }
   const shiftMap = new Map<string, { AM: Shift[]; PM: Shift[] }>();
   for (const s of shifts) {
     const key = toDateStr(s.shiftDate);
@@ -57,12 +55,21 @@ export function YearCalendar({
     else bucket.PM.push(s);
   }
 
+  function navigate(offsetMonths: number) {
+    const d = new Date(startYear, startMonth + offsetMonths, 1);
+    router.push(`/dashboard/calendar?year=${d.getFullYear()}&month=${d.getMonth()}`);
+  }
+
+  function navigateTo(year: number, month: number) {
+    router.push(`/dashboard/calendar?year=${year}&month=${month}`);
+  }
+
   function openSlot(dateStr: string, slot: Slot) {
     const bucket = shiftMap.get(dateStr);
     const slotShifts = bucket?.[slot] ?? [];
     setModal({ dateStr, slot, shifts: slotShifts });
     setEditingShift(null);
-    setCreating(slotShifts.length === 0); // auto-open create form if empty
+    setCreating(slotShifts.length === 0);
   }
 
   function closeModal() {
@@ -71,24 +78,66 @@ export function YearCalendar({
     setCreating(false);
   }
 
+  // The 3 months to display (handles year boundaries)
+  const visibleMonths = [0, 1, 2].map((offset) => {
+    const d = new Date(startYear, startMonth + offset, 1);
+    return { year: d.getFullYear(), monthIdx: d.getMonth() };
+  });
+
+  const isCurrentMonth = startYear === today.getFullYear() && startMonth === today.getMonth();
+
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Calendar {year}</h1>
+      <div className="flex items-center justify-between mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800 shrink-0">Calendar</h1>
+
         <div className="flex items-center gap-2">
           <button
-            onClick={() => router.push(`/dashboard/calendar?year=${year - 1}`)}
+            onClick={() => navigate(-3)}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >← {year - 1}</button>
+            title="Previous 3 months"
+          >
+            ←
+          </button>
+
+          {/* Month / Year selectors */}
+          <select
+            value={startMonth}
+            onChange={(e) => navigateTo(startYear, parseInt(e.target.value))}
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+          >
+            {MONTHS.map((name, i) => (
+              <option key={i} value={i}>{name}</option>
+            ))}
+          </select>
+
+          <select
+            value={startYear}
+            onChange={(e) => navigateTo(parseInt(e.target.value), startMonth)}
+            className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+          >
+            {YEAR_RANGE.map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+
+          {!isCurrentMonth && (
+            <button
+              onClick={() => navigateTo(today.getFullYear(), today.getMonth())}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            >
+              Today
+            </button>
+          )}
+
           <button
-            onClick={() => router.push(`/dashboard/calendar?year=${new Date().getFullYear()}`)}
+            onClick={() => navigate(3)}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >This year</button>
-          <button
-            onClick={() => router.push(`/dashboard/calendar?year=${year + 1}`)}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
-          >{year + 1} →</button>
+            title="Next 3 months"
+          >
+            →
+          </button>
         </div>
       </div>
 
@@ -107,21 +156,21 @@ export function YearCalendar({
         </div>
       </div>
 
-      {/* 12-month grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {MONTHS.map((monthName, monthIdx) => (
+      {/* 3-month grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {visibleMonths.map(({ year, monthIdx }) => (
           <MonthGrid
-            key={monthIdx}
+            key={`${year}-${monthIdx}`}
             year={year}
             monthIdx={monthIdx}
-            monthName={monthName}
+            monthName={MONTHS[monthIdx]}
+            showYear={year !== startYear}
             todayStr={todayStr}
             shiftMap={shiftMap}
             onSlotClick={openSlot}
           />
         ))}
       </div>
-
 
       {/* Modal */}
       {modal && (
@@ -144,15 +193,14 @@ export function YearCalendar({
 }
 
 function MonthGrid({
-  year, monthIdx, monthName, todayStr, shiftMap, onSlotClick,
+  year, monthIdx, monthName, showYear, todayStr, shiftMap, onSlotClick,
 }: {
-  year: number; monthIdx: number; monthName: string; todayStr: string;
+  year: number; monthIdx: number; monthName: string; showYear: boolean; todayStr: string;
   shiftMap: Map<string, { AM: Shift[]; PM: Shift[] }>;
   onSlotClick: (dateStr: string, slot: Slot) => void;
 }) {
   const firstDay = new Date(year, monthIdx, 1);
   const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-  // 0=Sun, shift to Mon-start
   const startOffset = (firstDay.getDay() + 6) % 7;
 
   const cells: (number | null)[] = [
@@ -162,7 +210,9 @@ function MonthGrid({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-3">
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">{monthName}</h3>
+      <h3 className="text-sm font-semibold text-gray-700 mb-2">
+        {monthName}{showYear && <span className="text-gray-400 font-normal ml-1">{year}</span>}
+      </h3>
       <div className="grid grid-cols-7 gap-px text-center mb-1">
         {["M","T","W","T","F","S","S"].map((d, i) => (
           <div key={i} className="text-[9px] font-medium text-gray-400">{d}</div>
@@ -179,15 +229,11 @@ function MonthGrid({
 
           return (
             <div key={i} className="flex flex-col gap-px">
-              {/* Day number */}
-              <div
-                className={`text-[10px] text-center leading-none py-0.5 font-medium rounded-sm ${
-                  isToday ? "bg-blue-600 text-white" : "text-gray-600"
-                }`}
-              >
+              <div className={`text-[10px] text-center leading-none py-0.5 font-medium rounded-sm ${
+                isToday ? "bg-blue-600 text-white" : "text-gray-600"
+              }`}>
                 {day}
               </div>
-              {/* AM slot */}
               <button
                 onClick={() => onSlotClick(dateStr, "AM")}
                 className={`h-2.5 rounded-sm w-full transition-colors ${
@@ -197,7 +243,6 @@ function MonthGrid({
                 }`}
                 title={amShifts.length > 0 ? amShifts.map((s) => s.title).join(", ") : "Add AM shift"}
               />
-              {/* PM slot */}
               <button
                 onClick={() => onSlotClick(dateStr, "PM")}
                 className={`h-2.5 rounded-sm w-full transition-colors ${
@@ -232,7 +277,6 @@ function SlotModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div>
             <p className="font-semibold text-gray-800">{display}</p>
@@ -242,7 +286,6 @@ function SlotModal({
         </div>
 
         <div className="overflow-y-auto flex-1 p-4">
-          {/* Existing shifts list */}
           {!creating && !editingShift && (
             <>
               {slotShifts.length === 0 ? (
@@ -273,7 +316,6 @@ function SlotModal({
             </>
           )}
 
-          {/* Create form */}
           {creating && (
             <ShiftForm
               mode="create"
@@ -290,7 +332,6 @@ function SlotModal({
             />
           )}
 
-          {/* Edit form */}
           {editingShift && (
             <ShiftForm
               mode="edit"
@@ -372,30 +413,17 @@ function ShiftForm({
       <h3 className="font-semibold text-gray-800 text-sm mb-3">
         {mode === "create" ? "New shift" : "Edit shift"}
       </h3>
-
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
-        <input
-          type="text"
-          value={form.title}
-          onChange={(e) => setField("title", e.target.value)}
+        <input type="text" value={form.title} onChange={(e) => setField("title", e.target.value)}
           className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-          placeholder="e.g. Weekend pottery workshop"
-          required
-        />
+          placeholder="e.g. Weekend pottery workshop" required />
       </div>
-
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
-        <input
-          type="date"
-          value={form.shiftDate}
-          onChange={(e) => setField("shiftDate", e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-          required
-        />
+        <input type="date" value={form.shiftDate} onChange={(e) => setField("shiftDate", e.target.value)}
+          className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm" required />
       </div>
-
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Start</label>
@@ -408,19 +436,12 @@ function ShiftForm({
             className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm" required />
         </div>
       </div>
-
-      {/* Roles */}
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Roles & pay</label>
-        <RolesEditor
-          skills={currentSkills}
-          roles={roles}
-          onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
-        />
+        <RolesEditor skills={currentSkills} roles={roles}
+          onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }} />
       </div>
-
       {error && <p className="text-red-500 text-xs">{error}</p>}
-
       <div className="flex gap-2 pt-1">
         <button type="button" onClick={onCancel}
           className="flex-1 border border-gray-300 text-gray-600 py-2 rounded text-sm">
@@ -431,7 +452,6 @@ function ShiftForm({
           {loading ? "Saving..." : mode === "create" ? "Create shift" : "Save changes"}
         </button>
       </div>
-
       {mode === "edit" && (
         <Link href={`/dashboard/shifts/${shift!.id}`}
           className="block text-center text-xs text-blue-600 hover:underline pt-1">
@@ -441,4 +461,3 @@ function ShiftForm({
     </form>
   );
 }
-
