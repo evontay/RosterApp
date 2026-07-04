@@ -16,11 +16,14 @@ export default async function PartTimerLayout({
       <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <span className="font-bold text-gray-800">MyCrew</span>
+          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+            Home
+          </Link>
           <Link href="/my-shifts" className="text-sm text-gray-600 hover:text-gray-900">
             My Shifts
           </Link>
-          <Link href="/my-profile" className="text-sm text-gray-600 hover:text-gray-900">
-            Profile
+          <Link href="/my-settings" className="text-sm text-gray-600 hover:text-gray-900">
+            Settings
           </Link>
         </div>
         <form
