@@ -8,7 +8,7 @@ const STATUS_STYLE: Record<string, { dot: string; bg: string; text: string }> = 
   completed: { dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
   cancelled: { dot: "bg-red-400",    bg: "bg-red-50",    text: "text-red-600" },
 };
-const STATUS_ORDER = ["draft", "open", "filled", "completed", "cancelled"] as const;
+const STATUS_ORDER = ["open", "filled", "completed"] as const;
 
 export default async function DashboardPage() {
   const session = await auth();
