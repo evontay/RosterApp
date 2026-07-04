@@ -7,10 +7,16 @@ export default async function DashboardPage() {
     where: { ownerUserId: session!.user.id },
     include: {
       _count: {
-        select: { rosterMembers: true, shifts: true },
+        select: { shifts: true },
       },
     },
   });
+
+  const activeRosterCount = business
+    ? await prisma.rosterMembership.count({
+        where: { businessId: business.id, status: "active" },
+      })
+    : 0;
 
   const unpaidCount = business
     ? await prisma.shiftAssignment.count({
@@ -28,7 +34,7 @@ export default async function DashboardPage() {
         {business?.name ?? "Your Business"}
       </h1>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Roster members" value={business?._count.rosterMembers ?? 0} />
+        <StatCard label="Active employees" value={activeRosterCount} />
         <StatCard label="Total shifts" value={business?._count.shifts ?? 0} />
         <StatCard label="Unpaid completed shifts" value={unpaidCount} />
       </div>
