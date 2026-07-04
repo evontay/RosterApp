@@ -1,12 +1,12 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const STATUS_DOT: Record<string, string> = {
-  draft: "bg-gray-400",
-  open: "bg-blue-500",
-  filled: "bg-purple-500",
-  completed: "bg-green-500",
-  cancelled: "bg-red-400",
+const STATUS_STYLE: Record<string, { dot: string; bg: string; text: string }> = {
+  draft:     { dot: "bg-gray-400",   bg: "bg-gray-50",   text: "text-gray-600" },
+  open:      { dot: "bg-blue-500",   bg: "bg-blue-50",   text: "text-blue-700" },
+  filled:    { dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
+  completed: { dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
+  cancelled: { dot: "bg-red-400",    bg: "bg-red-50",    text: "text-red-600" },
 };
 const STATUS_ORDER = ["draft", "open", "filled", "completed", "cancelled"] as const;
 
@@ -42,26 +42,34 @@ export default async function DashboardPage() {
   const totalShifts = shiftStatusGroups.reduce((sum, g) => sum + g._count.id, 0);
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
-        {business.name}
-      </h1>
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold text-gray-800">{business.name}</h1>
+
+      {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Active employees" value={activeRosterCount} />
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <p className="text-sm text-gray-500">Total shifts</p>
-          <p className="text-3xl font-bold text-gray-800 mt-1">{totalShifts}</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
-            {STATUS_ORDER.map((status) => (
-              <div key={status} className="flex items-center gap-1">
-                <div className={`w-2 h-2 rounded-sm ${STATUS_DOT[status]}`} />
-                <span className="text-xs text-gray-500 capitalize">{status}</span>
-                <span className="text-xs text-gray-400">({statusCounts[status] ?? 0})</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <StatCard label="Total shifts" value={totalShifts} />
         <StatCard label="Unpaid completed shifts" value={unpaidCount} />
+      </div>
+
+      {/* Shift status breakdown */}
+      <div>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Shifts by status</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {STATUS_ORDER.map((status) => {
+            const count = statusCounts[status] ?? 0;
+            const s = STATUS_STYLE[status];
+            return (
+              <div key={status} className={`rounded-lg border border-gray-200 p-4 ${s.bg}`}>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <div className={`w-2.5 h-2.5 rounded-sm ${s.dot}`} />
+                  <span className={`text-xs font-medium capitalize ${s.text}`}>{status}</span>
+                </div>
+                <p className={`text-2xl font-bold ${s.text}`}>{count}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
