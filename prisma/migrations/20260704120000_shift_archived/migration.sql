@@ -1,0 +1,1 @@
+ALTER TABLE "Shift" ADD COLUMN "archived" BOOLEAN NOT NULL DEFAULT false;

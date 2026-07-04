@@ -114,6 +114,7 @@ model Shift {
   startTime   String
   endTime     String
   status      ShiftStatus       @default(draft)
+  archived    Boolean           @default(false)
   createdAt   DateTime          @default(now())
   assignments ShiftAssignment[]
   roles       ShiftRole[]

@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ShiftLegend, ShiftStepBadge } from "./ShiftProgress";
+import { ArchiveButton } from "./ArchiveButton";
+import { ArchivedSection } from "./ArchivedSection";
 
 export default async function ShiftsPage() {
   const session = await auth();
@@ -23,6 +25,9 @@ export default async function ShiftsPage() {
     orderBy: { shiftDate: "desc" },
   });
 
+  const active = shifts.filter((s) => !s.archived);
+  const archived = shifts.filter((s) => s.archived);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -40,7 +45,7 @@ export default async function ShiftsPage() {
       </div>
 
       <div className="space-y-3">
-        {shifts.map((shift) => {
+        {active.map((shift) => {
           const allPaid =
             shift.assignments.length > 0 &&
             shift.assignments.every((a) => a.paymentStatus === "paid");
@@ -69,7 +74,10 @@ export default async function ShiftsPage() {
                     ).join(", ")}
                   </p>
                 </div>
-                <ShiftStepBadge status={shift.status} allPaid={allPaid} />
+                <div className="flex items-center gap-3 shrink-0">
+                  <ShiftStepBadge status={shift.status} allPaid={allPaid} />
+                  {allPaid && <ArchiveButton shiftId={shift.id} archived={false} />}
+                </div>
               </div>
               {shift.assignments.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
@@ -86,12 +94,24 @@ export default async function ShiftsPage() {
             </div>
           );
         })}
-        {shifts.length === 0 && (
+        {active.length === 0 && (
           <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">
-            No shifts yet. Create one to get started.
+            No active shifts. Create one to get started.
           </div>
         )}
       </div>
+
+      <ArchivedSection
+        shifts={archived.map((s) => ({
+          ...s,
+          roles: s.roles.map((r) => ({ ...r, payRate: Number(r.payRate) })),
+          assignments: s.assignments.map((a) => ({
+            id: a.id,
+            partTimer: { name: a.partTimer.name },
+            paymentStatus: a.paymentStatus,
+          })),
+        }))}
+      />
     </div>
   );
 }
