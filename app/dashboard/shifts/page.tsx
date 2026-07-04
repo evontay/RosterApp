@@ -6,7 +6,14 @@ import { ArchiveButton } from "./ArchiveButton";
 import { ArchivedSection } from "./ArchivedSection";
 import { StatusLegend } from "./StatusLegend";
 
-export default async function ShiftsPage() {
+export default async function ShiftsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const { sort } = await searchParams;
+  const asc = sort === "asc";
+
   const session = await auth();
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
@@ -23,7 +30,7 @@ export default async function ShiftsPage() {
         include: { partTimer: true },
       },
     },
-    orderBy: { shiftDate: "desc" },
+    orderBy: { shiftDate: asc ? "asc" : "desc" },
   });
 
   const active = shifts.filter((s) => !s.archived);
@@ -38,12 +45,20 @@ export default async function ShiftsPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Shifts</h1>
-        <Link
-          href="/dashboard/shifts/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
-        >
-          + New shift
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/shifts?sort=${asc ? "desc" : "asc"}`}
+            className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-500 hover:border-gray-400 hover:text-gray-700"
+          >
+            Date: {asc ? "Oldest first ↑" : "Newest first ↓"}
+          </Link>
+          <Link
+            href="/dashboard/shifts/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
+          >
+            + New shift
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4 space-y-2">
