@@ -2,7 +2,14 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
-export default async function MyShiftsPage() {
+export default async function MyShiftsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const { sort } = await searchParams;
+  const asc = sort === "asc";
+
   const session = await auth();
 
   const partTimer = await prisma.partTimer.findFirst({
@@ -18,12 +25,20 @@ export default async function MyShiftsPage() {
         include: { business: true, roles: { include: { skill: true } } },
       },
     },
-    orderBy: { shift: { shiftDate: "desc" } },
+    orderBy: { shift: { shiftDate: asc ? "asc" : "desc" } },
   });
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Shifts</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">My Shifts</h1>
+        <Link
+          href={`/my-shifts?sort=${asc ? "desc" : "asc"}`}
+          className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-500 hover:border-gray-400 hover:text-gray-700"
+        >
+          Date: {asc ? "Oldest first ↑" : "Newest first ↓"}
+        </Link>
+      </div>
       <div className="space-y-3">
         {assignments.map((a) => (
           <Link key={a.id} href={`/shifts/${a.shift.id}`} className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors">
@@ -45,11 +60,7 @@ export default async function MyShiftsPage() {
                 {a.payAmount != null ? (
                   <p className="font-medium text-gray-800">${Number(a.payAmount).toFixed(2)}</p>
                 ) : null}
-                <span
-                  className={`text-xs font-medium ${
-                    a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"
-                  }`}
-                >
+                <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}`}>
                   {a.paymentStatus}
                 </span>
               </div>
