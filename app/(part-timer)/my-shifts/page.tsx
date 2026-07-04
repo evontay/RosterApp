@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
 export default async function MyShiftsPage() {
   const session = await auth();
@@ -25,7 +26,7 @@ export default async function MyShiftsPage() {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">My Shifts</h1>
       <div className="space-y-3">
         {assignments.map((a) => (
-          <div key={a.id} className="bg-white rounded-lg border border-gray-200 p-4">
+          <Link key={a.id} href={`/shifts/${a.shift.id}`} className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors">
             <div className="flex items-start justify-between">
               <div>
                 <p className="font-medium text-gray-800">{a.shift.title}</p>
@@ -53,7 +54,7 @@ export default async function MyShiftsPage() {
                 </span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
         {assignments.length === 0 && (
           <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">

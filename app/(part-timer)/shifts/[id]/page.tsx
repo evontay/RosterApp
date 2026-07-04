@@ -41,8 +41,8 @@ export default async function EmployeeShiftDetailPage({
 
   return (
     <div className="space-y-4">
-      <Link href="/home" className="text-sm text-gray-400 hover:text-gray-600">
-        ← Back
+      <Link href="/my-shifts" className="text-sm text-gray-400 hover:text-gray-600">
+        ← My Shifts
       </Link>
 
       <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-4">
