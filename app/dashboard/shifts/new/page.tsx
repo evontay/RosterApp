@@ -11,6 +11,7 @@ export default async function NewShiftPage() {
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
   const skills = await prisma.skill.findMany({
+    where: { archived: false },
     orderBy: { label: "asc" },
     select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
   });

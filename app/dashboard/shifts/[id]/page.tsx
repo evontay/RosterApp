@@ -31,6 +31,7 @@ export default async function ShiftDetailPage({
   if (!shift) notFound();
 
   const skills = await prisma.skill.findMany({
+    where: { archived: false },
     orderBy: { label: "asc" },
     select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
   });

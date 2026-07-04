@@ -9,6 +9,7 @@ export default async function RolesSettingsPage() {
       label: true,
       defaultPayType: true,
       defaultPayRate: true,
+      archived: true,
       _count: { select: { shiftRoles: true, partTimers: true } },
     },
   });
@@ -17,7 +18,7 @@ export default async function RolesSettingsPage() {
     <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-1">Role types</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Rename or delete role types here. To add new ones, use the shift form.
+        Edit or archive role types here. To add new ones, use the shift form.
       </p>
       <RolesManager
         skills={skills.map((s) => ({
@@ -27,6 +28,7 @@ export default async function RolesSettingsPage() {
           defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
           shiftCount: s._count.shiftRoles,
           partTimerCount: s._count.partTimers,
+          archived: s.archived,
         }))}
       />
     </div>

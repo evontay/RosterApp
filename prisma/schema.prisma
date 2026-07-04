@@ -71,6 +71,7 @@ model Skill {
   label          String           @unique
   defaultPayType PayType?
   defaultPayRate Decimal?         @db.Decimal(10, 2)
+  archived       Boolean          @default(false)
   partTimers     PartTimerSkill[]
   shiftRoles     ShiftRole[]
 }

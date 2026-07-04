@@ -34,7 +34,7 @@ export default async function PartTimerProfilePage({
         },
       },
     }),
-    prisma.skill.findMany({ orderBy: { label: "asc" }, select: { id: true, label: true } }),
+    prisma.skill.findMany({ where: { archived: false }, orderBy: { label: "asc" }, select: { id: true, label: true } }),
   ]);
   if (!membership) notFound();
 
