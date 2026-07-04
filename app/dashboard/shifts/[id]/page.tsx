@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import { AssignForm } from "./AssignForm";
 import { HoursForm } from "./HoursForm";
 import { MarkAllPaidButton } from "./MarkAllPaidButton";
-import { ShiftStatusControl } from "./ShiftStatusControl";
 import { UnassignButton } from "./UnassignButton";
-import { EditShiftForm } from "./EditShiftForm";
+import { ShiftActionsMenu } from "./ShiftActionsMenu";
 import { ShiftProgress } from "../ShiftProgress";
 
 export default async function ShiftDetailPage({
@@ -58,33 +57,29 @@ export default async function ShiftDetailPage({
     <div className="max-w-2xl">
       <div className="flex items-start justify-between mb-1">
         <h1 className="text-2xl font-bold text-gray-800">{shift.title}</h1>
-        <div className="flex items-center gap-2">
-          <EditShiftForm
-            shift={{
-              id: shift.id,
-              title: shift.title,
-              shiftDate: shift.shiftDate.toISOString(),
-              startTime: shift.startTime,
-              endTime: shift.endTime,
-              roles: shift.roles.map((r) => ({
-                skillId: r.skillId,
-                count: r.count,
-                payType: r.payType,
-                payRate: Number(r.payRate),
-              })),
-            }}
-            skills={skills.map((s) => ({
-              id: s.id,
-              label: s.label,
-              defaultPayType: s.defaultPayType,
-              defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
-            }))}
-          />
-          <ShiftStatusControl
-            shiftId={shift.id}
-            currentStatus={shift.status as "draft" | "open" | "filled" | "completed" | "cancelled"}
-          />
-        </div>
+        <ShiftActionsMenu
+          shiftId={shift.id}
+          currentStatus={shift.status as "draft" | "open" | "filled" | "completed" | "cancelled"}
+          shift={{
+            id: shift.id,
+            title: shift.title,
+            shiftDate: shift.shiftDate.toISOString(),
+            startTime: shift.startTime,
+            endTime: shift.endTime,
+            roles: shift.roles.map((r) => ({
+              skillId: r.skillId,
+              count: r.count,
+              payType: r.payType,
+              payRate: Number(r.payRate),
+            })),
+          }}
+          skills={skills.map((s) => ({
+            id: s.id,
+            label: s.label,
+            defaultPayType: s.defaultPayType,
+            defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
+          }))}
+        />
       </div>
       <p className="text-sm text-gray-500 mb-4">
         {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
