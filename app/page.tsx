@@ -5,5 +5,5 @@ export default async function Home() {
   const session = await auth();
   if (!session) redirect("/login");
   if (session.user.role === "owner") redirect("/dashboard");
-  redirect("/my-shifts");
+  redirect("/home");
 }
