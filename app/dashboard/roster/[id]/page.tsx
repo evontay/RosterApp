@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SkillEditor } from "./SkillEditor";
+import { Avatar } from "@/components/Avatar";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -66,7 +67,15 @@ export default async function PartTimerProfilePage({
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
-        <div>
+        <div className="flex items-center gap-4">
+          <Avatar
+            name={partTimer.name}
+            avatarEmoji={partTimer.avatarEmoji}
+            avatarColor={partTimer.avatarColor}
+            id={partTimer.id}
+            size="lg"
+          />
+          <div>
           <h1 className="text-2xl font-bold text-gray-800">{partTimer.name}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {partTimer.email}{partTimer.phone ? ` · ${partTimer.phone}` : ""}
@@ -74,6 +83,7 @@ export default async function PartTimerProfilePage({
           <p className="text-xs text-gray-400 mt-0.5">
             Member since {membership.invitedAt.toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}
           </p>
+          </div>
         </div>
         <span className={`px-2 py-1 rounded text-xs font-medium ${
           membership.status === "active" ? "bg-green-100 text-green-700" :

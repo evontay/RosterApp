@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AvatarPicker } from "@/components/AvatarPicker";
+import { hashColor } from "@/components/Avatar";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
@@ -9,6 +11,8 @@ interface PartTimer {
   id: string;
   name: string;
   phone: string | null;
+  avatarEmoji: string | null;
+  avatarColor: string | null;
   availability: {
     id: string;
     dayOfWeek: string;
@@ -21,6 +25,10 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
   const router = useRouter();
   const [name, setName] = useState(partTimer.name);
   const [phone, setPhone] = useState(partTimer.phone ?? "");
+  const [avatarEmoji, setAvatarEmoji] = useState<string | null>(partTimer.avatarEmoji);
+  const [avatarColor, setAvatarColor] = useState<string | null>(
+    partTimer.avatarColor ?? hashColor(partTimer.id)
+  );
   const [availability, setAvailability] = useState(
     partTimer.availability.map((a) => ({
       dayOfWeek: a.dayOfWeek,
@@ -51,7 +59,7 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
     await fetch("/api/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, availability }),
+      body: JSON.stringify({ name, phone, availability, avatarEmoji, avatarColor }),
     });
     setSaving(false);
     setSaved(true);
@@ -61,6 +69,19 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      {/* Avatar */}
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <h2 className="font-semibold text-gray-700 mb-4">Avatar</h2>
+        <AvatarPicker
+          name={name || partTimer.name}
+          id={partTimer.id}
+          emoji={avatarEmoji}
+          color={avatarColor}
+          onChange={(e, c) => { setAvatarEmoji(e); setAvatarColor(c); }}
+        />
+      </div>
+
+      {/* Personal info */}
       <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-4">
         <h2 className="font-semibold text-gray-700">Personal info</h2>
         <div>
@@ -92,6 +113,7 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
         </div>
       </div>
 
+      {/* Availability */}
       <div className="bg-white rounded-lg border border-gray-200 p-5">
         <h2 className="font-semibold text-gray-700 mb-3">Weekly availability</h2>
         <div className="space-y-3">
@@ -103,9 +125,7 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
                   type="button"
                   onClick={() => toggleDay(day)}
                   className={`w-12 text-xs font-medium py-1 rounded border ${
-                    avail
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-400 border-gray-200"
+                    avail ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-400 border-gray-200"
                   }`}
                 >
                   {day}

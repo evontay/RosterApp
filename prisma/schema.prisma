@@ -40,6 +40,8 @@ model PartTimer {
   phone        String?
   email        String
   profilePhoto String?
+  avatarEmoji  String?
+  avatarColor  String?
   createdAt    DateTime           @default(now())
   skills       PartTimerSkill[]
   availability Availability[]

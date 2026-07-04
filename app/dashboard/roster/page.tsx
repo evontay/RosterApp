@@ -4,6 +4,7 @@ import Link from "next/link";
 import { InviteForm } from "./InviteForm";
 import { RemoveButton } from "./RemoveButton";
 import { ShowRemovedToggle } from "./ShowRemovedToggle";
+import { Avatar } from "@/components/Avatar";
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -97,10 +98,21 @@ export default async function RosterPage({
             {members.map((m) => (
               <tr key={m.id} className={`border-b border-gray-100 last:border-0 ${m.status === "removed" ? "opacity-50" : ""}`}>
                 <td className="px-4 py-3">
-                  <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-gray-800 hover:text-blue-600">
-                    {m.partTimer.name}
-                  </Link>
-                  <p className="text-xs text-gray-400">{m.partTimer.email}</p>
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      name={m.partTimer.name}
+                      avatarEmoji={m.partTimer.avatarEmoji}
+                      avatarColor={m.partTimer.avatarColor}
+                      id={m.partTimer.id}
+                      size="sm"
+                    />
+                    <div>
+                      <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-gray-800 hover:text-blue-600">
+                        {m.partTimer.name}
+                      </Link>
+                      <p className="text-xs text-gray-400">{m.partTimer.email}</p>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-gray-600">
                   {m.partTimer.skills.map((s) => s.skill.label).join(", ") || "—"}

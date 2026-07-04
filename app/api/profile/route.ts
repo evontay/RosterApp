@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, phone, availability } = await req.json();
+  const { name, phone, availability, avatarEmoji, avatarColor } = await req.json();
 
   const partTimer = await prisma.partTimer.findFirst({
     where: { userId: session.user.id },
@@ -17,7 +17,12 @@ export async function POST(req: NextRequest) {
 
   await prisma.partTimer.update({
     where: { id: partTimer.id },
-    data: { name, phone: phone || null },
+    data: {
+      name,
+      phone: phone || null,
+      avatarEmoji: avatarEmoji ?? null,
+      avatarColor: avatarColor ?? null,
+    },
   });
 
   // Replace availability

@@ -13,6 +13,7 @@ export default async function MyProfilePage() {
       availability: true,
       memberships: { orderBy: { invitedAt: "asc" }, take: 1 },
     },
+    // avatarEmoji and avatarColor are scalar fields, included by default
   });
 
   if (!partTimer) redirect("/login");
