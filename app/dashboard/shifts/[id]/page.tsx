@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { AssignForm } from "./AssignForm";
 import { HoursForm } from "./HoursForm";
-import { MarkPaidButton } from "./MarkPaidButton";
+import { MarkAllPaidButton } from "./MarkAllPaidButton";
 import { ShiftStatusControl } from "./ShiftStatusControl";
 import { UnassignButton } from "./UnassignButton";
 import { EditShiftForm } from "./EditShiftForm";
+import { ShiftProgress } from "../ShiftProgress";
 
 export default async function ShiftDetailPage({
   params,
@@ -40,9 +41,8 @@ export default async function ShiftDetailPage({
     include: { partTimer: true },
   });
 
-  const assignedIds = new Set(
-    shift.assignments.filter((a) => a.status !== "cancelled").map((a) => a.partTimerId)
-  );
+  const activeAssignments = shift.assignments.filter((a) => a.status !== "cancelled");
+  const assignedIds = new Set(activeAssignments.map((a) => a.partTimerId));
   const assignableMembers = activeMembers.filter((m) => !assignedIds.has(m.partTimerId));
 
   const roleOptions = shift.roles.map((r) => ({
@@ -50,6 +50,9 @@ export default async function ShiftDetailPage({
     payType: r.payType,
     payRate: Number(r.payRate),
   }));
+
+  const allPaid = activeAssignments.length > 0 && activeAssignments.every((a) => a.paymentStatus === "paid");
+  const hasUnpaid = activeAssignments.some((a) => a.paymentStatus === "unpaid");
 
   return (
     <div className="max-w-2xl">
@@ -83,12 +86,16 @@ export default async function ShiftDetailPage({
           />
         </div>
       </div>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 mb-4">
         {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
           weekday: "long", day: "numeric", month: "long", year: "numeric",
         })}{" "}
         · {shift.startTime}–{shift.endTime}
       </p>
+
+      <div className="mb-6">
+        <ShiftProgress status={shift.status} allPaid={allPaid} />
+      </div>
 
       {/* Roles summary */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -106,16 +113,21 @@ export default async function ShiftDetailPage({
       <div className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-gray-700">Assignments</h2>
-          {assignableMembers.length > 0 && (
-            <AssignForm shiftId={shift.id} members={assignableMembers} />
-          )}
+          <div className="flex items-center gap-2">
+            {shift.status === "completed" && hasUnpaid && (
+              <MarkAllPaidButton shiftId={shift.id} />
+            )}
+            {assignableMembers.length > 0 && (
+              <AssignForm shiftId={shift.id} members={assignableMembers} />
+            )}
+          </div>
         </div>
 
-        {shift.assignments.filter((a) => a.status !== "cancelled").length === 0 ? (
+        {activeAssignments.length === 0 ? (
           <p className="text-sm text-gray-400">No one assigned yet.</p>
         ) : (
           <div className="space-y-4">
-            {shift.assignments.filter((a) => a.status !== "cancelled").map((a) => (
+            {activeAssignments.map((a) => (
               <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                 <div>
                   <p className="font-medium text-gray-800 text-sm">{a.partTimer.name}</p>
@@ -133,9 +145,6 @@ export default async function ShiftDetailPage({
                     roles={roleOptions}
                     currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
                   />
-                  {a.paymentStatus === "unpaid" && a.hoursLogged != null && (
-                    <MarkPaidButton assignmentId={a.id} />
-                  )}
                   <UnassignButton assignmentId={a.id} />
                 </div>
               </div>
