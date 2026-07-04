@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ShiftProgress } from "./ShiftProgress";
+import { ShiftLegend, ShiftStepBadge } from "./ShiftProgress";
 
 export default async function ShiftsPage() {
   const session = await auth();
@@ -25,7 +25,7 @@ export default async function ShiftsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Shifts</h1>
         <Link
           href="/dashboard/shifts/new"
@@ -33,6 +33,10 @@ export default async function ShiftsPage() {
         >
           + New shift
         </Link>
+      </div>
+
+      <div className="mb-4">
+        <ShiftLegend />
       </div>
 
       <div className="space-y-3">
@@ -45,7 +49,12 @@ export default async function ShiftsPage() {
             <div key={shift.id} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h3 className="font-medium text-gray-800">{shift.title}</h3>
+                  <Link
+                    href={`/dashboard/shifts/${shift.id}`}
+                    className="font-bold text-gray-800 hover:text-blue-600"
+                  >
+                    {shift.title}
+                  </Link>
                   <p className="text-sm text-gray-500 mt-0.5">
                     {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
                       weekday: "short",
@@ -60,15 +69,7 @@ export default async function ShiftsPage() {
                     ).join(", ")}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <ShiftProgress status={shift.status} allPaid={allPaid} />
-                  <Link
-                    href={`/dashboard/shifts/${shift.id}`}
-                    className="text-blue-600 text-sm hover:underline"
-                  >
-                    Manage
-                  </Link>
-                </div>
+                <ShiftStepBadge status={shift.status} allPaid={allPaid} />
               </div>
               {shift.assignments.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
