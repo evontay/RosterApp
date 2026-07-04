@@ -64,10 +64,15 @@ export default async function RosterPage({
     where: { businessId: business.id, status: "removed" },
   });
 
+  const activeCount = members.filter((m) => m.status === "active").length;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Roster</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-bold text-gray-800">Roster</h1>
+          <span className="text-sm text-gray-400">{activeCount} active</span>
+        </div>
         <div className="flex items-center gap-3">
           {removedCount > 0 && (
             <ShowRemovedToggle showRemoved={showRemovedBool} count={removedCount} />
