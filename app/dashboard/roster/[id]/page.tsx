@@ -39,15 +39,38 @@ export default async function PartTimerProfilePage({
   ]);
   if (!membership) notFound();
 
-  const assignments = await prisma.shiftAssignment.findMany({
-    where: { partTimerId: id, shift: { businessId: business.id }, status: { not: "cancelled" } },
-    include: {
-      shift: { include: { roles: { include: { skill: true } } } },
-    },
-    orderBy: { shift: { shiftDate: "desc" } },
-  });
+  const [assignments, coworkerRows] = await Promise.all([
+    prisma.shiftAssignment.findMany({
+      where: { partTimerId: id, shift: { businessId: business.id }, status: { not: "cancelled" } },
+      include: { shift: { include: { roles: { include: { skill: true } } } } },
+      orderBy: { shift: { shiftDate: "desc" } },
+    }),
+    prisma.shiftAssignment.findMany({
+      where: {
+        partTimerId: { not: id },
+        status: { not: "cancelled" },
+        shift: {
+          businessId: business.id,
+          assignments: { some: { partTimerId: id, status: { not: "cancelled" } } },
+        },
+      },
+      select: {
+        partTimerId: true,
+        partTimer: { select: { id: true, name: true, avatarEmoji: true, avatarColor: true } },
+      },
+    }),
+  ]);
 
   const { partTimer } = membership;
+
+  // Deduplicate coworkers and count shared shifts
+  const coworkerMap = new Map<string, { partTimer: typeof coworkerRows[0]["partTimer"]; count: number }>();
+  for (const row of coworkerRows) {
+    const existing = coworkerMap.get(row.partTimerId);
+    if (existing) existing.count++;
+    else coworkerMap.set(row.partTimerId, { partTimer: row.partTimer, count: 1 });
+  }
+  const coworkers = [...coworkerMap.values()].sort((a, b) => b.count - a.count);
 
   const totalEarned = assignments.reduce(
     (sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0
@@ -142,6 +165,38 @@ export default async function PartTimerProfilePage({
           </p>
         </div>
       </div>
+
+      {/* Worked with */}
+      {coworkers.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 mb-6">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="font-semibold text-gray-700">Worked with</h2>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {coworkers.map(({ partTimer: cw, count }) => (
+              <Link
+                key={cw.id}
+                href={`/dashboard/roster/${cw.id}`}
+                className="flex items-center justify-between px-5 py-3 hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    name={cw.name}
+                    avatarEmoji={cw.avatarEmoji}
+                    avatarColor={cw.avatarColor}
+                    id={cw.id}
+                    size="sm"
+                  />
+                  <span className="text-sm font-medium text-gray-800">{cw.name}</span>
+                </div>
+                <span className="text-xs text-gray-400">
+                  {count} shift{count !== 1 ? "s" : ""} together
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Shift history */}
       <div className="bg-white rounded-lg border border-gray-200">
