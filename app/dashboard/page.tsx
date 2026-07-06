@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard label="Active employees" value={activeRosterCount} />
         <StatCard label="Total shifts" value={totalShifts} />
-        <StatCard label="Unpaid completed shifts" value={unpaidCount} />
+        <StatCard label="Unpaid logged shifts" value={unpaidCount} />
       </div>
 
       {/* Shift status breakdown */}

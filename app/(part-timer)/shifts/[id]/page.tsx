@@ -26,6 +26,7 @@ export default async function EmployeeShiftDetailPage({
           roles: { include: { skill: true } },
         },
       },
+      shiftRole: { include: { skill: true } },
     },
   });
   if (!assignment) notFound();
@@ -54,10 +55,24 @@ export default async function EmployeeShiftDetailPage({
         <div className="border-t border-gray-100 pt-4 space-y-2">
           <Row label="Date" value={shiftDate} />
           <Row label="Time" value={`${shift.startTime} – ${shift.endTime}`} />
-          <Row
-            label="Roles"
-            value={shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
-          />
+          {assignment.shiftRole ? (
+            <>
+              <Row label="Role" value={assignment.shiftRole.skill.label} />
+              <Row
+                label="Rate"
+                value={
+                  assignment.shiftRole.payType === "flat_session"
+                    ? `$${Number(assignment.shiftRole.payRate).toFixed(2)} flat`
+                    : `$${Number(assignment.shiftRole.payRate).toFixed(2)}/hr`
+                }
+              />
+            </>
+          ) : shift.roles.length > 0 ? (
+            <Row
+              label="Roles"
+              value={shift.roles.map((r) => r.skill.label).join(", ")}
+            />
+          ) : null}
         </div>
 
         <div className="border-t border-gray-100 pt-4 space-y-2">
