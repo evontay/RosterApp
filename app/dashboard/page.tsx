@@ -141,7 +141,11 @@ export default async function DashboardPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
         <StatCard label="Active employees" value={activeRosterCount} />
-        <StatCard label="Shifts this month" value={shiftsThisMonth} />
+        <StatCard
+          label="Shifts this month"
+          value={shiftsThisMonth}
+          href={`/dashboard/shifts?year=${now.getFullYear()}&month=${now.getMonth()}`}
+        />
         <div className="grid grid-cols-3 col-span-3 gap-3">
           {STATUS_ORDER.map((status) => {
             const count = statusCounts[status] ?? 0;
@@ -273,11 +277,19 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
+function StatCard({ label, value, href }: { label: string; value: number; href?: string }) {
+  const content = (
+    <>
       <p className="text-sm text-gray-500">{label}</p>
       <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
-    </div>
+    </>
   );
+  if (href) {
+    return (
+      <Link href={href} className="block bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-300 transition-colors">
+        {content}
+      </Link>
+    );
+  }
+  return <div className="bg-white rounded-lg border border-gray-200 p-5">{content}</div>;
 }
