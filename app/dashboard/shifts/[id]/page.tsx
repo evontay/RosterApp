@@ -9,6 +9,8 @@ import { UnassignButton } from "./UnassignButton";
 import { ShiftActionsMenu } from "./ShiftActionsMenu";
 import { ShiftProgress } from "../ShiftProgress";
 import { Avatar } from "@/components/Avatar";
+import { InterestActions } from "./InterestActions";
+import { EmployeeProfileModal } from "./EmployeeProfileModal";
 
 export default async function ShiftDetailPage({
   params,
@@ -31,7 +33,17 @@ export default async function ShiftDetailPage({
           skill: true,
           assignments: {
             where: { status: { not: "cancelled" } },
-            include: { partTimer: true },
+            include: {
+              partTimer: {
+                include: {
+                  skills: { where: { businessId: business.id }, include: { skill: true } },
+                  assignments: {
+                    where: { status: "completed", shift: { businessId: business.id } },
+                    select: { id: true },
+                  },
+                },
+              },
+            },
             orderBy: { createdAt: "asc" },
           },
         },
@@ -44,6 +56,23 @@ export default async function ShiftDetailPage({
     where: { archived: false },
     orderBy: { label: "asc" },
     select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+  });
+
+  const pendingInterests = await prisma.shiftInterest.findMany({
+    where: { shiftId: id, status: "pending" },
+    include: {
+      partTimer: {
+        include: {
+          skills: { where: { businessId: business.id }, include: { skill: true } },
+          assignments: {
+            where: { status: "completed", shift: { businessId: business.id } },
+            select: { id: true },
+          },
+        },
+      },
+      shiftRole: { include: { skill: true } },
+    },
+    orderBy: { createdAt: "asc" },
   });
 
   const activeMembers = await prisma.rosterMembership.findMany({
@@ -154,7 +183,18 @@ export default async function ShiftDetailPage({
                           size="sm"
                         />
                         <div>
-                          <p className="text-sm font-medium text-gray-800">{a.partTimer.name}</p>
+                          <EmployeeProfileModal
+                            partTimer={{
+                              id: a.partTimer.id,
+                              name: a.partTimer.name,
+                              email: a.partTimer.email,
+                              phone: a.partTimer.phone,
+                              avatarEmoji: a.partTimer.avatarEmoji,
+                              avatarColor: a.partTimer.avatarColor,
+                              skills: a.partTimer.skills.map((s) => s.skill.label),
+                              completedJobs: a.partTimer.assignments.length,
+                            }}
+                          />
                           <p className="text-xs text-gray-500">
                             {a.hoursLogged != null
                               ? `${a.hoursLogged} hrs · $${a.payAmount}`
@@ -202,6 +242,61 @@ export default async function ShiftDetailPage({
           })}
         </div>
       </div>
+
+      {/* Interested employees */}
+      {pendingInterests.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 className="font-semibold text-gray-700 mb-4">
+            Interested <span className="text-gray-400 font-normal text-sm">({pendingInterests.length})</span>
+          </h2>
+          <div className="space-y-3">
+            {pendingInterests.map((interest) => {
+              const roleOptions = shift.roles
+                .filter((r) => {
+                  const filledCount = r.assignments.length;
+                  return filledCount < r.count && !allAssignedIds.has(interest.partTimerId);
+                })
+                .map((r) => ({ id: r.id, label: r.skill.label }));
+
+              return (
+                <div key={interest.id} className="flex items-center justify-between gap-4 py-2 border-b border-gray-100 last:border-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar
+                      name={interest.partTimer.name}
+                      avatarEmoji={interest.partTimer.avatarEmoji}
+                      avatarColor={interest.partTimer.avatarColor}
+                      id={interest.partTimer.id}
+                      size="sm"
+                    />
+                    <div className="min-w-0">
+                      <EmployeeProfileModal
+                        partTimer={{
+                          id: interest.partTimer.id,
+                          name: interest.partTimer.name,
+                          email: interest.partTimer.email,
+                          phone: interest.partTimer.phone,
+                          avatarEmoji: interest.partTimer.avatarEmoji,
+                          avatarColor: interest.partTimer.avatarColor,
+                          skills: interest.partTimer.skills.map((s) => s.skill.label),
+                          completedJobs: interest.partTimer.assignments.length,
+                        }}
+                      />
+                      {interest.comment && (
+                        <p className="text-xs text-gray-400 italic truncate">"{interest.comment}"</p>
+                      )}
+                    </div>
+                  </div>
+                  <InterestActions
+                    interestId={interest.id}
+                    preferredRoleId={interest.shiftRoleId}
+                    roleOptions={roleOptions}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

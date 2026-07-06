@@ -19,6 +19,9 @@ export default async function PartTimerLayout({
           <Link href="/home" className="text-sm text-gray-600 hover:text-gray-900">
             Home
           </Link>
+          <Link href="/open-shifts" className="text-sm text-gray-600 hover:text-gray-900">
+            Open Shifts
+          </Link>
           <Link href="/my-shifts" className="text-sm text-gray-600 hover:text-gray-900">
             My Shifts
           </Link>

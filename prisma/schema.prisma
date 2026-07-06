@@ -47,6 +47,7 @@ model PartTimer {
   availability Availability[]
   memberships  RosterMembership[]
   assignments  ShiftAssignment[]
+  interests    ShiftInterest[]
 }
 
 model RosterMembership {
@@ -126,6 +127,7 @@ model Shift {
   createdAt   DateTime          @default(now())
   assignments ShiftAssignment[]
   roles       ShiftRole[]
+  interests   ShiftInterest[]
 }
 
 model ShiftRole {
@@ -138,6 +140,7 @@ model ShiftRole {
   payType     PayType
   payRate     Decimal           @db.Decimal(10, 2)
   assignments ShiftAssignment[]
+  interests   ShiftInterest[]
 }
 
 enum PayType {
@@ -178,4 +181,26 @@ enum AssignmentStatus {
 enum PaymentStatus {
   unpaid
   paid
+}
+
+model ShiftInterest {
+  id          String         @id @default(cuid())
+  shift       Shift          @relation(fields: [shiftId], references: [id])
+  shiftId     String
+  shiftRole   ShiftRole?     @relation(fields: [shiftRoleId], references: [id])
+  shiftRoleId String?
+  partTimer   PartTimer      @relation(fields: [partTimerId], references: [id])
+  partTimerId String
+  status      InterestStatus @default(pending)
+  comment     String?
+  createdAt   DateTime       @default(now())
+
+  @@unique([shiftId, partTimerId, shiftRoleId])
+}
+
+enum InterestStatus {
+  pending
+  confirmed
+  rejected
+  withdrawn
 }
