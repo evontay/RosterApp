@@ -1,11 +1,12 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { Avatar } from "@/components/Avatar";
 
 const STATUS_STYLE: Record<string, { label: string; dot: string; bg: string; text: string }> = {
   open:      { label: "Open",      dot: "bg-blue-500",   bg: "bg-blue-50",   text: "text-blue-700" },
   filled:    { label: "Confirmed", dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
   completed: { label: "Logged",    dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
-  cancelled: { label: "Cancelled", dot: "bg-red-400",    bg: "bg-red-50",    text: "text-red-600" },
 };
 const STATUS_ORDER = ["open", "filled", "completed"] as const;
 
@@ -14,47 +15,134 @@ export default async function DashboardPage() {
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
   });
-
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
-  const [activeRosterCount, unpaidCount, shiftStatusGroups] = await Promise.all([
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const in7Days = new Date(today); in7Days.setDate(today.getDate() + 7);
+
+  const [
+    activeRosterCount,
+    shiftsThisMonth,
+    shiftStatusGroups,
+    openShifts,
+    pendingInterests,
+    upcomingShifts,
+    unpaidAssignments,
+  ] = await Promise.all([
     prisma.rosterMembership.count({
       where: { businessId: business.id, status: "active" },
     }),
-    prisma.shiftAssignment.count({
-      where: {
-        shift: { businessId: business.id },
-        paymentStatus: "unpaid",
-        status: "completed",
-      },
+    prisma.shift.count({
+      where: { businessId: business.id, shiftDate: { gte: startOfMonth, lt: endOfMonth }, status: { not: "cancelled" } },
     }),
     prisma.shift.groupBy({
       by: ["status"],
-      where: { businessId: business.id },
+      where: { businessId: business.id, archived: false },
       _count: { id: true },
+    }),
+    // Open shifts with unfilled slots
+    prisma.shift.findMany({
+      where: { businessId: business.id, status: "open", archived: false },
+      include: {
+        roles: {
+          include: {
+            assignments: { where: { status: { not: "cancelled" } }, select: { id: true } },
+          },
+        },
+      },
+      orderBy: { shiftDate: "asc" },
+    }),
+    // Pending interests awaiting decision
+    prisma.shiftInterest.findMany({
+      where: { status: "pending", shift: { businessId: business.id } },
+      include: {
+        shift: { select: { id: true, title: true, shiftDate: true } },
+        partTimer: { select: { id: true, name: true, avatarEmoji: true, avatarColor: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    // Upcoming shifts in next 7 days
+    prisma.shift.findMany({
+      where: {
+        businessId: business.id,
+        shiftDate: { gte: today, lte: in7Days },
+        status: { not: "cancelled" },
+        archived: false,
+      },
+      include: {
+        roles: {
+          include: {
+            assignments: { where: { status: { not: "cancelled" } }, select: { id: true } },
+          },
+        },
+      },
+      orderBy: { shiftDate: "asc" },
+    }),
+    // Unpaid assignments on logged shifts
+    prisma.shiftAssignment.findMany({
+      where: {
+        shift: { businessId: business.id, status: "completed" },
+        paymentStatus: "unpaid",
+        status: { not: "cancelled" },
+      },
+      include: {
+        partTimer: { select: { id: true, name: true, avatarEmoji: true, avatarColor: true } },
+        shift: { select: { id: true, title: true } },
+      },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
 
   const statusCounts = Object.fromEntries(
     shiftStatusGroups.map((g) => [g.status, g._count.id])
   );
-  const totalShifts = shiftStatusGroups.reduce((sum, g) => sum + g._count.id, 0);
+
+  // Shifts with at least one unfilled slot
+  const understaffedShifts = openShifts.filter((s) =>
+    s.roles.some((r) => r.assignments.length < r.count)
+  ).map((s) => ({
+    id: s.id,
+    title: s.title,
+    shiftDate: s.shiftDate,
+    emptySlots: s.roles.reduce((sum, r) => sum + Math.max(0, r.count - r.assignments.length), 0),
+  }));
+
+  // Group pending interests by shift
+  const interestsByShift = new Map<string, { shift: typeof pendingInterests[0]["shift"]; people: typeof pendingInterests }>();
+  for (const i of pendingInterests) {
+    const key = i.shift.id;
+    if (!interestsByShift.has(key)) interestsByShift.set(key, { shift: i.shift, people: [] });
+    interestsByShift.get(key)!.people.push(i);
+  }
+  const interestGroups = [...interestsByShift.values()];
+
+  // Group unpaid by employee
+  const unpaidByEmployee = new Map<string, { partTimer: typeof unpaidAssignments[0]["partTimer"]; count: number; amount: number }>();
+  for (const a of unpaidAssignments) {
+    const key = a.partTimerId;
+    if (!unpaidByEmployee.has(key)) {
+      unpaidByEmployee.set(key, { partTimer: a.partTimer, count: 0, amount: 0 });
+    }
+    const entry = unpaidByEmployee.get(key)!;
+    entry.count++;
+    entry.amount += a.payAmount ? Number(a.payAmount) : 0;
+  }
+  const unpaidEmployees = [...unpaidByEmployee.values()].sort((a, b) => b.amount - a.amount);
+
+  const hasAttentionItems = understaffedShifts.length > 0 || interestGroups.length > 0 || unpaidEmployees.length > 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-3xl">
       <h1 className="text-2xl font-bold text-gray-800">{business.name}</h1>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Summary stats */}
+      <div className="grid grid-cols-3 gap-4">
         <StatCard label="Active employees" value={activeRosterCount} />
-        <StatCard label="Total shifts" value={totalShifts} />
-        <StatCard label="Unpaid logged shifts" value={unpaidCount} />
-      </div>
-
-      {/* Shift status breakdown */}
-      <div>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Shifts by status</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <StatCard label="Shifts this month" value={shiftsThisMonth} />
+        <div className="grid grid-cols-3 col-span-3 gap-3">
           {STATUS_ORDER.map((status) => {
             const count = statusCounts[status] ?? 0;
             const s = STATUS_STYLE[status];
@@ -70,6 +158,117 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
+
+      {/* Needs attention */}
+      {hasAttentionItems && (
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Needs attention</h2>
+          <div className="space-y-3">
+
+            {/* Understaffed shifts */}
+            {understaffedShifts.map((s) => (
+              <Link
+                key={s.id}
+                href={`/dashboard/shifts/${s.id}`}
+                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{s.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(s.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
+                  </p>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-600 rounded shrink-0">
+                  {s.emptySlots} slot{s.emptySlots !== 1 ? "s" : ""} unfilled
+                </span>
+              </Link>
+            ))}
+
+            {/* Pending interests */}
+            {interestGroups.map(({ shift, people }) => (
+              <Link
+                key={shift.id}
+                href={`/dashboard/shifts/${shift.id}`}
+                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{shift.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {new Date(shift.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
+                    {" · "}
+                    {people.map((p) => p.partTimer.name).join(", ")}
+                  </p>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 bg-blue-50 text-blue-600 rounded shrink-0">
+                  {people.length} interested
+                </span>
+              </Link>
+            ))}
+
+            {/* Unpaid employees */}
+            {unpaidEmployees.map(({ partTimer, count, amount }) => (
+              <Link
+                key={partTimer.id}
+                href={`/dashboard/roster/${partTimer.id}`}
+                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    name={partTimer.name}
+                    avatarEmoji={partTimer.avatarEmoji}
+                    avatarColor={partTimer.avatarColor}
+                    id={partTimer.id}
+                    size="sm"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{partTimer.name}</p>
+                    <p className="text-xs text-gray-400">{count} unpaid shift{count !== 1 ? "s" : ""}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 bg-yellow-50 text-yellow-700 rounded shrink-0">
+                  ${amount.toFixed(2)} owed
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Upcoming shifts — next 7 days */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Next 7 days</h2>
+        {upcomingShifts.length === 0 ? (
+          <p className="text-sm text-gray-400">No shifts in the next 7 days.</p>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+            {upcomingShifts.map((s) => {
+              const totalSlots = s.roles.reduce((sum, r) => sum + r.count, 0);
+              const filledSlots = s.roles.reduce((sum, r) => sum + r.assignments.length, 0);
+              const full = filledSlots >= totalSlots && totalSlots > 0;
+              return (
+                <Link
+                  key={s.id}
+                  href={`/dashboard/shifts/${s.id}`}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{s.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {new Date(s.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
+                      {" · "}{s.startTime}–{s.endTime}
+                    </p>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-1 rounded shrink-0 ${
+                    full ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
+                  }`}>
+                    {filledSlots}/{totalSlots} staffed
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

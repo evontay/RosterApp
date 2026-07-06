@@ -50,7 +50,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Employee profile modal**: avatar, skills, completed job count, link to full roster profile
 - **Hours + pay**: log hours per assignment, pay auto-calculated from role's pay type/rate
 - **Mark as paid** per assignment or all at once
-- **Dashboard**: active roster count, shift status counts (open/confirmed/logged), unpaid logged shifts
+- **Dashboard**: active employees, shifts this month, status counts (open/confirmed/logged); "Needs attention" section (understaffed shifts, pending interests, unpaid employees); next 7 days upcoming shifts with staffing ratio
 - **Settings → Role types**: create, rename, archive/restore; default pay type and rate per role
 
 ### Employee-side features
