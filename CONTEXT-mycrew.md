@@ -41,22 +41,25 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Shifts + Calendar**: combined two-column page (`/dashboard/shifts`) — list on left, 3-month scrollable calendar on right
   - Create/edit shifts from either panel
   - Sort by date (asc/desc)
-  - Shift status progress stepper: Open → Staffed → Completed → Paid
+  - Shift status: Open → Confirmed → Logged → Paid (labels consistent across all surfaces)
   - Auto-advance to "filled" when all slots staffed; revert to "open" on unassign
   - Archive paid shifts; cancelled shifts auto-archive; unarchive anytime
   - Cancelled shifts excluded from calendar view
-- **Slot-based staffing**: each role on a shift has N slots; boss fills each slot by selecting an employee; dropdown filtered by matching skill
+- **Slot-based staffing**: each role on a shift has N slots; boss fills each slot by selecting an employee (manual) OR confirming an interested employee
+- **Interest management**: shift detail shows pending interests with employee name (clickable → profile modal), comment, Confirm/Reject actions
+- **Employee profile modal**: avatar, skills, completed job count, link to full roster profile
 - **Hours + pay**: log hours per assignment, pay auto-calculated from role's pay type/rate
 - **Mark as paid** per assignment or all at once
-- **Dashboard**: active roster count, shift status counts (open/filled/completed)
+- **Dashboard**: active roster count, shift status counts (open/confirmed/logged), unpaid logged shifts
 - **Settings → Role types**: create, rename, archive/restore; default pay type and rate per role
 
 ### Employee-side features
 - Auth (email + password)
-- **Home** (`/home`): avatar, profile info, active upcoming shifts (clickable)
+- **Home** (`/home`): avatar, profile info, skills, upcoming shifts
+- **Open Shifts** (`/open-shifts`): all upcoming open shifts across active businesses; express interest with optional comment; withdraw if still pending
 - **My Shifts** (`/my-shifts`): full assignment history, sort by date, clickable cards
-- **Shift detail** (`/shifts/[id]`): shift info, pay amount, payment status
-- **Settings** (`/my-settings`): edit name, phone, avatar (emoji + background colour)
+- **Shift detail** (`/shifts/[id]`): shift info, assigned role, pay rate, payment status
+- **Settings** (`/my-settings`): edit name, phone, avatar (emoji + background colour); availability preference per day (Morning/Afternoon/Flexible)
 
 ---
 
@@ -77,10 +80,11 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 ### Employee (`/*`)
 | Route | Description |
 |-------|-------------|
-| `/home` | Employee home — avatar, profile, active shifts |
+| `/home` | Employee home — avatar, profile, skills, upcoming shifts |
+| `/open-shifts` | All upcoming open shifts; express/withdraw interest |
 | `/my-shifts` | All assigned shifts |
-| `/shifts/[id]` | Shift detail |
-| `/my-settings` | Profile + avatar editor |
+| `/shifts/[id]` | Shift detail — role, rate, pay amount, payment status |
+| `/my-settings` | Profile + avatar editor + availability preferences |
 | `/my-profile` | Redirects to `/my-settings` |
 
 ---
@@ -194,6 +198,17 @@ model ShiftAssignment {
   paidAt        DateTime?
   createdAt     DateTime         @default(now())
 }
+
+model ShiftInterest {
+  id          String         @id @default(cuid())
+  shiftId     String
+  shiftRoleId String?        -- null = general interest
+  partTimerId String
+  status      InterestStatus @default(pending)
+  comment     String?
+  createdAt   DateTime       @default(now())
+  @@unique([shiftId, partTimerId, shiftRoleId])
+}
 ```
 
 ### Enums
@@ -207,25 +222,29 @@ model ShiftAssignment {
 | `PaymentStatus` | `unpaid`, `paid` |
 | `DayOfWeek` | `Mon`–`Sun` |
 | `AvailabilityPreference` | `morning`, `afternoon`, `flexible` |
+| `InterestStatus` | `pending`, `confirmed`, `rejected`, `withdrawn` |
 
 ---
 
 ## Key business logic
 
-- **Slot-based assignment**: each `ShiftRole` has a `count` (slots). Boss fills slots one by one. Each `ShiftAssignment` links to a `ShiftRoleId`. Dropdown filtered to employees with matching skill.
+- **Slot-based assignment**: each `ShiftRole` has a `count` (slots). Boss fills slots one by one via manual assign OR by confirming a `ShiftInterest`. Each `ShiftAssignment` links to a `shiftRoleId`. Manual dropdown filtered to employees with matching skill.
 - **One employee per shift**: an employee cannot fill two slots on the same shift.
-- **Auto-advance status**: when all slots across all roles are filled → shift auto-advances to `filled`. Unassigning reverts `filled` → `open`.
+- **Auto-advance status**: when all slots across all roles are filled → shift auto-advances to `filled`. Unassigning reverts `filled` → `open`. Confirming an interest also triggers this check.
+- **Interest flow**: employees express interest in open shifts (with optional comment) via `/open-shifts`. Owner confirms (picks role) or rejects on the shift detail page. Confirming creates a `ShiftAssignment`. Employee can withdraw if still `pending`.
+- **Interest uniqueness**: `@@unique([shiftId, partTimerId, shiftRoleId])` — one general interest per employee per shift (`shiftRoleId = null`).
 - **Archive rules**: only fully-paid or cancelled shifts can be archived. Cancelled shifts auto-archive on cancellation.
 - **Draft removed**: shifts are created as `open` by default. The `draft` enum value exists in the DB but is unused.
+- **Status labels** (UI only, DB values unchanged): `open` → Open, `filled` → Confirmed, `completed` → Logged. Consistent across shift list badges, stepper, calendar legend, and dashboard.
 - **Avatar**: employees pick an emoji (or use initials) + a pastel background colour. Fallback colour is deterministically hashed from the partTimer's `id`.
 
 ---
 
 ## Why this document exists
 
-Phase 1 is complete. Later phases will add: explicit-accept shift flows, an objective performance record, a private Trust Rating, milestone-based retention nudges, and a team-fit/pairing-notes layer.
+Phases 1 and 2 are complete. Later phases will add: an objective performance record, a private Trust Rating, milestone-based retention nudges, and a team-fit/pairing-notes layer.
 
-**Do not build those yet** — but keep the schema extensible. Specifically, `ShiftAssignment.status` is an enum to allow `offered`, `accepted`, `declined` etc. in Phase 2.
+**Do not build those yet** — but keep the schema extensible.
 
 ---
 
@@ -234,8 +253,8 @@ Phase 1 is complete. Later phases will add: explicit-accept shift flows, an obje
 ### Phase 1 — complete ✅
 Owner manages roster, creates shifts with per-role slots and pay, assigns part-timers to slots, logs hours, marks paid. Part-timer views their shifts. Combined shifts+calendar page. Avatar system. Archive patterns throughout.
 
-### Phase 2 — next
-Broadcasting open shifts to the employee pool. Employees express interest; owner confirms. Richer `ShiftAssignment` status: `offered`, `accepted`, `declined`, `cancelled_early`, `cancelled_late`, `no_show`. **Declines must never factor into any scoring/rating logic.**
+### Phase 2 — complete ✅
+Employees see all open shifts and express interest (with optional comment). Owner confirms or rejects from the shift detail page. Confirming creates a `ShiftAssignment` and auto-advances shift status. Employees can withdraw pending interest. Owner retains manual assign capability. Withdrawal after confirmation is out of scope.
 
 ### Phase 3
 ObjectiveRecord, SubjectiveNote, TrustRating tables — scoped per business per part-timer. Trust Rating visible to owner only.
