@@ -20,5 +20,14 @@ export async function POST(req: NextRequest) {
     data: { status: "cancelled" },
   });
 
+  // Revert to "open" if a slot just became empty
+  const shift = await prisma.shift.findUnique({
+    where: { id: assignment.shiftId },
+    select: { status: true },
+  });
+  if (shift?.status === "filled") {
+    await prisma.shift.update({ where: { id: assignment.shiftId }, data: { status: "open" } });
+  }
+
   return NextResponse.json({ ok: true });
 }

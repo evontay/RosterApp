@@ -1,12 +1,11 @@
 const STATUS_DOT: Record<string, string> = {
-  draft: "bg-gray-400",
   open: "bg-blue-500",
   filled: "bg-purple-500",
   completed: "bg-green-500",
   cancelled: "bg-red-400",
 };
 
-const STATUS_ORDER = ["draft", "open", "filled", "completed", "cancelled"] as const;
+const STATUS_ORDER = ["open", "filled", "completed", "cancelled"] as const;
 
 export function StatusLegend({ counts }: { counts: Partial<Record<string, number>> }) {
   return (

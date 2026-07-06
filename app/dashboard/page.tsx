@@ -1,12 +1,11 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const STATUS_STYLE: Record<string, { dot: string; bg: string; text: string }> = {
-  draft:     { dot: "bg-gray-400",   bg: "bg-gray-50",   text: "text-gray-600" },
-  open:      { dot: "bg-blue-500",   bg: "bg-blue-50",   text: "text-blue-700" },
-  filled:    { dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
-  completed: { dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
-  cancelled: { dot: "bg-red-400",    bg: "bg-red-50",    text: "text-red-600" },
+const STATUS_STYLE: Record<string, { label: string; dot: string; bg: string; text: string }> = {
+  open:      { label: "Open",      dot: "bg-blue-500",   bg: "bg-blue-50",   text: "text-blue-700" },
+  filled:    { label: "Confirmed", dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
+  completed: { label: "Logged",    dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
+  cancelled: { label: "Cancelled", dot: "bg-red-400",    bg: "bg-red-50",    text: "text-red-600" },
 };
 const STATUS_ORDER = ["open", "filled", "completed"] as const;
 
@@ -63,7 +62,7 @@ export default async function DashboardPage() {
               <div key={status} className={`rounded-lg border border-gray-200 p-4 ${s.bg}`}>
                 <div className="flex items-center gap-1.5 mb-2">
                   <div className={`w-2.5 h-2.5 rounded-sm ${s.dot}`} />
-                  <span className={`text-xs font-medium capitalize ${s.text}`}>{status}</span>
+                  <span className={`text-xs font-medium ${s.text}`}>{s.label}</span>
                 </div>
                 <p className={`text-2xl font-bold ${s.text}`}>{count}</p>
               </div>

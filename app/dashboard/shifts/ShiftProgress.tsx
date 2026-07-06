@@ -1,4 +1,4 @@
-const STEPS = ["Open", "Staffed", "Completed", "Paid"] as const;
+const STEPS = ["Open", "Confirmed", "Logged", "Paid"] as const;
 
 /** Returns how many steps are fully done (0–4). */
 function completedSteps(status: string, allPaid: boolean): number {
@@ -6,7 +6,7 @@ function completedSteps(status: string, allPaid: boolean): number {
   if (status === "completed") return 3;
   if (status === "filled") return 2;
   if (status === "open") return 1;
-  return 0; // draft
+  return 0;
 }
 
 /** Full stepper used on the shift detail page. */
@@ -60,6 +60,14 @@ export function ShiftProgress({
   );
 }
 
+const BADGE: Record<string, { label: string; cls: string }> = {
+  open:      { label: "Open",      cls: "bg-blue-100 text-blue-700" },
+  filled:    { label: "Confirmed", cls: "bg-purple-100 text-purple-700" },
+  completed: { label: "Logged",    cls: "bg-green-100 text-green-700" },
+  paid:      { label: "Paid",      cls: "bg-green-100 text-green-700" },
+  cancelled: { label: "Cancelled", cls: "bg-red-100 text-red-600" },
+};
+
 /** Compact badge for use on shift list cards. */
 export function ShiftStepBadge({
   status,
@@ -68,34 +76,12 @@ export function ShiftStepBadge({
   status: string;
   allPaid: boolean;
 }) {
-  if (status === "cancelled") {
-    return (
-      <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
-        Cancelled
-      </span>
-    );
-  }
-
-  const done = completedSteps(status, allPaid);
-  const stepNum = Math.min(done + 1, STEPS.length);
-  const label = STEPS[stepNum - 1];
-  const isComplete = done === STEPS.length;
+  const key = status === "completed" && allPaid ? "paid" : status;
+  const { label, cls } = BADGE[key] ?? BADGE.open;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-        isComplete
-          ? "bg-green-100 text-green-700"
-          : done >= 3
-          ? "bg-yellow-100 text-yellow-700"
-          : done >= 2
-          ? "bg-purple-100 text-purple-700"
-          : done >= 1
-          ? "bg-blue-100 text-blue-700"
-          : "bg-gray-100 text-gray-500"
-      }`}
-    >
-      <span className="opacity-60">{stepNum}·</span> {label}
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
+      {label}
     </span>
   );
 }

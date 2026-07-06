@@ -1,57 +1,154 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ShiftLegend, ShiftStepBadge } from "./ShiftProgress";
+import { ShiftStepBadge } from "./ShiftProgress";
 import { ArchiveButton } from "./ArchiveButton";
 import { ArchivedSection } from "./ArchivedSection";
-import { StatusLegend } from "./StatusLegend";
+
+import { YearCalendar } from "../calendar/YearCalendar";
 
 export default async function ShiftsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string; year?: string; month?: string }>;
 }) {
-  const { sort } = await searchParams;
+  const { sort, year, month } = await searchParams;
   const asc = sort === "asc";
+
+  const now = new Date();
+  const calYear = year ? parseInt(year) : now.getFullYear();
+  const calMonth = month !== undefined ? parseInt(month) : now.getMonth();
+  const windowStart = new Date(calYear, calMonth, 1);
+  const windowEnd = new Date(calYear, calMonth + 3, 1);
 
   const session = await auth();
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
   });
-
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
-  const shifts = await prisma.shift.findMany({
-    where: { businessId: business.id },
-    include: {
-      roles: { include: { skill: true } },
-      assignments: {
-        where: { status: { not: "cancelled" } },
-        include: { partTimer: true },
+  const [shifts, calendarShifts, skills] = await Promise.all([
+    prisma.shift.findMany({
+      where: { businessId: business.id },
+      include: {
+        roles: { include: { skill: true } },
+        assignments: {
+          where: { status: { not: "cancelled" } },
+          include: { partTimer: true },
+        },
       },
-    },
-    orderBy: { shiftDate: asc ? "asc" : "desc" },
-  });
+      orderBy: { shiftDate: asc ? "asc" : "desc" },
+    }),
+    prisma.shift.findMany({
+      where: {
+        businessId: business.id,
+        shiftDate: { gte: windowStart, lt: windowEnd },
+        status: { not: "cancelled" },
+      },
+      include: {
+        roles: { include: { skill: true } },
+        assignments: { include: { partTimer: true } },
+      },
+      orderBy: { startTime: "asc" },
+    }),
+    prisma.skill.findMany({
+      where: { archived: false },
+      orderBy: { label: "asc" },
+      select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+    }),
+  ]);
 
   const active = shifts.filter((s) => !s.archived);
   const archived = shifts.filter((s) => s.archived);
 
-  const statusCounts = shifts.reduce<Record<string, number>>((acc, s) => {
-    acc[s.status] = (acc[s.status] ?? 0) + 1;
-    return acc;
-  }, {});
+  // Sort toggle preserves calendar params
+  const sortParams = new URLSearchParams();
+  if (!asc) sortParams.set("sort", "asc");
+  if (year) sortParams.set("year", year);
+  if (month !== undefined) sortParams.set("month", month);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Shifts</h1>
-        <div className="flex items-center gap-2">
+    <div className="flex gap-6 items-start">
+      {/* Left: Shifts list */}
+      <div className="w-96 shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Shifts</h1>
           <Link
-            href={`/dashboard/shifts?sort=${asc ? "desc" : "asc"}`}
+            href={`/dashboard/shifts?${sortParams}`}
             className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-500 hover:border-gray-400 hover:text-gray-700"
           >
-            Date: {asc ? "Oldest first ↑" : "Newest first ↓"}
+            {asc ? "Oldest first ↑" : "Newest first ↓"}
           </Link>
+        </div>
+
+
+
+        <div className="space-y-3">
+          {active.map((shift) => {
+            const allPaid =
+              shift.assignments.length > 0 &&
+              shift.assignments.every((a) => a.paymentStatus === "paid");
+
+            return (
+              <div key={shift.id} className="relative bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors">
+                <Link href={`/dashboard/shifts/${shift.id}`} className="absolute inset-0 rounded-lg" />
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-bold text-gray-800">{shift.title}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                      {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                      })}{" "}
+                      · {shift.startTime}–{shift.endTime}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
+                    </p>
+                  </div>
+                  <div className="relative z-10 flex items-center gap-2 shrink-0">
+                    <ShiftStepBadge status={shift.status} allPaid={allPaid} />
+                    {(allPaid || shift.status === "cancelled") && <ArchiveButton shiftId={shift.id} archived={false} />}
+                  </div>
+                </div>
+                {shift.assignments.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex gap-2 flex-wrap">
+                      {shift.assignments.map((a) => (
+                        <span key={a.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                          {a.partTimer.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {active.length === 0 && (
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">
+              No active shifts.
+            </div>
+          )}
+        </div>
+
+        <ArchivedSection
+          shifts={archived.map((s) => ({
+            ...s,
+            roles: s.roles.map((r) => ({ ...r, payRate: Number(r.payRate) })),
+            assignments: s.assignments.map((a) => ({
+              id: a.id,
+              partTimer: { name: a.partTimer.name },
+              paymentStatus: a.paymentStatus,
+            })),
+          }))}
+        />
+      </div>
+
+      {/* Right: Calendar */}
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-end mb-0">
           <Link
             href="/dashboard/shifts/new"
             className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
@@ -59,81 +156,35 @@ export default async function ShiftsPage({
             + New shift
           </Link>
         </div>
+        <YearCalendar
+          businessId={business.id}
+          startYear={calYear}
+          startMonth={calMonth}
+          skills={skills.map((s) => ({
+            id: s.id,
+            label: s.label,
+            defaultPayType: s.defaultPayType,
+            defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
+          }))}
+          shifts={calendarShifts.map((s) => ({
+            id: s.id,
+            title: s.title,
+            shiftDate: s.shiftDate.toISOString(),
+            startTime: s.startTime,
+            endTime: s.endTime,
+            status: s.status,
+            roles: s.roles.map((r) => ({
+              id: r.id,
+              skillId: r.skillId,
+              skillLabel: r.skill.label,
+              count: r.count,
+              payType: r.payType,
+              payRate: Number(r.payRate),
+            })),
+            assignments: s.assignments.map((a) => ({ id: a.id, name: a.partTimer.name })),
+          }))}
+        />
       </div>
-
-      <div className="mb-4 space-y-2">
-        <ShiftLegend />
-        <StatusLegend counts={statusCounts} />
-      </div>
-
-      <div className="space-y-3">
-        {active.map((shift) => {
-          const allPaid =
-            shift.assignments.length > 0 &&
-            shift.assignments.every((a) => a.paymentStatus === "paid");
-
-          return (
-            <div key={shift.id} className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <Link
-                    href={`/dashboard/shifts/${shift.id}`}
-                    className="font-bold text-gray-800 hover:text-blue-600"
-                  >
-                    {shift.title}
-                  </Link>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
-                      weekday: "short",
-                      day: "numeric",
-                      month: "short",
-                    })}{" "}
-                    · {shift.startTime}–{shift.endTime} · {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {shift.roles.map((r) =>
-                      r.payType === "hourly" ? `$${Number(r.payRate)}/hr` : `$${Number(r.payRate)} flat`
-                    ).join(", ")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <ShiftStepBadge status={shift.status} allPaid={allPaid} />
-                  {allPaid && <ArchiveButton shiftId={shift.id} archived={false} />}
-                </div>
-              </div>
-              {shift.assignments.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <p className="text-xs text-gray-400 mb-1">Assigned</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {shift.assignments.map((a) => (
-                      <span key={a.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-                        {a.partTimer.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-        {active.length === 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">
-            No active shifts. Create one to get started.
-          </div>
-        )}
-      </div>
-
-      <ArchivedSection
-        shifts={archived.map((s) => ({
-          ...s,
-          roles: s.roles.map((r) => ({ ...r, payRate: Number(r.payRate) })),
-          assignments: s.assignments.map((a) => ({
-            id: a.id,
-            partTimer: { name: a.partTimer.name },
-            paymentStatus: a.paymentStatus,
-          })),
-        }))}
-      />
     </div>
   );
 }

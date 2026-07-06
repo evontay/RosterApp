@@ -2,8 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { InviteForm } from "./InviteForm";
-import { RemoveButton } from "./RemoveButton";
-import { ShowRemovedToggle } from "./ShowRemovedToggle";
+import { ArchiveRestoreButton } from "./RemoveButton";
+import { ArchivedRosterSection } from "./ArchivedRosterSection";
 import { Avatar } from "@/components/Avatar";
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -18,22 +18,16 @@ function nextDateForDay(dayLabel: string): Date {
   return d;
 }
 
-function nextAvailability(availability: { dayOfWeek: string; startTime: string }[]): string {
+function nextAvailability(availability: { dayOfWeek: string; preference: string }[]): string {
   if (availability.length === 0) return "—";
   const upcoming = availability
     .map((a) => ({ ...a, date: nextDateForDay(a.dayOfWeek) }))
     .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
-  return upcoming.date.toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" });
+  const label = upcoming.preference === "morning" ? "AM" : upcoming.preference === "afternoon" ? "PM" : "Flexible";
+  return `${upcoming.date.toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })} · ${label}`;
 }
 
-export default async function RosterPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ showRemoved?: string }>;
-}) {
-  const { showRemoved } = await searchParams;
-  const showRemovedBool = showRemoved === "true";
-
+export default async function RosterPage() {
   const session = await auth();
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
@@ -42,10 +36,7 @@ export default async function RosterPage({
   if (!business) return <p className="text-gray-500">No business found.</p>;
 
   const members = await prisma.rosterMembership.findMany({
-    where: {
-      businessId: business.id,
-      ...(!showRemovedBool && { status: { not: "removed" } }),
-    },
+    where: { businessId: business.id },
     include: {
       partTimer: {
         include: {
@@ -61,10 +52,8 @@ export default async function RosterPage({
     orderBy: { invitedAt: "desc" },
   });
 
-  const removedCount = await prisma.rosterMembership.count({
-    where: { businessId: business.id, status: "removed" },
-  });
-
+  const active = members.filter((m) => m.status !== "removed");
+  const archived = members.filter((m) => m.status === "removed");
   const activeCount = members.filter((m) => m.status === "active").length;
 
   return (
@@ -74,12 +63,7 @@ export default async function RosterPage({
           <h1 className="text-2xl font-bold text-gray-800">Roster</h1>
           <span className="text-sm text-gray-400">{activeCount} active</span>
         </div>
-        <div className="flex items-center gap-3">
-          {removedCount > 0 && (
-            <ShowRemovedToggle showRemoved={showRemovedBool} count={removedCount} />
-          )}
-          <InviteForm businessId={business.id} />
-        </div>
+        <InviteForm businessId={business.id} />
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -95,8 +79,8 @@ export default async function RosterPage({
             </tr>
           </thead>
           <tbody>
-            {members.map((m) => (
-              <tr key={m.id} className={`border-b border-gray-100 last:border-0 ${m.status === "removed" ? "opacity-50" : ""}`}>
+            {active.map((m) => (
+              <tr key={m.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -127,20 +111,34 @@ export default async function RosterPage({
                   <StatusBadge status={m.status} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {m.status !== "removed" && <RemoveButton membershipId={m.id} />}
+                  <ArchiveRestoreButton membershipId={m.id} archived={false} />
                 </td>
               </tr>
             ))}
-            {members.length === 0 && (
+            {active.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                  {showRemovedBool ? "No removed employees." : "No employees yet. Invite someone to get started."}
+                  No employees yet. Invite someone to get started.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <ArchivedRosterSection
+        members={archived.map((m) => ({
+          id: m.id,
+          partTimerId: m.partTimerId,
+          partTimer: {
+            id: m.partTimer.id,
+            name: m.partTimer.name,
+            email: m.partTimer.email,
+            avatarEmoji: m.partTimer.avatarEmoji,
+            avatarColor: m.partTimer.avatarColor,
+          },
+        }))}
+      />
     </div>
   );
 }
@@ -149,7 +147,6 @@ function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     invited: "bg-yellow-100 text-yellow-700",
     active: "bg-green-100 text-green-700",
-    removed: "bg-gray-100 text-gray-500",
   };
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? ""}`}>

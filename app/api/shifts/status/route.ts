@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  draft:     ["open", "cancelled"],
   open:      ["filled", "cancelled"],
   filled:    ["completed", "cancelled"],
   completed: [],
@@ -32,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   const updated = await prisma.shift.update({
     where: { id: shiftId },
-    data: { status },
+    data: { status, ...(status === "cancelled" && { archived: true }) },
   });
 
   return NextResponse.json(updated);

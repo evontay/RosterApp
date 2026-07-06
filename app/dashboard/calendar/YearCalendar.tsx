@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RolesEditor, RoleRow } from "@/components/RolesEditor";
 
@@ -17,8 +17,12 @@ type Slot = "AM" | "PM";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const STATUS_DOT: Record<string, string> = {
-  draft: "bg-gray-400", open: "bg-blue-500", filled: "bg-purple-500",
-  completed: "bg-green-500", cancelled: "bg-red-400",
+  open: "bg-blue-500", filled: "bg-purple-500",
+  completed: "bg-green-500",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  open: "Open", filled: "Confirmed", completed: "Logged",
 };
 
 function isMorning(t: string) { return t < "12:00"; }
@@ -39,6 +43,7 @@ export function YearCalendar({
   shifts: Shift[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const today = new Date();
   const todayStr = localDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -57,13 +62,20 @@ export function YearCalendar({
     statusCounts[s.status] = (statusCounts[s.status] ?? 0) + 1;
   }
 
+  function buildUrl(year: number, month: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("year", year.toString());
+    params.set("month", month.toString());
+    return `/dashboard/shifts?${params}`;
+  }
+
   function navigate(offsetMonths: number) {
     const d = new Date(startYear, startMonth + offsetMonths, 1);
-    router.push(`/dashboard/calendar?year=${d.getFullYear()}&month=${d.getMonth()}`);
+    router.push(buildUrl(d.getFullYear(), d.getMonth()));
   }
 
   function navigateTo(year: number, month: number) {
-    router.push(`/dashboard/calendar?year=${year}&month=${month}`);
+    router.push(buildUrl(year, month));
   }
 
   function openSlot(dateStr: string, slot: Slot) {
@@ -91,9 +103,7 @@ export function YearCalendar({
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800 shrink-0">Calendar</h1>
-
+      <div className="flex items-center justify-between mb-4 gap-4">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-3)}
@@ -149,7 +159,7 @@ export function YearCalendar({
         {Object.entries(STATUS_DOT).map(([s, cls]) => (
           <div key={s} className="flex items-center gap-1.5">
             <div className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
-            <span className="text-xs text-gray-600 capitalize">{s}</span>
+            <span className="text-xs text-gray-600">{STATUS_LABEL[s] ?? s}</span>
             <span className="text-xs text-gray-400">({statusCounts[s] ?? 0})</span>
           </div>
         ))}
@@ -159,8 +169,8 @@ export function YearCalendar({
         </div>
       </div>
 
-      {/* 3-month grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* 3-month column */}
+      <div className="space-y-4">
         {visibleMonths.map(({ year, monthIdx }) => (
           <MonthGrid
             key={`${year}-${monthIdx}`}
@@ -231,8 +241,8 @@ function MonthGrid({
 
           return (
             <div key={i} className="flex flex-col gap-px">
-              <div className={`text-[10px] text-center leading-none py-0.5 font-medium rounded-sm ${
-                isToday ? "bg-blue-600 text-white" : "text-gray-600"
+              <div className={`text-xs text-center leading-none py-0.5 ${
+                isToday ? "font-bold text-red-500" : "font-medium text-gray-600"
               }`}>
                 {day}
               </div>

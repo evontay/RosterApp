@@ -21,10 +21,18 @@ const STATUS_STYLES: Record<ShiftStatus, string> = {
   cancelled: "bg-red-100 text-red-600",
 };
 
+const STATUS_LABELS: Record<ShiftStatus, string> = {
+  draft:     "Draft",
+  open:      "Open",
+  filled:    "Confirmed",
+  completed: "Logged",
+  cancelled: "Cancelled",
+};
+
 const ACTION_LABELS: Partial<Record<ShiftStatus, string>> = {
   open:      "Mark open",
-  filled:    "Mark filled",
-  completed: "Mark completed",
+  filled:    "Mark confirmed",
+  completed: "Mark logged",
   cancelled: "Cancel shift",
 };
 
@@ -60,8 +68,8 @@ export function ShiftStatusControl({
 
   return (
     <div className="flex items-center gap-2">
-      <span className={`px-2.5 py-1 rounded text-xs font-semibold capitalize ${STATUS_STYLES[currentStatus]}`}>
-        {currentStatus}
+      <span className={`px-2.5 py-1 rounded text-xs font-semibold ${STATUS_STYLES[currentStatus]}`}>
+        {STATUS_LABELS[currentStatus]}
       </span>
       {next.map((toStatus) => (
         <button

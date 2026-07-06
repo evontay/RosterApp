@@ -21,8 +21,8 @@ export async function POST(req: Request) {
   });
   if (!shift) return NextResponse.json({ error: "Shift not found" }, { status: 404 });
 
-  // Only allow archiving fully paid shifts
-  if (archived) {
+  // Allow archiving if fully paid or cancelled; unarchiving always allowed
+  if (archived && shift.status !== "cancelled") {
     const allPaid =
       shift.assignments.length > 0 &&
       shift.assignments.every((a) => a.paymentStatus === "paid");

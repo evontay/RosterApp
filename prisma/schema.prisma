@@ -90,12 +90,17 @@ model PartTimerSkill {
 }
 
 model Availability {
-  id          String    @id @default(cuid())
-  partTimer   PartTimer @relation(fields: [partTimerId], references: [id])
+  id          String                 @id @default(cuid())
+  partTimer   PartTimer              @relation(fields: [partTimerId], references: [id])
   partTimerId String
   dayOfWeek   DayOfWeek
-  startTime   String
-  endTime     String
+  preference  AvailabilityPreference @default(flexible)
+}
+
+enum AvailabilityPreference {
+  morning
+  afternoon
+  flexible
 }
 
 enum DayOfWeek {
@@ -124,14 +129,15 @@ model Shift {
 }
 
 model ShiftRole {
-  id      String  @id @default(cuid())
-  shift   Shift   @relation(fields: [shiftId], references: [id])
-  shiftId String
-  skill   Skill   @relation(fields: [skillId], references: [id])
-  skillId String
-  count   Int     @default(1)
-  payType PayType
-  payRate Decimal @db.Decimal(10, 2)
+  id          String            @id @default(cuid())
+  shift       Shift             @relation(fields: [shiftId], references: [id])
+  shiftId     String
+  skill       Skill             @relation(fields: [skillId], references: [id])
+  skillId     String
+  count       Int               @default(1)
+  payType     PayType
+  payRate     Decimal           @db.Decimal(10, 2)
+  assignments ShiftAssignment[]
 }
 
 enum PayType {
@@ -153,6 +159,8 @@ model ShiftAssignment {
   shiftId       String
   partTimer     PartTimer        @relation(fields: [partTimerId], references: [id])
   partTimerId   String
+  shiftRole     ShiftRole?       @relation(fields: [shiftRoleId], references: [id])
+  shiftRoleId   String?
   status        AssignmentStatus @default(assigned)
   hoursLogged   Decimal?         @db.Decimal(5, 2)
   payAmount     Decimal?         @db.Decimal(10, 2)

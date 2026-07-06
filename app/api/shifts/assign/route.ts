@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { shiftId, partTimerId } = await req.json();
+  const { shiftId, partTimerId, shiftRoleId } = await req.json();
 
   // Verify shift belongs to owner's business
   const shift = await prisma.shift.findFirst({
@@ -24,9 +24,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Employee not on active roster" }, { status: 400 });
   }
 
-  const assignment = await prisma.shiftAssignment.create({
-    data: { shiftId, partTimerId, status: "assigned" },
+  // Prevent duplicate assignment — only check slot-based assignments (shiftRoleId set).
+  // Old orphaned assignments (shiftRoleId null, from before slot system) are left untouched.
+  const existing = await prisma.shiftAssignment.findFirst({
+    where: { shiftId, partTimerId, shiftRoleId: { not: null }, status: { not: "cancelled" } },
   });
+  if (existing) {
+    return NextResponse.json({ error: "Employee is already assigned to this shift" }, { status: 400 });
+  }
+
+  // Enforce slot cap for the role
+  if (shiftRoleId) {
+    const role = await prisma.shiftRole.findUnique({ where: { id: shiftRoleId } });
+    if (!role || role.shiftId !== shiftId) {
+      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    }
+    const filledSlots = await prisma.shiftAssignment.count({
+      where: { shiftRoleId, status: { not: "cancelled" } },
+    });
+    if (filledSlots >= role.count) {
+      return NextResponse.json({ error: "This role is already fully staffed" }, { status: 400 });
+    }
+  }
+
+  const assignment = await prisma.shiftAssignment.create({
+    data: { shiftId, partTimerId, shiftRoleId: shiftRoleId ?? null, status: "assigned" },
+  });
+
+  // Auto-advance to "filled" if all slots are now taken
+  if (shift.status === "open") {
+    const roles = await prisma.shiftRole.findMany({
+      where: { shiftId },
+      select: { id: true, count: true },
+    });
+    const totalSlots = roles.reduce((sum, r) => sum + r.count, 0);
+    const filledSlots = await prisma.shiftAssignment.count({
+      where: { shiftId, shiftRoleId: { not: null }, status: { not: "cancelled" } },
+    });
+    if (filledSlots >= totalSlots) {
+      await prisma.shift.update({ where: { id: shiftId }, data: { status: "filled" } });
+    }
+  }
 
   return NextResponse.json(assignment);
 }

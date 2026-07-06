@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { membershipId } = await req.json();
+  const { membershipId, restore } = await req.json();
 
   const membership = await prisma.rosterMembership.findFirst({
     where: { id: membershipId, business: { ownerUserId: session.user.id } },
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   await prisma.rosterMembership.update({
     where: { id: membershipId },
-    data: { status: "removed" },
+    data: { status: restore ? "active" : "removed" },
   });
 
   return NextResponse.json({ ok: true });

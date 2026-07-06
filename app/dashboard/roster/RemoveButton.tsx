@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function RemoveButton({ membershipId }: { membershipId: string }) {
+export function ArchiveRestoreButton({
+  membershipId,
+  archived,
+}: {
+  membershipId: string;
+  archived: boolean;
+}) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleRemove() {
+  async function handleAction() {
     setLoading(true);
     await fetch("/api/roster/remove", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ membershipId }),
+      body: JSON.stringify({ membershipId, restore: archived }),
     });
     setLoading(false);
     setConfirming(false);
@@ -23,11 +29,11 @@ export function RemoveButton({ membershipId }: { membershipId: string }) {
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">Remove?</span>
+        <span className="text-xs text-gray-500">{archived ? "Restore?" : "Archive?"}</span>
         <button
-          onClick={handleRemove}
+          onClick={handleAction}
           disabled={loading}
-          className="text-xs text-red-600 font-medium hover:underline disabled:opacity-50"
+          className="text-xs font-medium hover:underline disabled:opacity-50 text-blue-600"
         >
           {loading ? "..." : "Yes"}
         </button>
@@ -44,9 +50,9 @@ export function RemoveButton({ membershipId }: { membershipId: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
     >
-      Remove
+      {archived ? "Restore" : "Archive"}
     </button>
   );
 }

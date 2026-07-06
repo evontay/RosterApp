@@ -134,16 +134,17 @@ export default async function PartTimerProfilePage({
             <div className="space-y-1">
               {DAYS.filter((d) => partTimer.availability.find((a) => a.dayOfWeek === d)).map((d) => {
                 const a = partTimer.availability.find((a) => a.dayOfWeek === d)!;
+                const label = a.preference === "morning" ? "Morning" : a.preference === "afternoon" ? "Afternoon" : "Flexible";
                 return (
                   <div key={d} className="flex items-center gap-2 text-xs text-gray-600">
                     <span className="w-8 font-medium text-gray-800">{d}</span>
-                    <span>{a.startTime}–{a.endTime}</span>
+                    <span>{label}</span>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-xs text-gray-400">No availability set</p>
+            <p className="text-xs text-gray-400">No preference set</p>
           )}
         </div>
       </div>

@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EditShiftForm } from "./EditShiftForm";
 
-type ShiftStatus = "draft" | "open" | "filled" | "completed" | "cancelled";
+type ShiftStatus = "open" | "filled" | "completed" | "cancelled";
 
 const TRANSITIONS: Record<ShiftStatus, { status: ShiftStatus; label: string; danger?: boolean }[]> = {
-  draft:     [{ status: "open", label: "Mark open" }, { status: "cancelled", label: "Cancel shift", danger: true }],
   open:      [{ status: "filled", label: "Mark filled" }, { status: "cancelled", label: "Cancel shift", danger: true }],
   filled:    [{ status: "completed", label: "Mark completed" }, { status: "cancelled", label: "Cancel shift", danger: true }],
   completed: [],
