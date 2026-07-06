@@ -19,11 +19,10 @@ export default async function MyShiftsPage({
   if (!partTimer) return <p className="text-gray-500">Profile not found.</p>;
 
   const assignments = await prisma.shiftAssignment.findMany({
-    where: { partTimerId: partTimer.id },
+    where: { partTimerId: partTimer.id, status: { not: "cancelled" } },
     include: {
-      shift: {
-        include: { business: true, roles: { include: { skill: true } } },
-      },
+      shift: { include: { business: true } },
+      shiftRole: { include: { skill: true } },
     },
     orderBy: { shift: { shiftDate: asc ? "asc" : "desc" } },
   });
@@ -46,7 +45,6 @@ export default async function MyShiftsPage({
               <div>
                 <p className="font-medium text-gray-800">{a.shift.title}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {a.shift.business.name} ·{" "}
                   {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", {
                     weekday: "short",
                     day: "numeric",
@@ -54,14 +52,18 @@ export default async function MyShiftsPage({
                   })}{" "}
                   · {a.shift.startTime}–{a.shift.endTime}
                 </p>
-                <p className="text-sm text-gray-500">{a.shift.roles.map((r) => r.skill.label).join(", ")}</p>
+                {a.shiftRole && (
+                  <p className="text-xs text-gray-400 mt-0.5">{a.shiftRole.skill.label}</p>
+                )}
               </div>
-              <div className="text-right text-sm">
+              <div className="text-right shrink-0">
                 {a.payAmount != null ? (
-                  <p className="font-medium text-gray-800">${Number(a.payAmount).toFixed(2)}</p>
-                ) : null}
+                  <p className="text-sm font-medium text-gray-800">${Number(a.payAmount).toFixed(2)}</p>
+                ) : (
+                  <p className="text-xs text-gray-400">Not logged</p>
+                )}
                 <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}`}>
-                  {a.paymentStatus}
+                  {a.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                 </span>
               </div>
             </div>
