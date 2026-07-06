@@ -85,6 +85,13 @@ export default async function ShiftDetailPage({
     orderBy: { partTimer: { name: "asc" } },
   });
 
+  // Default hours from shift duration
+  function parseTime(t: string) {
+    const [h, m] = t.split(":").map(Number);
+    return h + m / 60;
+  }
+  const defaultHours = Math.round((parseTime(shift.endTime) - parseTime(shift.startTime)) * 10) / 10;
+
   // All assigned employee IDs across the whole shift (one person = one slot max)
   const allActiveAssignments = shift.roles.flatMap((r) => r.assignments);
   const allAssignedIds = new Set(allActiveAssignments.map((a) => a.partTimerId));
@@ -196,12 +203,12 @@ export default async function ShiftDetailPage({
                             }}
                           />
                           <p className="text-xs text-gray-500">
-                            {a.hoursLogged != null
-                              ? `${a.hoursLogged} hrs · $${a.payAmount}`
-                              : "Hours not logged"}
+                            {a.payAmount != null
+                              ? (a.hoursLogged != null ? `${a.hoursLogged} hrs · ` : "") + `$${Number(a.payAmount).toFixed(2)}`
+                              : role.payType === "flat_session" ? "Pending confirmation" : "Hours not logged"}
                             {" · "}
                             <span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>
-                              {a.paymentStatus}
+                              {a.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                             </span>
                           </p>
                         </div>
@@ -212,6 +219,7 @@ export default async function ShiftDetailPage({
                           payType={role.payType}
                           payRate={Number(role.payRate)}
                           currentHours={a.hoursLogged ? Number(a.hoursLogged) : null}
+                          defaultHours={defaultHours}
                         />
                         <UnassignButton assignmentId={a.id} />
                       </div>

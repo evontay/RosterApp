@@ -90,9 +90,9 @@ export default async function DashboardPage() {
       },
       include: {
         partTimer: { select: { id: true, name: true, avatarEmoji: true, avatarColor: true } },
-        shift: { select: { id: true, title: true } },
+        shift: { select: { id: true, title: true, shiftDate: true } },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { shift: { shiftDate: "asc" } },
     }),
   ]);
 
@@ -119,20 +119,8 @@ export default async function DashboardPage() {
   }
   const interestGroups = [...interestsByShift.values()];
 
-  // Group unpaid by employee
-  const unpaidByEmployee = new Map<string, { partTimer: typeof unpaidAssignments[0]["partTimer"]; count: number; amount: number }>();
-  for (const a of unpaidAssignments) {
-    const key = a.partTimerId;
-    if (!unpaidByEmployee.has(key)) {
-      unpaidByEmployee.set(key, { partTimer: a.partTimer, count: 0, amount: 0 });
-    }
-    const entry = unpaidByEmployee.get(key)!;
-    entry.count++;
-    entry.amount += a.payAmount ? Number(a.payAmount) : 0;
-  }
-  const unpaidEmployees = [...unpaidByEmployee.values()].sort((a, b) => b.amount - a.amount);
 
-  const hasAttentionItems = understaffedShifts.length > 0 || interestGroups.length > 0 || unpaidEmployees.length > 0;
+  const hasAttentionItems = understaffedShifts.length > 0 || interestGroups.length > 0 || unpaidAssignments.length > 0;
 
   return (
     <div className="space-y-8 max-w-3xl">
@@ -209,28 +197,30 @@ export default async function DashboardPage() {
               </Link>
             ))}
 
-            {/* Unpaid employees */}
-            {unpaidEmployees.map(({ partTimer, count, amount }) => (
+            {/* Unpaid assignments */}
+            {unpaidAssignments.map((a) => (
               <Link
-                key={partTimer.id}
-                href={`/dashboard/roster/${partTimer.id}`}
+                key={a.id}
+                href={`/dashboard/shifts/${a.shift.id}`}
                 className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Avatar
-                    name={partTimer.name}
-                    avatarEmoji={partTimer.avatarEmoji}
-                    avatarColor={partTimer.avatarColor}
-                    id={partTimer.id}
+                    name={a.partTimer.name}
+                    avatarEmoji={a.partTimer.avatarEmoji}
+                    avatarColor={a.partTimer.avatarColor}
+                    id={a.partTimer.id}
                     size="sm"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{partTimer.name}</p>
-                    <p className="text-xs text-gray-400">{count} unpaid shift{count !== 1 ? "s" : ""}</p>
+                    <p className="text-sm font-medium text-gray-800">{a.partTimer.name}</p>
+                    <p className="text-xs text-gray-400">
+                      {a.shift.title} · {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", { day: "numeric", month: "short" })}
+                    </p>
                   </div>
                 </div>
                 <span className="text-xs font-medium px-2 py-1 bg-yellow-50 text-yellow-700 rounded shrink-0">
-                  ${amount.toFixed(2)} owed
+                  {a.payAmount != null ? `$${Number(a.payAmount).toFixed(2)} unpaid` : "Unpaid"}
                 </span>
               </Link>
             ))}

@@ -8,15 +8,17 @@ export function HoursForm({
   payType,
   payRate,
   currentHours,
+  defaultHours,
 }: {
   assignmentId: string;
   payType: string;
   payRate: number;
   currentHours: number | null;
+  defaultHours?: number;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [hours, setHours] = useState(currentHours?.toString() ?? "");
+  const [hours, setHours] = useState(currentHours?.toString() ?? defaultHours?.toString() ?? "");
   const [loading, setLoading] = useState(false);
 
   async function handleSave() {
@@ -31,6 +33,20 @@ export function HoursForm({
     router.refresh();
   }
 
+  // Flat session: no hours needed — just a confirm button
+  if (payType === "flat_session") {
+    if (currentHours != null) return null;
+    return (
+      <button
+        onClick={handleSave}
+        disabled={loading}
+        className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+      >
+        {loading ? "..." : "Confirm"}
+      </button>
+    );
+  }
+
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} className="text-xs text-blue-600 hover:underline">
@@ -41,20 +57,18 @@ export function HoursForm({
 
   return (
     <div className="flex items-center gap-1">
-      {payType === "hourly" && (
-        <input
-          type="number"
-          min="0"
-          step="0.5"
-          value={hours}
-          onChange={(e) => setHours(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1 text-xs w-20"
-          placeholder="hrs"
-        />
-      )}
+      <input
+        type="number"
+        min="0"
+        step="0.5"
+        value={hours}
+        onChange={(e) => setHours(e.target.value)}
+        className="border border-gray-300 rounded px-2 py-1 text-xs w-20"
+        placeholder="hrs"
+      />
       <button
         onClick={handleSave}
-        disabled={loading || (payType === "hourly" && !hours)}
+        disabled={loading || !hours}
         className="text-xs bg-blue-600 text-white px-2 py-1 rounded disabled:opacity-50"
       >
         {loading ? "..." : "Save"}
