@@ -31,6 +31,7 @@ export default async function DashboardPage() {
     pendingInterests,
     upcomingShifts,
     unpaidAssignments,
+    unreadActivityCount,
   ] = await Promise.all([
     prisma.rosterMembership.count({
       where: { businessId: business.id, status: "active" },
@@ -94,6 +95,10 @@ export default async function DashboardPage() {
       },
       orderBy: { shift: { shiftDate: "asc" } },
     }),
+    // Unread activity notifications
+    prisma.activity.count({
+      where: { recipientId: session!.user.id, read: false },
+    }),
   ]);
 
   const statusCounts = Object.fromEntries(
@@ -150,6 +155,19 @@ export default async function DashboardPage() {
           })}
         </div>
       </div>
+
+      {/* Unread activity */}
+      {unreadActivityCount > 0 && (
+        <Link
+          href="/dashboard/activity"
+          className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 hover:border-blue-400 transition-colors"
+        >
+          <p className="text-sm font-medium text-blue-800">
+            {unreadActivityCount} new notification{unreadActivityCount !== 1 ? "s" : ""}
+          </p>
+          <span className="text-xs text-blue-600">View activity →</span>
+        </Link>
+      )}
 
       {/* Needs attention */}
       {hasAttentionItems && (

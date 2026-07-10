@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createActivity } from "@/lib/activity";
 
 // POST — express or withdraw interest
 export async function POST(req: NextRequest) {
@@ -26,13 +27,23 @@ export async function POST(req: NextRequest) {
         rosterMembers: { some: { partTimerId: partTimer.id, status: "active" } },
       },
     },
+    include: { business: { select: { ownerUserId: true } } },
   });
   if (!shift) return NextResponse.json({ error: "Shift not available" }, { status: 404 });
+
+  const ownerUserId = shift.business.ownerUserId;
 
   if (withdraw) {
     await prisma.shiftInterest.updateMany({
       where: { shiftId, partTimerId: partTimer.id, shiftRoleId: null, status: "pending" },
       data: { status: "withdrawn" },
+    });
+    await createActivity({
+      type: "INTEREST_WITHDRAWN",
+      recipientId: ownerUserId,
+      entityType: "shift",
+      entityId: shiftId,
+      metadata: { shiftTitle: shift.title, partTimerName: partTimer.name },
     });
     return NextResponse.json({ ok: true });
   }
@@ -61,6 +72,15 @@ export async function POST(req: NextRequest) {
       },
     });
   }
+
+  // Notify owner of new interest
+  await createActivity({
+    type: "INTEREST_RECEIVED",
+    recipientId: ownerUserId,
+    entityType: "shift",
+    entityId: shiftId,
+    metadata: { shiftTitle: shift.title, partTimerName: partTimer.name },
+  });
 
   return NextResponse.json({ ok: true });
 }

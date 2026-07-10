@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createActivity } from "@/lib/activity";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -25,7 +26,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Prevent duplicate assignment — only check slot-based assignments (shiftRoleId set).
-  // Old orphaned assignments (shiftRoleId null, from before slot system) are left untouched.
   const existing = await prisma.shiftAssignment.findFirst({
     where: { shiftId, partTimerId, shiftRoleId: { not: null }, status: { not: "cancelled" } },
   });
@@ -64,6 +64,24 @@ export async function POST(req: NextRequest) {
     if (filledSlots >= totalSlots) {
       await prisma.shift.update({ where: { id: shiftId }, data: { status: "filled" } });
     }
+  }
+
+  // Notify employee
+  const partTimer = await prisma.partTimer.findUnique({
+    where: { id: partTimerId },
+    select: { userId: true },
+  });
+  if (partTimer) {
+    await createActivity({
+      type: "ASSIGNED",
+      recipientId: partTimer.userId,
+      entityType: "shift",
+      entityId: shiftId,
+      metadata: {
+        shiftTitle: shift.title,
+        shiftDate: shift.shiftDate.toISOString(),
+      },
+    });
   }
 
   return NextResponse.json(assignment);

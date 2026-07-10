@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createActivity } from "@/lib/activity";
 
 // POST — owner confirms interest → creates ShiftAssignment
 export async function POST(req: NextRequest) {
@@ -19,7 +20,10 @@ export async function POST(req: NextRequest) {
 
   const interest = await prisma.shiftInterest.findFirst({
     where: { id: interestId, shift: { businessId: business.id }, status: "pending" },
-    include: { shift: true },
+    include: {
+      shift: true,
+      partTimer: { select: { userId: true, name: true } },
+    },
   });
   if (!interest) return NextResponse.json({ error: "Interest not found" }, { status: 404 });
 
@@ -79,6 +83,18 @@ export async function POST(req: NextRequest) {
   if (filledSlots >= totalSlots && interest.shift.status === "open") {
     await prisma.shift.update({ where: { id: shiftId }, data: { status: "filled" } });
   }
+
+  // Notify employee
+  await createActivity({
+    type: "INTEREST_CONFIRMED",
+    recipientId: interest.partTimer.userId,
+    entityType: "shift",
+    entityId: shiftId,
+    metadata: {
+      shiftTitle: interest.shift.title,
+      shiftDate: interest.shift.shiftDate.toISOString(),
+    },
+  });
 
   return NextResponse.json({ ok: true });
 }

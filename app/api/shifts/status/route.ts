@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createActivities } from "@/lib/activity";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   open:      ["filled", "cancelled"],
@@ -33,6 +34,26 @@ export async function POST(req: NextRequest) {
     where: { id: shiftId },
     data: { status, ...(status === "cancelled" && { archived: true }) },
   });
+
+  // Notify all assigned employees when shift is cancelled
+  if (status === "cancelled") {
+    const assignments = await prisma.shiftAssignment.findMany({
+      where: { shiftId, status: { not: "cancelled" } },
+      include: { partTimer: { select: { userId: true } } },
+    });
+    await createActivities(
+      assignments.map((a) => ({
+        type: "SHIFT_CANCELLED" as const,
+        recipientId: a.partTimer.userId,
+        entityType: "shift",
+        entityId: shiftId,
+        metadata: {
+          shiftTitle: shift.title,
+          shiftDate: shift.shiftDate.toISOString(),
+        },
+      }))
+    );
+  }
 
   return NextResponse.json(updated);
 }

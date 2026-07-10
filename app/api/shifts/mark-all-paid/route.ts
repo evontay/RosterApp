@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { createActivities } from "@/lib/activity";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -18,10 +19,30 @@ export async function POST(req: Request) {
   });
   if (!shift) return NextResponse.json({ error: "Shift not found" }, { status: 404 });
 
+  // Fetch unpaid assignments before updating so we have their details
+  const unpaidAssignments = await prisma.shiftAssignment.findMany({
+    where: { shiftId, status: { not: "cancelled" }, paymentStatus: "unpaid" },
+    include: { partTimer: { select: { userId: true } } },
+  });
+
   await prisma.shiftAssignment.updateMany({
     where: { shiftId, status: { not: "cancelled" }, paymentStatus: "unpaid" },
     data: { paymentStatus: "paid" },
   });
+
+  await createActivities(
+    unpaidAssignments.map((a) => ({
+      type: "PAID" as const,
+      recipientId: a.partTimer.userId,
+      entityType: "assignment",
+      entityId: a.id,
+      metadata: {
+        shiftTitle: shift.title,
+        shiftDate: shift.shiftDate.toISOString(),
+        payAmount: a.payAmount ? Number(a.payAmount) : null,
+      },
+    }))
+  );
 
   return NextResponse.json({ ok: true });
 }

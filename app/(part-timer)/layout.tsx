@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export default async function PartTimerLayout({
   children,
@@ -10,6 +11,10 @@ export default async function PartTimerLayout({
   const session = await auth();
   if (!session) redirect("/login");
   if (session.user.role !== "part_timer") redirect("/dashboard");
+
+  const unreadCount = await prisma.activity.count({
+    where: { recipientId: session.user.id, read: false },
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,6 +29,14 @@ export default async function PartTimerLayout({
           </Link>
           <Link href="/my-shifts" className="text-sm text-gray-600 hover:text-gray-900">
             My Shifts
+          </Link>
+          <Link href="/activity" className="relative text-sm text-gray-600 hover:text-gray-900">
+            Activity
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-3 min-w-[16px] h-4 px-1 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </Link>
           <Link href="/my-settings" className="text-sm text-gray-600 hover:text-gray-900">
             Settings

@@ -204,3 +204,24 @@ enum InterestStatus {
   rejected
   withdrawn
 }
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  recipientId String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  read        Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+}
+
+enum ActivityType {
+  INTEREST_CONFIRMED
+  INTEREST_REJECTED
+  ASSIGNED
+  SHIFT_CANCELLED
+  PAID
+  INTEREST_RECEIVED
+  INTEREST_WITHDRAWN
+}
