@@ -49,8 +49,10 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Interest management**: shift detail shows pending interests with employee name (clickable → profile modal), comment, Confirm/Reject actions
 - **Employee profile modal**: avatar, skills, completed job count, link to full roster profile
 - **Hours + pay**: log hours per assignment, pay auto-calculated from role's pay type/rate
-- **Mark as paid** per assignment or all at once
-- **Dashboard**: active employees, shifts this month, status counts (open/confirmed/logged); "Needs attention" section (understaffed shifts, pending interests, unpaid employees); next 7 days upcoming shifts with staffing ratio
+- **Mark as paid** per assignment or all at once; **Unmark paid** per assignment if mistake
+- **Shift status corrections**: "Unmark as logged" reverts a completed shift back to filled/open based on current slot count; "Mark as logged" is blocked before the shift date (UI grayed out + API guard)
+- **Dashboard**: active employees, shifts this month, status counts (open/confirmed/logged); unread activity banner; "Needs attention" section (understaffed shifts, pending interests, unpaid employees); next 7 days upcoming shifts with staffing ratio
+- **Activity feed** (`/dashboard/activity`): append-only event log grouped by date; badge count in nav; marks all read on visit
 - **Settings → Role types**: create, rename, archive/restore; default pay type and rate per role
 
 ### Employee-side features
@@ -59,7 +61,8 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Open Shifts** (`/open-shifts`): all upcoming open shifts across active businesses; express interest with optional comment; withdraw if still pending
 - **My Shifts** (`/my-shifts`): full assignment history, sort by date, clickable cards
 - **Shift detail** (`/shifts/[id]`): shift info, assigned role, pay rate, payment status
-- **Settings** (`/my-settings`): edit name, phone, avatar (emoji + background colour); availability preference per day (Morning/Afternoon/Flexible)
+- **Activity feed** (`/activity`): notifications for interest confirmed/rejected, assigned, shift cancelled, paid; badge count in nav; marks all read on visit
+- **Settings** (`/my-settings`): edit name, phone, avatar (emoji + background colour); skills (pill selector, applies across all active business memberships); availability preference per day (Morning/Afternoon/Flexible)
 
 ---
 
@@ -68,12 +71,13 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 ### Owner (`/dashboard/*`)
 | Route | Description |
 |-------|-------------|
-| `/dashboard` | Dashboard — roster count, shift status summary |
+| `/dashboard` | Dashboard — roster count, shift status summary, unread activity banner, needs attention, next 7 days |
 | `/dashboard/roster` | Roster list with archive section |
 | `/dashboard/roster/[id]` | Employee profile — skills, availability, pay summary, shift history, worked-with |
 | `/dashboard/shifts` | Shifts list + calendar (combined two-column page) |
 | `/dashboard/shifts/new` | Create shift form |
 | `/dashboard/shifts/[id]` | Shift detail — staffing slots, hours logging, pay, actions menu |
+| `/dashboard/activity` | Activity feed — interest received/withdrawn, grouped by date |
 | `/dashboard/calendar` | Redirects to `/dashboard/shifts` |
 | `/dashboard/settings/roles` | Role type management |
 
@@ -84,7 +88,8 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 | `/open-shifts` | All upcoming open shifts; express/withdraw interest |
 | `/my-shifts` | All assigned shifts |
 | `/shifts/[id]` | Shift detail — role, rate, pay amount, payment status |
-| `/my-settings` | Profile + avatar editor + availability preferences |
+| `/activity` | Activity feed — confirmed, rejected, assigned, cancelled, paid |
+| `/my-settings` | Profile + avatar editor + skills + availability preferences |
 | `/my-profile` | Redirects to `/my-settings` |
 
 ---
@@ -209,6 +214,17 @@ model ShiftInterest {
   createdAt   DateTime       @default(now())
   @@unique([shiftId, partTimerId, shiftRoleId])
 }
+
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  recipientId String       -- userId (works for both owner and part-timer)
+  entityType  String       -- "shift" | "assignment"
+  entityId    String
+  metadata    Json?        -- shiftTitle, shiftDate, partTimerName, payAmount
+  read        Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+}
 ```
 
 ### Enums
@@ -223,6 +239,7 @@ model ShiftInterest {
 | `DayOfWeek` | `Mon`–`Sun` |
 | `AvailabilityPreference` | `morning`, `afternoon`, `flexible` |
 | `InterestStatus` | `pending`, `confirmed`, `rejected`, `withdrawn` |
+| `ActivityType` | `INTEREST_CONFIRMED`, `INTEREST_REJECTED`, `ASSIGNED`, `SHIFT_CANCELLED`, `PAID`, `INTEREST_RECEIVED`, `INTEREST_WITHDRAWN` |
 
 ---
 
@@ -236,6 +253,11 @@ model ShiftInterest {
 - **Archive rules**: only fully-paid or cancelled shifts can be archived. Cancelled shifts auto-archive on cancellation.
 - **Draft removed**: shifts are created as `open` by default. The `draft` enum value exists in the DB but is unused.
 - **Status labels** (UI only, DB values unchanged): `open` → Open, `filled` → Confirmed, `completed` → Logged. Consistent across shift list badges, stepper, calendar legend, and dashboard.
+- **Mark as logged gate**: cannot mark a shift as logged before its `shiftDate`. Enforced at the API level and grayed out in the UI.
+- **Status corrections**: "Unmark as logged" recalculates status from slot fill state (→ `filled` if full, → `open` if not). "Unmark paid" per assignment reverts `paymentStatus` to `unpaid`. Both are owner-only.
+- **Activity feed**: append-only `Activity` table, scoped by `recipientId` (userId). Written by API routes on key events. Nav badge shows unread count (server-rendered per request). Visiting the activity page marks all as read.
+- **Employee skills**: employees set their own skills from Settings; applied across all active business memberships. Owner can also edit skills from the roster profile.
+- **Nav**: "MyCrew" logo is the homepage link for both roles (owner → `/dashboard`, employee → `/home`). No separate Home/Dashboard nav item.
 - **Avatar**: employees pick an emoji (or use initials) + a pastel background colour. Fallback colour is deterministically hashed from the partTimer's `id`.
 
 ---
@@ -255,6 +277,12 @@ Owner manages roster, creates shifts with per-role slots and pay, assigns part-t
 
 ### Phase 2 — complete ✅
 Employees see all open shifts and express interest (with optional comment). Owner confirms or rejects from the shift detail page. Confirming creates a `ShiftAssignment` and auto-advances shift status. Employees can withdraw pending interest. Owner retains manual assign capability. Withdrawal after confirmation is out of scope.
+
+### Post-Phase 2 additions — complete ✅
+- Activity feed (owner + employee sides, badge counts, mark-as-read)
+- Employee self-service skills editor in Settings
+- Shift status corrections: unmark logged, unmark paid, date gate on Mark logged
+- Nav: MyCrew logo as homepage link, removed redundant Home/Dashboard items
 
 ### Phase 3
 ObjectiveRecord, SubjectiveNote, TrustRating tables — scoped per business per part-timer. Trust Rating visible to owner only.
