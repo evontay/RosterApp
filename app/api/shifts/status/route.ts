@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { createActivities } from "@/lib/activity";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  open:      ["filled", "completed", "cancelled"],
-  filled:    ["open", "completed", "cancelled"],
-  completed: ["open", "filled"],
+  open:      ["completed", "cancelled"],
+  filled:    ["completed", "cancelled"],
+  completed: [],
   cancelled: [],
 };
 
@@ -28,6 +28,20 @@ export async function POST(req: NextRequest) {
       { error: `Cannot transition from ${shift.status} to ${status}` },
       { status: 400 }
     );
+  }
+
+  // Prevent marking logged before the shift date
+  if (status === "completed") {
+    const shiftDay = new Date(shift.shiftDate);
+    shiftDay.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (shiftDay > today) {
+      return NextResponse.json(
+        { error: "Cannot mark a shift as logged before it has taken place" },
+        { status: 400 }
+      );
+    }
   }
 
   const updated = await prisma.shift.update({

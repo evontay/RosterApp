@@ -6,6 +6,7 @@ import { AssignForm } from "./AssignForm";
 import { HoursForm } from "./HoursForm";
 import { MarkAllPaidButton } from "./MarkAllPaidButton";
 import { UnassignButton } from "./UnassignButton";
+import { UnmarkPaidButton } from "./UnmarkPaidButton";
 import { ShiftActionsMenu } from "./ShiftActionsMenu";
 import { ShiftProgress } from "../ShiftProgress";
 import { Avatar } from "@/components/Avatar";
@@ -111,6 +112,7 @@ export default async function ShiftDetailPage({
         <ShiftActionsMenu
           shiftId={shift.id}
           currentStatus={shift.status as "open" | "filled" | "completed" | "cancelled"}
+          shiftDate={shift.shiftDate.toISOString()}
           shift={{
             id: shift.id,
             title: shift.title,
@@ -210,6 +212,9 @@ export default async function ShiftDetailPage({
                             <span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>
                               {a.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                             </span>
+                            {a.paymentStatus === "paid" && (
+                              <> · <UnmarkPaidButton assignmentId={a.id} /></>
+                            )}
                           </p>
                         </div>
                       </div>

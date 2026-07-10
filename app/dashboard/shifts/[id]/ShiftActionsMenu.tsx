@@ -6,23 +6,10 @@ import { EditShiftForm } from "./EditShiftForm";
 
 type ShiftStatus = "open" | "filled" | "completed" | "cancelled";
 
-const FORWARD: Record<ShiftStatus, { status: ShiftStatus; label: string; danger?: boolean }[]> = {
-  open:      [{ status: "cancelled", label: "Cancel shift", danger: true }],
-  filled:    [{ status: "completed", label: "Mark logged" }, { status: "cancelled", label: "Cancel shift", danger: true }],
-  completed: [],
-  cancelled: [],
-};
-
-const REVERT: Record<ShiftStatus, { status: ShiftStatus; label: string }[]> = {
-  open:      [{ status: "filled", label: "Set to Confirmed" }, { status: "completed", label: "Set to Logged" }],
-  filled:    [{ status: "open", label: "Revert to Open" }],
-  completed: [{ status: "filled", label: "Revert to Confirmed" }, { status: "open", label: "Revert to Open" }],
-  cancelled: [],
-};
-
 interface Props {
   shiftId: string;
   currentStatus: ShiftStatus;
+  shiftDate: string; // ISO string
   shift: {
     id: string;
     title: string;
@@ -39,7 +26,7 @@ interface Props {
   }[];
 }
 
-export function ShiftActionsMenu({ shiftId, currentStatus, shift, skills }: Props) {
+export function ShiftActionsMenu({ shiftId, currentStatus, shiftDate, shift, skills }: Props) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -56,6 +43,13 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shift, skills }: Prop
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // "Mark logged" is only available on or after the shift date
+  const shiftDay = new Date(shiftDate);
+  shiftDay.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const canMarkLogged = shiftDay <= today;
+
   async function handleTransition(toStatus: ShiftStatus) {
     setLoading(toStatus);
     setMenuOpen(false);
@@ -68,8 +62,17 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shift, skills }: Prop
     router.refresh();
   }
 
-  const forward = FORWARD[currentStatus];
-  const revert = REVERT[currentStatus];
+  async function handleUnlog() {
+    setLoading("unlog");
+    setMenuOpen(false);
+    await fetch("/api/shifts/unlog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shiftId }),
+    });
+    setLoading(null);
+    router.refresh();
+  }
 
   return (
     <>
@@ -93,35 +96,48 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shift, skills }: Prop
               Edit shift
             </button>
 
-            {revert.length > 0 && (
+            {/* Mark logged — only on/after shift date */}
+            {(currentStatus === "open" || currentStatus === "filled") && (
               <div className="border-t border-gray-100 mt-1 pt-1">
-                {revert.map((t) => (
+                {canMarkLogged ? (
                   <button
-                    key={t.status}
-                    onClick={() => handleTransition(t.status)}
+                    onClick={() => handleTransition("completed")}
                     disabled={loading !== null}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                   >
-                    {loading === t.status ? "..." : t.label}
+                    {loading === "completed" ? "..." : "Mark as logged"}
                   </button>
-                ))}
+                ) : (
+                  <span className="block px-4 py-2 text-sm text-gray-300 cursor-default select-none">
+                    Mark as logged
+                  </span>
+                )}
               </div>
             )}
 
-            {forward.length > 0 && (
+            {/* Unmark logged — correction */}
+            {currentStatus === "completed" && (
               <div className="border-t border-gray-100 mt-1 pt-1">
-                {forward.map((t) => (
-                  <button
-                    key={t.status}
-                    onClick={() => handleTransition(t.status)}
-                    disabled={loading !== null}
-                    className={`w-full text-left px-4 py-2 text-sm disabled:opacity-50 hover:bg-gray-50 ${
-                      t.danger ? "text-red-600" : "text-gray-700"
-                    }`}
-                  >
-                    {loading === t.status ? "..." : t.label}
-                  </button>
-                ))}
+                <button
+                  onClick={handleUnlog}
+                  disabled={loading !== null}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {loading === "unlog" ? "..." : "Unmark as logged"}
+                </button>
+              </div>
+            )}
+
+            {/* Cancel */}
+            {(currentStatus === "open" || currentStatus === "filled") && (
+              <div className="border-t border-gray-100 mt-1 pt-1">
+                <button
+                  onClick={() => handleTransition("cancelled")}
+                  disabled={loading !== null}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {loading === "cancelled" ? "..." : "Cancel shift"}
+                </button>
               </div>
             )}
           </div>
