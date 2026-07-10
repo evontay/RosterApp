@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { createActivities } from "@/lib/activity";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  open:      ["filled", "cancelled"],
-  filled:    ["completed", "cancelled"],
-  completed: [],
+  open:      ["filled", "completed", "cancelled"],
+  filled:    ["open", "completed", "cancelled"],
+  completed: ["open", "filled"],
   cancelled: [],
 };
 
