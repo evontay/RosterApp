@@ -54,6 +54,9 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Dashboard**: active employees, shifts this month, status counts (open/confirmed/logged); unread activity banner; "Needs attention" section (understaffed shifts, pending interests, unpaid employees); next 7 days upcoming shifts with staffing ratio
 - **Activity feed** (`/dashboard/activity`): append-only event log grouped by date; badge count in nav; marks all read on visit
 - **Settings → Role types**: create, rename, archive/restore; default pay type and rate per role
+- **Settings → Performance tags**: create, rename, archive/restore owner-defined job-performance tags scoped per business
+- **Performance records**: on completed shift detail, each assignment row shows Add/Edit record — attendance (attended/late/no-show), optional quality flag (good/issues), optional tags. Retroactively editable.
+- **Trust signals on roster profile**: Performance section shows Reliability % and Quality %, both computed with 180-day exponential decay (recent shifts weighted more). Raw record count shown as context. Color-coded green ≥80 / yellow 60–79 / red <60. Quality shows "—" until at least one quality flag is set.
 
 ### Employee-side features
 - Auth (email + password)
@@ -80,6 +83,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 | `/dashboard/activity` | Activity feed — interest received/withdrawn, grouped by date |
 | `/dashboard/calendar` | Redirects to `/dashboard/shifts` |
 | `/dashboard/settings/roles` | Role type management |
+| `/dashboard/settings/performance-tags` | Performance tag management |
 
 ### Employee (`/*`)
 | Route | Description |
@@ -204,6 +208,34 @@ model ShiftAssignment {
   createdAt     DateTime         @default(now())
 }
 
+model ObjectiveRecord {
+  id          String               @id @default(cuid())
+  shiftId     String
+  partTimerId String
+  businessId  String
+  attendance  Attendance           -- attended | late | no_show
+  qualityFlag QualityFlag?         -- good | issues | null (unflagged)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  tags        ObjectiveRecordTag[]
+  @@unique([shiftId, partTimerId])
+}
+
+model PerformanceTag {
+  id         String               @id @default(cuid())
+  businessId String
+  label      String
+  archived   Boolean              @default(false)
+  records    ObjectiveRecordTag[]
+  @@unique([businessId, label])
+}
+
+model ObjectiveRecordTag {
+  recordId String
+  tagId    String
+  @@id([recordId, tagId])
+}
+
 model ShiftInterest {
   id          String         @id @default(cuid())
   shiftId     String
@@ -240,6 +272,8 @@ model Activity {
 | `AvailabilityPreference` | `morning`, `afternoon`, `flexible` |
 | `InterestStatus` | `pending`, `confirmed`, `rejected`, `withdrawn` |
 | `ActivityType` | `INTEREST_CONFIRMED`, `INTEREST_REJECTED`, `ASSIGNED`, `SHIFT_CANCELLED`, `PAID`, `INTEREST_RECEIVED`, `INTEREST_WITHDRAWN` |
+| `Attendance` | `attended`, `late`, `no_show` |
+| `QualityFlag` | `good`, `issues` |
 
 ---
 
@@ -257,7 +291,9 @@ model Activity {
 - **Status corrections**: "Unmark as logged" recalculates status from slot fill state (→ `filled` if full, → `open` if not). "Unmark paid" per assignment reverts `paymentStatus` to `unpaid`. Both are owner-only.
 - **Activity feed**: append-only `Activity` table, scoped by `recipientId` (userId). Written by API routes on key events. Nav badge shows unread count (server-rendered per request). Visiting the activity page marks all as read.
 - **Employee skills**: employees set their own skills from Settings; applied across all active business memberships. Owner can also edit skills from the roster profile.
-- **Nav**: "MyCrew" logo is the homepage link for both roles (owner → `/dashboard`, employee → `/home`). No separate Home/Dashboard nav item.
+- **Nav**: "MyCrew" logo is the homepage link for both roles (owner → `/dashboard`, employee → `/home`). No separate Home/Dashboard nav item. Owner Settings is a hover dropdown with Role types and Performance tags.
+- **Trust signals** (`lib/trust.ts`): `computeTrustSignals(records)` returns `{ reliability, quality, recordCount }`. Both scores use 180-day half-life exponential decay. Reliability counts all records; Quality counts only flagged ones. Returns `null` when no data exists for that signal.
+- **Performance records**: declines and withdrawals never create ObjectiveRecords — only actual shift attendance.
 - **Avatar**: employees pick an emoji (or use initials) + a pastel background colour. Fallback colour is deterministically hashed from the partTimer's `id`.
 
 ---
@@ -283,6 +319,9 @@ Employees see all open shifts and express interest (with optional comment). Owne
 - Employee self-service skills editor in Settings
 - Shift status corrections: unmark logged, unmark paid, date gate on Mark logged
 - Nav: MyCrew logo as homepage link, removed redundant Home/Dashboard items
+
+### Phase 3 — complete ✅
+ObjectiveRecord per shift per employee (attendance + quality flag + tags). PerformanceTag vocabulary scoped per business, managed in Settings. Trust signals (Reliability %, Quality %) computed with recency weighting, displayed on roster profile. Entry point is the completed shift detail page.
 
 ### Phase 3
 ObjectiveRecord, SubjectiveNote, TrustRating tables — scoped per business per part-timer. Trust Rating visible to owner only.
