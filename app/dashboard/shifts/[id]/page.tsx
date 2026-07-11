@@ -12,6 +12,7 @@ import { ShiftProgress } from "../ShiftProgress";
 import { Avatar } from "@/components/Avatar";
 import { InterestActions } from "./InterestActions";
 import { EmployeeProfileModal } from "./EmployeeProfileModal";
+import { ObjectiveRecordForm } from "./ObjectiveRecordForm";
 
 export default async function ShiftDetailPage({
   params,
@@ -53,11 +54,22 @@ export default async function ShiftDetailPage({
   });
   if (!shift) notFound();
 
-  const skills = await prisma.skill.findMany({
-    where: { archived: false },
-    orderBy: { label: "asc" },
-    select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
-  });
+  const [skills, performanceTags, objectiveRecords] = await Promise.all([
+    prisma.skill.findMany({
+      where: { archived: false },
+      orderBy: { label: "asc" },
+      select: { id: true, label: true, defaultPayType: true, defaultPayRate: true },
+    }),
+    prisma.performanceTag.findMany({
+      where: { businessId: business.id, archived: false },
+      orderBy: { label: "asc" },
+      select: { id: true, label: true },
+    }),
+    prisma.objectiveRecord.findMany({
+      where: { shiftId: id, businessId: business.id },
+      include: { tags: { select: { tagId: true } } },
+    }),
+  ]);
 
   const pendingInterests = await prisma.shiftInterest.findMany({
     where: { shiftId: id, status: "pending" },
@@ -85,6 +97,14 @@ export default async function ShiftDetailPage({
     },
     orderBy: { partTimer: { name: "asc" } },
   });
+
+  // ObjectiveRecord lookup by partTimerId
+  const recordByPartTimer = new Map(
+    objectiveRecords.map((r) => [
+      r.partTimerId,
+      { attendance: r.attendance as "attended" | "late" | "no_show", qualityFlag: r.qualityFlag as "good" | "issues" | null, tagIds: r.tags.map((t) => t.tagId) },
+    ])
+  );
 
   // Default hours from shift duration
   function parseTime(t: string) {
@@ -181,8 +201,9 @@ export default async function ShiftDetailPage({
                   {filled.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
+                      className="py-2 px-3 bg-gray-50 rounded-lg"
                     >
+                      <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar
                           name={a.partTimer.name}
@@ -228,6 +249,17 @@ export default async function ShiftDetailPage({
                         />
                         <UnassignButton assignmentId={a.id} />
                       </div>
+                      </div>
+                      {shift.status === "completed" && (
+                        <div className="mt-2 pl-1">
+                          <ObjectiveRecordForm
+                            shiftId={shift.id}
+                            partTimerId={a.partTimerId}
+                            availableTags={performanceTags}
+                            existing={recordByPartTimer.get(a.partTimerId) ?? null}
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SkillEditor } from "./SkillEditor";
 import { Avatar } from "@/components/Avatar";
+import { TrustSignalsDisplay } from "./TrustSignals";
+import { computeTrustSignals } from "@/lib/trust";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -39,7 +41,7 @@ export default async function PartTimerProfilePage({
   ]);
   if (!membership) notFound();
 
-  const [assignments, coworkerRows] = await Promise.all([
+  const [assignments, coworkerRows, objectiveRecords] = await Promise.all([
     prisma.shiftAssignment.findMany({
       where: { partTimerId: id, shift: { businessId: business.id }, status: { not: "cancelled" } },
       include: { shift: { include: { roles: { include: { skill: true } } } } },
@@ -59,6 +61,10 @@ export default async function PartTimerProfilePage({
         partTimer: { select: { id: true, name: true, avatarEmoji: true, avatarColor: true } },
       },
     }),
+    prisma.objectiveRecord.findMany({
+      where: { partTimerId: id, businessId: business.id },
+      select: { attendance: true, qualityFlag: true, createdAt: true },
+    }),
   ]);
 
   const { partTimer } = membership;
@@ -71,6 +77,14 @@ export default async function PartTimerProfilePage({
     else coworkerMap.set(row.partTimerId, { partTimer: row.partTimer, count: 1 });
   }
   const coworkers = [...coworkerMap.values()].sort((a, b) => b.count - a.count);
+
+  const trustSignals = computeTrustSignals(
+    objectiveRecords.map((r) => ({
+      attendance: r.attendance as "attended" | "late" | "no_show",
+      qualityFlag: r.qualityFlag as "good" | "issues" | null,
+      createdAt: r.createdAt,
+    }))
+  );
 
   const totalEarned = assignments.reduce(
     (sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0
@@ -115,6 +129,11 @@ export default async function PartTimerProfilePage({
         }`}>
           {membership.status}
         </span>
+      </div>
+
+      {/* Performance signals */}
+      <div className="mb-6">
+        <TrustSignalsDisplay signals={trustSignals} />
       </div>
 
       {/* Skills & Availability */}

@@ -36,9 +36,21 @@ export default async function DashboardLayout({
               </span>
             )}
           </Link>
-          <Link href="/dashboard/settings/roles" className="text-sm text-gray-600 hover:text-gray-900">
-            Settings
-          </Link>
+          <div className="group relative">
+            <span className="text-sm text-gray-600 hover:text-gray-900 cursor-default select-none">
+              Settings
+            </span>
+            <div className="absolute left-0 top-full pt-2 hidden group-hover:block z-20">
+              <div className="bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-44">
+                <Link href="/dashboard/settings/roles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  Role types
+                </Link>
+                <Link href="/dashboard/settings/performance-tags" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  Performance tags
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
         <form
           action={async () => {
