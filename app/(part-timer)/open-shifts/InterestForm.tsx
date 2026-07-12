@@ -46,7 +46,7 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
           Confirmed ✓
         </span>
         {currentComment && (
-          <p className="text-xs text-sun-mute italic">"{currentComment}"</p>
+          <p className="text-xs text-sun-mute italic">&ldquo;{currentComment}&rdquo;</p>
         )}
       </div>
     );
@@ -54,19 +54,17 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
 
   if (currentStatus === "pending") {
     return (
-      <div className="flex items-center justify-between gap-3 pt-3 border-t border-sun-border">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-medium px-2 py-1 bg-pending-bg text-pending-text rounded-full shrink-0">
-            Interested
-          </span>
+      <div className="bg-pending-bg rounded-[12px] px-3 py-2.5 flex items-center justify-between">
+        <div>
+          <p className="text-xs text-pending-text">You raised your hand · waiting for the boss</p>
           {currentComment && (
-            <p className="text-xs text-sun-mute italic truncate">"{currentComment}"</p>
+            <p className="text-[10px] text-pending-mute mt-0.5">&ldquo;{currentComment}&rdquo;</p>
           )}
         </div>
         <button
           onClick={withdraw}
           disabled={loading}
-          className="text-xs text-sun-mute hover:text-sun-body disabled:opacity-50 shrink-0"
+          className="border border-pending-border text-pending-mute text-[11px] px-2.5 py-1 rounded-full disabled:opacity-50"
         >
           {loading ? "..." : "Withdraw"}
         </button>
@@ -85,7 +83,7 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
   return (
     <div className="pt-3 border-t border-sun-border">
       {open ? (
-        <div className="space-y-2">
+        <div className="bg-sun-inset rounded-[12px] p-3 mt-3 space-y-2">
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
@@ -115,7 +113,7 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
           onClick={() => setOpen(true)}
           className="text-sm text-sun-accent-link hover:opacity-80 font-medium"
         >
-          I'm interested →
+          I&apos;m interested →
         </button>
       )}
     </div>

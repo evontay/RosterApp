@@ -7,6 +7,18 @@ import { ArchivedSection } from "./ArchivedSection";
 
 import { YearCalendar } from "../calendar/YearCalendar";
 
+const SHIFT_EMOJIS = ["🎨", "🏺", "📦", "✂️", "🕯️", "🧶", "🌿", "🎸", "🌸", "🧑‍🎨"];
+const SHIFT_BGS = ["#FDE68A", "#DBEAFE", "#D1FAE5", "#E9D5FF", "#FCE7F3"];
+
+function getShiftIcon(title: string, id: string): { emoji: string; bg: string } {
+  const code0 = id.charCodeAt(0) || 0;
+  const code1 = id.charCodeAt(1) || 0;
+  return {
+    emoji: SHIFT_EMOJIS[code0 % SHIFT_EMOJIS.length],
+    bg: SHIFT_BGS[code1 % SHIFT_BGS.length],
+  };
+}
+
 export default async function ShiftsPage({
   searchParams,
 }: {
@@ -88,24 +100,30 @@ export default async function ShiftsPage({
             const allPaid =
               shift.assignments.length > 0 &&
               shift.assignments.every((a) => a.paymentStatus === "paid");
+            const { emoji, bg } = getShiftIcon(shift.title, shift.id);
 
             return (
               <div key={shift.id} className="relative bg-sun-card rounded-[16px] border border-sun-border p-4 hover:border-sun-accent transition-colors">
                 <Link href={`/dashboard/shifts/${shift.id}`} className="absolute inset-0 rounded-[16px]" />
                 <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="font-bold text-sun-ink">{shift.title}</p>
-                    <p className="text-sm text-sun-mute mt-0.5">
-                      {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                      })}{" "}
-                      · {shift.startTime}–{shift.endTime}
-                    </p>
-                    <p className="text-sm text-sun-mute">
-                      {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
-                    </p>
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
+                      {emoji}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sun-ink">{shift.title}</p>
+                      <p className="text-sm text-sun-mute mt-0.5">
+                        {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                        })}{" "}
+                        · {shift.startTime}–{shift.endTime}
+                      </p>
+                      <p className="text-sm text-sun-mute">
+                        {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
+                      </p>
+                    </div>
                   </div>
                   <div className="relative z-10 flex items-center gap-2 shrink-0">
                     <ShiftStepBadge status={shift.status} allPaid={allPaid} />

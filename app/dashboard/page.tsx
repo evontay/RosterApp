@@ -129,7 +129,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-sun-ink">{business.name}</h1>
+      <div className="mb-4">
+        <h1 className="text-lg font-medium text-sun-ink">Good morning</h1>
+        <p className="text-xs text-sun-mute">{new Date().toLocaleDateString("en-SG", { weekday: "long", day: "numeric", month: "long" })}</p>
+      </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -163,7 +166,7 @@ export default async function DashboardPage() {
           className="flex items-center justify-between bg-sun-accent-soft border border-sun-border rounded-[16px] px-4 py-3 hover:border-sun-accent transition-colors"
         >
           <p className="text-sm font-medium text-sun-accent-text">
-            {unreadActivityCount} new notification{unreadActivityCount !== 1 ? "s" : ""}
+            🔔 {unreadActivityCount} new notification{unreadActivityCount !== 1 ? "s" : ""}
           </p>
           <span className="text-xs text-sun-accent-link">View activity →</span>
         </Link>
@@ -294,10 +297,10 @@ function StatCard({ label, value, href }: { label: string; value: number; href?:
   );
   if (href) {
     return (
-      <Link href={href} className="block bg-sun-card rounded-[16px] border border-sun-border p-5 hover:border-sun-accent transition-colors">
+      <Link href={href} className="block bg-sun-card rounded-[12px] border border-sun-border p-5 hover:border-sun-accent transition-colors">
         {content}
       </Link>
     );
   }
-  return <div className="bg-sun-card rounded-[16px] border border-sun-border p-5">{content}</div>;
+  return <div className="bg-sun-card rounded-[12px] border border-sun-border p-5">{content}</div>;
 }

@@ -15,6 +15,18 @@ import { EmployeeProfileModal } from "./EmployeeProfileModal";
 import { ObjectiveRecordForm } from "./ObjectiveRecordForm";
 import { KudosButton } from "./KudosButton";
 
+const SHIFT_EMOJIS = ["🎨", "🏺", "📦", "✂️", "🕯️", "🧶", "🌿", "🎸", "🌸", "🧑‍🎨"];
+const SHIFT_BGS = ["#FDE68A", "#DBEAFE", "#D1FAE5", "#E9D5FF", "#FCE7F3"];
+
+function getShiftIcon(title: string, id: string): { emoji: string; bg: string } {
+  const code0 = id.charCodeAt(0) || 0;
+  const code1 = id.charCodeAt(1) || 0;
+  return {
+    emoji: SHIFT_EMOJIS[code0 % SHIFT_EMOJIS.length],
+    bg: SHIFT_BGS[code1 % SHIFT_BGS.length],
+  };
+}
+
 export default async function ShiftDetailPage({
   params,
 }: {
@@ -138,44 +150,56 @@ export default async function ShiftDetailPage({
     allActiveAssignments.every((a) => a.paymentStatus === "paid");
   const hasUnpaid = allActiveAssignments.some((a) => a.paymentStatus === "unpaid");
 
+  const { emoji: iconEmoji, bg: iconBg } = getShiftIcon(shift.title, shift.id);
+  const totalSlots = shift.roles.reduce((sum, r) => sum + r.count, 0);
+  const filledCount = shift.roles.reduce((sum, r) => sum + r.assignments.length, 0);
+  const shiftDateStr = new Date(shift.shiftDate).toLocaleDateString("en-SG", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+
   return (
     <div className="max-w-2xl">
       <BackLink />
-      <div className="flex items-start justify-between mb-1">
-        <h1 className="text-2xl font-bold text-sun-ink">{shift.title}</h1>
-        <ShiftActionsMenu
-          shiftId={shift.id}
-          currentStatus={shift.status as "open" | "filled" | "completed" | "cancelled"}
-          shiftDate={shift.shiftDate.toISOString()}
-          shift={{
-            id: shift.id,
-            title: shift.title,
-            shiftDate: shift.shiftDate.toISOString(),
-            startTime: shift.startTime,
-            endTime: shift.endTime,
-            roles: shift.roles.map((r) => ({
-              skillId: r.skillId,
-              count: r.count,
-              payType: r.payType,
-              payRate: Number(r.payRate),
-            })),
-          }}
-          skills={skills.map((s) => ({
-            id: s.id,
-            label: s.label,
-            defaultPayType: s.defaultPayType,
-            defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
-          }))}
-        />
-      </div>
-      <p className="text-sm text-sun-mute mb-4">
-        {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
-          weekday: "long", day: "numeric", month: "long", year: "numeric",
-        })}{" "}
-        · {shift.startTime}–{shift.endTime}
-      </p>
 
-      <div className="mb-6">
+      {/* Shift header card */}
+      <div className="bg-sun-card border border-sun-border rounded-[16px] p-4 mb-4">
+        <div className="flex items-start gap-3 mb-4">
+          <div style={{ background: iconBg, width: 44, height: 44, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
+            {iconEmoji}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between">
+              <h1 className="text-base font-medium text-sun-ink">{shift.title}</h1>
+              <ShiftActionsMenu
+                shiftId={shift.id}
+                currentStatus={shift.status as "open" | "filled" | "completed" | "cancelled"}
+                shiftDate={shift.shiftDate.toISOString()}
+                shift={{
+                  id: shift.id,
+                  title: shift.title,
+                  shiftDate: shift.shiftDate.toISOString(),
+                  startTime: shift.startTime,
+                  endTime: shift.endTime,
+                  roles: shift.roles.map((r) => ({
+                    skillId: r.skillId,
+                    count: r.count,
+                    payType: r.payType,
+                    payRate: Number(r.payRate),
+                  })),
+                }}
+                skills={skills.map((s) => ({
+                  id: s.id,
+                  label: s.label,
+                  defaultPayType: s.defaultPayType,
+                  defaultPayRate: s.defaultPayRate ? Number(s.defaultPayRate) : null,
+                }))}
+              />
+            </div>
+            <p className="text-xs text-sun-mute mt-0.5">
+              {shiftDateStr} · {shift.startTime}–{shift.endTime} · {filledCount} of {totalSlots} slots filled
+            </p>
+          </div>
+        </div>
         <ShiftProgress status={shift.status} allPaid={allPaid} />
       </div>
 
