@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* ─── Sunny Crew design tokens ─────────────────────────────────────────────
+   Defined in both @theme (for Tailwind resolution) and @layer utilities
+   (explicit fallback for Turbopack, which doesn't always process @theme).
+   ──────────────────────────────────────────────────────────────────────── */
+
 @theme {
   /* Canvas + surfaces */
   --color-sun-page: #FFFBF2;
@@ -68,6 +73,60 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* Explicit utility classes — guaranteed output even when @theme is skipped
+   by Turbopack's CSS pipeline.                                             */
+@layer utilities {
+  /* Backgrounds */
+  .bg-sun-page         { background-color: #FFFBF2; }
+  .bg-sun-card         { background-color: #FFFFFF; }
+  .bg-sun-inset        { background-color: #FFFBF2; }
+  .bg-sun-accent       { background-color: #F59E0B; }
+  .bg-sun-accent-soft  { background-color: #FEF3C7; }
+  .bg-status-open-bg       { background-color: #FEE2E2; }
+  .bg-status-confirmed-bg  { background-color: #D1FAE5; }
+  .bg-status-logged-bg     { background-color: #DBEAFE; }
+  .bg-status-paid-bg       { background-color: #FEF3C7; }
+  .bg-pending-bg       { background-color: #FEF9C3; }
+  .bg-role-purple-bg   { background-color: #F3E8FF; }
+  .bg-role-blue-bg     { background-color: #DBEAFE; }
+  .bg-role-pink-bg     { background-color: #FCE7F3; }
+  .bg-role-green-bg    { background-color: #D1FAE5; }
+  .bg-alert            { background-color: #F87171; }
+
+  /* Text */
+  .text-sun-ink         { color: #1F2937; }
+  .text-sun-body        { color: #4B5563; }
+  .text-sun-mute        { color: #9CA3AF; }
+  .text-sun-faint       { color: #D1D5DB; }
+  .text-sun-accent      { color: #F59E0B; }
+  .text-sun-accent-text { color: #92400E; }
+  .text-sun-accent-link { color: #B45309; }
+  .text-status-open-text       { color: #B91C1C; }
+  .text-status-confirmed-text  { color: #065F46; }
+  .text-status-logged-text     { color: #1D4ED8; }
+  .text-status-paid-text       { color: #92400E; }
+  .text-pending-text   { color: #713F12; }
+  .text-pending-mute   { color: #A16207; }
+  .text-role-purple-text { color: #7C3AED; }
+  .text-role-blue-text   { color: #1D4ED8; }
+  .text-role-pink-text   { color: #BE185D; }
+  .text-role-green-text  { color: #065F46; }
+
+  /* Borders */
+  .border-sun-border   { border-color: #FDE8C8; }
+  .border-sun-accent   { border-color: #F59E0B; }
+  .border-pending-border { border-color: #FDE047; }
+  .border-sun-faint    { border-color: #D1D5DB; }
+
+  /* Hover */
+  .hover\:border-sun-accent:hover  { border-color: #F59E0B; }
+  .hover\:text-sun-ink:hover       { color: #1F2937; }
+  .hover\:bg-sun-inset:hover       { background-color: #FFFBF2; }
+
+  /* Focus */
+  .focus\:border-sun-accent:focus  { border-color: #F59E0B; }
 }
 
 body {
