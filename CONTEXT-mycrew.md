@@ -55,8 +55,9 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Activity feed** (`/dashboard/activity`): append-only event log grouped by date; badge count in nav; marks all read on visit
 - **Settings → Role types**: create, rename, archive/restore; default pay type and rate per role
 - **Settings → Performance tags**: create, rename, archive/restore owner-defined job-performance tags scoped per business
-- **Performance records**: on completed shift detail, each assignment row shows Add/Edit record — attendance (attended/late/no-show), optional quality flag (good/issues), optional tags. Retroactively editable.
+- **Performance records**: on completed shift detail, each assignment row shows Add/Edit record — attendance (attended/late/no-show), optional quality flag (good/issues), optional tags, optional private notes. Retroactively editable.
 - **Trust signals on roster profile**: Performance section shows Reliability % and Quality %, both computed with 180-day exponential decay (recent shifts weighted more). Raw record count shown as context. Color-coded green ≥80 / yellow 60–79 / red <60. Quality shows "—" until at least one quality flag is set.
+- **Performance log on roster profile**: below the score bars, a chronological log (newest first) of every ObjectiveRecord — shift name, date, attendance/quality badges, tags, and private notes if written. Visible to owner only, never to employee.
 
 ### Employee-side features
 - Auth (email + password)
@@ -215,6 +216,7 @@ model ObjectiveRecord {
   businessId  String
   attendance  Attendance           -- attended | late | no_show
   qualityFlag QualityFlag?         -- good | issues | null (unflagged)
+  comment     String?              -- private owner notes, never shown to employee
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   tags        ObjectiveRecordTag[]
