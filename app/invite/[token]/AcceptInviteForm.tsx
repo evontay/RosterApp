@@ -48,49 +48,49 @@ export function AcceptInviteForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <label className="block text-sm font-medium text-sun-body mb-1">Name</label>
         <input
           type="text"
           value={name}
           disabled
-          className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-gray-50 text-gray-500"
+          className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm bg-sun-inset text-sun-mute"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <label className="block text-sm font-medium text-sun-body mb-1">Email</label>
         <input
           type="email"
           value={email}
           disabled
-          className="w-full border border-gray-200 rounded px-3 py-2 text-sm bg-gray-50 text-gray-500"
+          className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm bg-sun-inset text-sun-mute"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Set password</label>
+        <label className="block text-sm font-medium text-sun-body mb-1">Set password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+          className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card"
           minLength={8}
           required
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+        <label className="block text-sm font-medium text-sun-body mb-1">Confirm password</label>
         <input
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+          className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card"
           required
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-status-open-text text-sm">{error}</p>}
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+        className="w-full bg-sun-accent text-white py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50"
       >
         {loading ? "Activating..." : "Activate account"}
       </button>

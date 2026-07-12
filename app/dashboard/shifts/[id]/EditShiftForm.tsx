@@ -76,45 +76,45 @@ export function EditShiftForm({ open, onClose, shift, skills }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-sun-card rounded-[16px] w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <h2 className="font-semibold text-gray-800 text-lg">Edit shift</h2>
+          <h2 className="font-semibold text-sun-ink text-lg">Edit shift</h2>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+            <label className="block text-xs font-medium text-sun-body mb-1">Title</label>
             <input type="text" value={form.title} onChange={(e) => setField("title", e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
+              className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent" required />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+            <label className="block text-xs font-medium text-sun-body mb-1">Date</label>
             <input type="date" value={form.shiftDate} onChange={(e) => setField("shiftDate", e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
+              className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Start time</label>
+              <label className="block text-xs font-medium text-sun-body mb-1">Start time</label>
               <input type="time" value={form.startTime} onChange={(e) => setField("startTime", e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
+                className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent" required />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">End time</label>
+              <label className="block text-xs font-medium text-sun-body mb-1">End time</label>
               <input type="time" value={form.endTime} onChange={(e) => setField("endTime", e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm" required />
+                className="w-full border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent" required />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Roles & pay</label>
+            <label className="block text-xs font-medium text-sun-body mb-1">Roles & pay</label>
             <RolesEditor
               skills={currentSkills}
               roles={roles}
               onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }}
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-status-open-text text-sm">{error}</p>}
           <div className="flex gap-2 pt-1">
             <button type="button" onClick={onClose}
-              className="flex-1 border border-gray-300 text-gray-600 py-2 rounded text-sm">Cancel</button>
+              className="flex-1 border border-sun-border text-sun-body py-2 rounded-full text-sm">Cancel</button>
             <button type="submit" disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+              className="flex-1 bg-sun-accent text-white py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50">
               {loading ? "Saving..." : "Save changes"}
             </button>
           </div>

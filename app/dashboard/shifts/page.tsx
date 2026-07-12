@@ -25,7 +25,7 @@ export default async function ShiftsPage({
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
   });
-  if (!business) return <p className="text-gray-500">No business found.</p>;
+  if (!business) return <p className="text-sun-mute">No business found.</p>;
 
   const [shifts, calendarShifts, skills] = await Promise.all([
     prisma.shift.findMany({
@@ -72,10 +72,10 @@ export default async function ShiftsPage({
       {/* Left: Shifts list */}
       <div className="w-96 shrink-0">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Shifts</h1>
+          <h1 className="text-2xl font-bold text-sun-ink">Shifts</h1>
           <Link
             href={`/dashboard/shifts?${sortParams}`}
-            className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-500 hover:border-gray-400 hover:text-gray-700"
+            className="text-xs border border-sun-border rounded-full px-3 py-1.5 text-sun-mute hover:border-sun-accent hover:text-sun-body"
           >
             {asc ? "Oldest first ↑" : "Newest first ↓"}
           </Link>
@@ -90,12 +90,12 @@ export default async function ShiftsPage({
               shift.assignments.every((a) => a.paymentStatus === "paid");
 
             return (
-              <div key={shift.id} className="relative bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors">
-                <Link href={`/dashboard/shifts/${shift.id}`} className="absolute inset-0 rounded-lg" />
+              <div key={shift.id} className="relative bg-sun-card rounded-[16px] border border-sun-border p-4 hover:border-sun-accent transition-colors">
+                <Link href={`/dashboard/shifts/${shift.id}`} className="absolute inset-0 rounded-[16px]" />
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="font-bold text-gray-800">{shift.title}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <p className="font-bold text-sun-ink">{shift.title}</p>
+                    <p className="text-sm text-sun-mute mt-0.5">
                       {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
                         weekday: "short",
                         day: "numeric",
@@ -103,7 +103,7 @@ export default async function ShiftsPage({
                       })}{" "}
                       · {shift.startTime}–{shift.endTime}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-sun-mute">
                       {shift.roles.map((r) => `${r.skill.label} ×${r.count}`).join(", ")}
                     </p>
                   </div>
@@ -113,10 +113,10 @@ export default async function ShiftsPage({
                   </div>
                 </div>
                 {shift.assignments.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="mt-3 pt-3 border-t border-sun-border">
                     <div className="flex gap-2 flex-wrap">
                       {shift.assignments.map((a) => (
-                        <span key={a.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                        <span key={a.id} className="text-xs bg-sun-inset text-sun-body px-2 py-0.5 rounded-full">
                           {a.partTimer.name}
                         </span>
                       ))}
@@ -127,8 +127,8 @@ export default async function ShiftsPage({
             );
           })}
           {active.length === 0 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">
-              No active shifts.
+            <div className="bg-sun-card rounded-[16px] border border-sun-border p-8 text-center text-sun-mute">
+              🌱 No active shifts.
             </div>
           )}
         </div>
@@ -151,7 +151,7 @@ export default async function ShiftsPage({
         <div className="flex justify-end mb-0">
           <Link
             href="/dashboard/shifts/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700"
+            className="bg-sun-accent text-white px-4 py-2 rounded-full text-sm font-medium hover:opacity-90"
           >
             + New shift
           </Link>

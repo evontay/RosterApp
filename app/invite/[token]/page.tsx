@@ -17,10 +17,10 @@ export default async function InvitePage({
   if (!membership || membership.status === "removed") notFound();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-lg shadow w-full max-w-sm">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">You're invited!</h1>
-        <p className="text-sm text-gray-500 mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-sun-page">
+      <div className="bg-sun-card p-8 rounded-[16px] border border-sun-border shadow-sm w-full max-w-sm">
+        <h1 className="text-xl font-bold text-sun-ink mb-1">You're invited!</h1>
+        <p className="text-sm text-sun-mute mb-6">
           <strong>{membership.business.name}</strong> has added you to their roster.
           Set a password to activate your account.
         </p>

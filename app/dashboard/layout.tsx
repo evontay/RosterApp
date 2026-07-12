@@ -18,34 +18,36 @@ export default async function DashboardLayout({
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-sun-page">
+      <nav className="bg-sun-card border-b border-sun-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="font-bold text-gray-800 hover:text-gray-600">MyCrew</Link>
-          <Link href="/dashboard/roster" className="text-sm text-gray-600 hover:text-gray-900">
+          <Link href="/dashboard" className="font-bold text-sun-ink hover:text-sun-body">
+            MyCrew <span className="text-sun-accent">☀</span>
+          </Link>
+          <Link href="/dashboard/roster" className="text-sm text-sun-mute hover:text-sun-ink">
             Roster
           </Link>
-          <Link href="/dashboard/shifts" className="text-sm text-gray-600 hover:text-gray-900">
+          <Link href="/dashboard/shifts" className="text-sm text-sun-mute hover:text-sun-ink">
             Shifts
           </Link>
-          <Link href="/dashboard/activity" className="relative text-sm text-gray-600 hover:text-gray-900">
+          <Link href="/dashboard/activity" className="relative text-sm text-sun-mute hover:text-sun-ink">
             Activity
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-3 min-w-[16px] h-4 px-1 bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+              <span className="absolute -top-1.5 -right-3 min-w-[16px] h-4 px-1 bg-alert text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </Link>
           <div className="group relative">
-            <span className="text-sm text-gray-600 hover:text-gray-900 cursor-default select-none">
+            <span className="text-sm text-sun-mute hover:text-sun-ink cursor-default select-none">
               Settings
             </span>
             <div className="absolute left-0 top-full pt-2 hidden group-hover:block z-20">
-              <div className="bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-44">
-                <Link href="/dashboard/settings/roles" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <div className="bg-sun-card border border-sun-border rounded-[16px] shadow-lg py-1 w-44">
+                <Link href="/dashboard/settings/roles" className="block px-4 py-2 text-sm text-sun-body hover:bg-sun-inset">
                   Role types
                 </Link>
-                <Link href="/dashboard/settings/performance-tags" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                <Link href="/dashboard/settings/performance-tags" className="block px-4 py-2 text-sm text-sun-body hover:bg-sun-inset">
                   Performance tags
                 </Link>
               </div>
@@ -58,7 +60,7 @@ export default async function DashboardLayout({
             await signOut({ redirectTo: "/login" });
           }}
         >
-          <button type="submit" className="text-sm text-gray-500 hover:text-gray-800">
+          <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
             Sign out
           </button>
         </form>

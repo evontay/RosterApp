@@ -40,7 +40,7 @@ export function HoursForm({
       <button
         onClick={handleSave}
         disabled={loading}
-        className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+        className="text-xs border border-sun-accent text-sun-accent-link px-3 py-1 rounded-full hover:bg-sun-accent-soft disabled:opacity-50"
       >
         {loading ? "..." : "Confirm"}
       </button>
@@ -49,7 +49,7 @@ export function HoursForm({
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-xs text-blue-600 hover:underline">
+      <button onClick={() => setOpen(true)} className="text-xs border border-sun-accent text-sun-accent-link px-3 py-1 rounded-full hover:bg-sun-accent-soft">
         {currentHours != null ? "Edit hours" : "Log hours"}
       </button>
     );
@@ -63,17 +63,17 @@ export function HoursForm({
         step="0.5"
         value={hours}
         onChange={(e) => setHours(e.target.value)}
-        className="border border-gray-300 rounded px-2 py-1 text-xs w-20"
+        className="border border-sun-border rounded-full px-2 py-1 text-xs w-20 focus:outline-none focus:border-sun-accent"
         placeholder="hrs"
       />
       <button
         onClick={handleSave}
         disabled={loading || !hours}
-        className="text-xs bg-blue-600 text-white px-2 py-1 rounded disabled:opacity-50"
+        className="text-xs bg-sun-accent text-white px-2 py-1 rounded-full hover:opacity-90 disabled:opacity-50"
       >
         {loading ? "..." : "Save"}
       </button>
-      <button onClick={() => setOpen(false)} className="text-xs text-gray-400">✕</button>
+      <button onClick={() => setOpen(false)} className="text-xs text-sun-mute">✕</button>
     </div>
   );
 }

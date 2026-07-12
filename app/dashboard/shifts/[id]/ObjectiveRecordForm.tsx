@@ -60,31 +60,31 @@ export function ObjectiveRecordForm({
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-xs text-blue-600 hover:underline">
+      <button onClick={() => setOpen(true)} className="text-xs border border-sun-accent text-sun-accent-link px-3 py-1 rounded-full hover:bg-sun-accent-soft">
         {existing ? "Edit record" : "Add record"}
       </button>
     );
   }
 
   return (
-    <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-3 w-full">
+    <div className="mt-2 p-3 bg-sun-card border border-sun-border rounded-[12px] space-y-3 w-full">
       {/* Attendance */}
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-1.5">Attendance</p>
+        <p className="text-xs font-medium text-sun-mute mb-1.5">Attendance</p>
         <div className="flex gap-1">
           {ATTENDANCE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setAttendance(opt.value)}
-              className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                 attendance === opt.value
                   ? opt.value === "attended"
-                    ? "bg-green-600 text-white border-green-600"
+                    ? "bg-status-confirmed-dot text-white border-status-confirmed-dot"
                     : opt.value === "late"
-                    ? "bg-yellow-500 text-white border-yellow-500"
-                    : "bg-red-500 text-white border-red-500"
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                    ? "bg-sun-accent text-white border-sun-accent"
+                    : "bg-status-open-dot text-white border-status-open-dot"
+                  : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent"
               }`}
             >
               {opt.label}
@@ -95,19 +95,19 @@ export function ObjectiveRecordForm({
 
       {/* Quality */}
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-1.5">Quality <span className="font-normal text-gray-400">(optional)</span></p>
+        <p className="text-xs font-medium text-sun-mute mb-1.5">Quality <span className="font-normal text-sun-faint">(optional)</span></p>
         <div className="flex gap-1">
           {(["good", "issues"] as const).map((flag) => (
             <button
               key={flag}
               type="button"
               onClick={() => setQualityFlag((prev) => (prev === flag ? null : flag))}
-              className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
                 qualityFlag === flag
                   ? flag === "good"
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-orange-500 text-white border-orange-500"
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
+                    ? "bg-status-logged-dot text-white border-status-logged-dot"
+                    : "bg-sun-accent text-white border-sun-accent"
+                  : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent"
               }`}
             >
               {flag === "good" ? "Good" : "Issues"}
@@ -119,17 +119,17 @@ export function ObjectiveRecordForm({
       {/* Tags */}
       {availableTags.length > 0 && (
         <div>
-          <p className="text-xs font-medium text-gray-500 mb-1.5">Tags <span className="font-normal text-gray-400">(optional)</span></p>
+          <p className="text-xs font-medium text-sun-mute mb-1.5">Tags <span className="font-normal text-sun-faint">(optional)</span></p>
           <div className="flex flex-wrap gap-1">
             {availableTags.map((tag) => (
               <button
                 key={tag.id}
                 type="button"
                 onClick={() => toggleTag(tag.id)}
-                className={`px-2 py-0.5 rounded text-xs border transition-colors ${
+                className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${
                   selectedTagIds.includes(tag.id)
-                    ? "bg-gray-700 text-white border-gray-700"
-                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                    ? "bg-sun-ink text-white border-sun-ink"
+                    : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent"
                 }`}
               >
                 {tag.label}
@@ -141,13 +141,13 @@ export function ObjectiveRecordForm({
 
       {/* Comment */}
       <div>
-        <p className="text-xs font-medium text-gray-500 mb-1.5">Notes <span className="font-normal text-gray-400">(optional)</span></p>
+        <p className="text-xs font-medium text-sun-mute mb-1.5">Notes <span className="font-normal text-sun-faint">(optional)</span></p>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Private notes about this shift…"
           rows={2}
-          className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
+          className="w-full border border-sun-border rounded-[10px] px-2.5 py-1.5 text-xs text-sun-ink placeholder-sun-mute focus:outline-none focus:border-sun-accent bg-sun-inset resize-none"
         />
       </div>
 
@@ -156,11 +156,11 @@ export function ObjectiveRecordForm({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}
         </button>
-        <button onClick={() => setOpen(false)} className="text-xs text-gray-400 hover:text-gray-600">
+        <button onClick={() => setOpen(false)} className="text-xs text-sun-mute hover:text-sun-body">
           Cancel
         </button>
       </div>

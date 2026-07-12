@@ -22,7 +22,7 @@ export function ArchiveButton({ shiftId, archived }: { shiftId: string; archived
     <button
       onClick={handle}
       disabled={loading}
-      className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
+      className="text-xs text-sun-mute hover:text-sun-body disabled:opacity-50"
     >
       {loading ? "..." : archived ? "Unarchive" : "Archive"}
     </button>

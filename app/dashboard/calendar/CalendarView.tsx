@@ -26,11 +26,11 @@ interface Shift {
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-100 border-gray-300 text-gray-600",
-  open: "bg-blue-50 border-blue-300 text-blue-800",
-  filled: "bg-purple-50 border-purple-300 text-purple-800",
-  completed: "bg-green-50 border-green-300 text-green-800",
-  cancelled: "bg-red-50 border-red-200 text-red-500 line-through opacity-60",
+  draft: "bg-sun-inset border-sun-border text-sun-mute",
+  open: "bg-status-open-bg border-status-open-dot text-status-open-text",
+  filled: "bg-status-confirmed-bg border-status-confirmed-dot text-status-confirmed-text",
+  completed: "bg-status-logged-bg border-status-logged-dot text-status-logged-text",
+  cancelled: "bg-sun-inset border-sun-border text-sun-mute line-through opacity-60",
 };
 
 export function CalendarView({
@@ -77,11 +77,11 @@ export function CalendarView({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-bold text-gray-800">{monthLabel}</h1>
+        <h1 className="text-2xl font-bold text-sun-ink">{monthLabel}</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-1)}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-mute"
           >
             ← Prev
           </button>
@@ -91,19 +91,19 @@ export function CalendarView({
                 `/dashboard/calendar?week=${new Date().toISOString().split("T")[0]}`
               )
             }
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-mute"
           >
             Today
           </button>
           <button
             onClick={() => navigate(1)}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-mute"
           >
             Next →
           </button>
           <Link
             href="/dashboard/shifts/new"
-            className="ml-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="ml-2 px-3 py-1.5 text-sm bg-sun-accent text-white rounded-full hover:opacity-90"
           >
             + New shift
           </Link>
@@ -117,12 +117,12 @@ export function CalendarView({
           const isToday = day.getTime() === today.getTime();
           return (
             <div key={i} className="text-center pb-2">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+              <p className="text-xs font-medium text-sun-mute uppercase tracking-wide">
                 {DAY_LABELS[i]}
               </p>
               <p
                 className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
-                  isToday ? "bg-blue-600 text-white" : "text-gray-700"
+                  isToday ? "bg-sun-accent text-white" : "text-sun-body"
                 }`}
               >
                 {day.getDate()}
@@ -143,9 +143,9 @@ export function CalendarView({
 
         {/* Divider label */}
         <div className="col-span-7 flex items-center gap-2 my-1">
-          <div className="flex-1 border-t border-dashed border-gray-200" />
-          <span className="text-xs text-gray-400 font-medium">Afternoon</span>
-          <div className="flex-1 border-t border-dashed border-gray-200" />
+          <div className="flex-1 border-t border-dashed border-sun-border" />
+          <span className="text-xs text-sun-mute font-medium">Afternoon</span>
+          <div className="flex-1 border-t border-dashed border-sun-border" />
         </div>
 
         {/* Afternoon row */}
@@ -160,13 +160,13 @@ export function CalendarView({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-100">
+      <div className="flex items-center gap-4 mt-6 pt-4 border-t border-sun-border">
         {Object.entries(STATUS_COLORS)
           .filter(([s]) => s !== "cancelled")
           .map(([status, cls]) => (
             <div key={status} className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded border ${cls}`} />
-              <span className="text-xs text-gray-500 capitalize">{status}</span>
+              <span className="text-xs text-sun-mute capitalize">{status}</span>
             </div>
           ))}
       </div>
@@ -176,10 +176,10 @@ export function CalendarView({
 
 function DaySlot({ label, shifts }: { label: string; shifts: Shift[] }) {
   return (
-    <div className="min-h-[100px] bg-white rounded-lg border border-gray-100 p-1.5 space-y-1">
+    <div className="min-h-[100px] bg-sun-card rounded-[12px] border border-sun-border p-1.5 space-y-1">
       {shifts.length === 0 ? (
         <div className="h-full flex items-center justify-center">
-          <span className="text-xs text-gray-200">{label}</span>
+          <span className="text-xs text-sun-faint">{label}</span>
         </div>
       ) : (
         shifts.map((s) => <ShiftCard key={s.id} shift={s} />)
@@ -189,7 +189,7 @@ function DaySlot({ label, shifts }: { label: string; shifts: Shift[] }) {
 }
 
 function ShiftCard({ shift }: { shift: Shift }) {
-  const colorClass = STATUS_COLORS[shift.status] ?? "bg-gray-50 border-gray-200 text-gray-700";
+  const colorClass = STATUS_COLORS[shift.status] ?? "bg-sun-inset border-sun-border text-sun-body";
 
   return (
     <Link href={`/dashboard/shifts/${shift.id}`}>

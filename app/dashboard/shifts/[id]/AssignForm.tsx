@@ -53,7 +53,7 @@ export function AssignForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-blue-600 hover:underline"
+        className="text-xs border border-sun-accent text-sun-accent-link px-3 py-1 rounded-full hover:bg-sun-accent-soft"
       >
         + Fill slot
       </button>
@@ -65,7 +65,7 @@ export function AssignForm({
       <select
         value={partTimerId}
         onChange={(e) => setPartTimerId(e.target.value)}
-        className="border border-gray-300 rounded px-2 py-1 text-xs"
+        className="border border-sun-border rounded-full px-2 py-1 text-xs"
       >
         <option value="">Select employee...</option>
         {members.map((m) => (
@@ -77,17 +77,17 @@ export function AssignForm({
       <button
         onClick={handleAssign}
         disabled={loading || !partTimerId}
-        className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+        className="text-xs bg-[#059669] text-white px-3 py-1 rounded-full hover:opacity-90 disabled:opacity-50"
       >
         {loading ? "..." : "Confirm"}
       </button>
       <button
         onClick={() => { setOpen(false); setPartTimerId(""); setError(""); }}
-        className="text-xs text-gray-400 hover:text-gray-600"
+        className="text-xs text-sun-mute hover:text-sun-body"
       >
         Cancel
       </button>
-      {error && <span className="text-xs text-red-500">{error}</span>}
+      {error && <span className="text-xs text-status-open-text">{error}</span>}
     </div>
   );
 }

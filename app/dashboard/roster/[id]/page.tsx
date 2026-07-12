@@ -116,7 +116,7 @@ export default async function PartTimerProfilePage({
   return (
     <div className="max-w-2xl">
       <div className="flex items-center gap-2 mb-6">
-        <Link href="/dashboard/roster" className="text-sm text-gray-400 hover:text-gray-600">
+        <Link href="/dashboard/roster" className="text-sm text-sun-mute hover:text-sun-body">
           ← Roster
         </Link>
       </div>
@@ -132,19 +132,19 @@ export default async function PartTimerProfilePage({
             size="lg"
           />
           <div>
-          <h1 className="text-2xl font-bold text-gray-800">{partTimer.name}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-bold text-sun-ink">{partTimer.name}</h1>
+          <p className="text-sm text-sun-mute mt-0.5">
             {partTimer.email}{partTimer.phone ? ` · ${partTimer.phone}` : ""}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-sun-mute mt-0.5">
             Member since {membership.invitedAt.toLocaleDateString("en-SG", { day: "numeric", month: "long", year: "numeric" })}
           </p>
           </div>
         </div>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${
-          membership.status === "active" ? "bg-green-100 text-green-700" :
-          membership.status === "invited" ? "bg-yellow-100 text-yellow-700" :
-          "bg-gray-100 text-gray-500"
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+          membership.status === "active" ? "bg-status-confirmed-bg text-status-confirmed-text" :
+          membership.status === "invited" ? "bg-pending-bg text-pending-text" :
+          "bg-sun-inset text-sun-mute"
         }`}>
           {membership.status}
         </span>
@@ -173,8 +173,8 @@ export default async function PartTimerProfilePage({
 
       {/* Skills & Availability */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Skills</h2>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-4">
+          <h2 className="text-sm font-semibold text-sun-body mb-3">Skills</h2>
           <SkillEditor
             partTimerId={id}
             allSkills={allSkills}
@@ -182,40 +182,40 @@ export default async function PartTimerProfilePage({
           />
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Availability</h2>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-4">
+          <h2 className="text-sm font-semibold text-sun-body mb-3">Availability</h2>
           {partTimer.availability.length > 0 ? (
             <div className="space-y-1">
               {DAYS.filter((d) => partTimer.availability.find((a) => a.dayOfWeek === d)).map((d) => {
                 const a = partTimer.availability.find((a) => a.dayOfWeek === d)!;
                 const label = a.preference === "morning" ? "Morning" : a.preference === "afternoon" ? "Afternoon" : "Flexible";
                 return (
-                  <div key={d} className="flex items-center gap-2 text-xs text-gray-600">
-                    <span className="w-8 font-medium text-gray-800">{d}</span>
+                  <div key={d} className="flex items-center gap-2 text-xs text-sun-body">
+                    <span className="w-8 font-medium text-sun-ink">{d}</span>
                     <span>{label}</span>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-xs text-gray-400">No preference set</p>
+            <p className="text-xs text-sun-mute">No preference set</p>
           )}
         </div>
       </div>
 
       {/* Pay summary */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <p className="text-xs text-gray-400 mb-1">Shifts worked</p>
-          <p className="text-xl font-bold text-gray-800">{assignments.length}</p>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-4 text-center">
+          <p className="text-xs text-sun-mute mb-1">Shifts worked</p>
+          <p className="text-xl font-bold text-sun-ink">{assignments.length}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <p className="text-xs text-gray-400 mb-1">Total earned</p>
-          <p className="text-xl font-bold text-gray-800">${totalEarned.toFixed(2)}</p>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-4 text-center">
+          <p className="text-xs text-sun-mute mb-1">Total earned</p>
+          <p className="text-xl font-bold text-sun-accent-link">${totalEarned.toFixed(2)}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-          <p className="text-xs text-gray-400 mb-1">Outstanding</p>
-          <p className={`text-xl font-bold ${totalOwed > 0 ? "text-yellow-600" : "text-gray-800"}`}>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-4 text-center">
+          <p className="text-xs text-sun-mute mb-1">Outstanding</p>
+          <p className={`text-xl font-bold ${totalOwed > 0 ? "text-pending-text" : "text-sun-ink"}`}>
             ${totalOwed.toFixed(2)}
           </p>
         </div>
@@ -223,16 +223,16 @@ export default async function PartTimerProfilePage({
 
       {/* Worked with */}
       {coworkers.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 mb-6">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-gray-700">Worked with</h2>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border mb-6">
+          <div className="px-5 py-4 border-b border-sun-border">
+            <h2 className="font-semibold text-sun-body">Worked with</h2>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-sun-border">
             {coworkers.map(({ partTimer: cw, count }) => (
               <Link
                 key={cw.id}
                 href={`/dashboard/roster/${cw.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-gray-50"
+                className="flex items-center justify-between px-5 py-3 hover:bg-sun-inset"
               >
                 <div className="flex items-center gap-3">
                   <Avatar
@@ -242,9 +242,9 @@ export default async function PartTimerProfilePage({
                     id={cw.id}
                     size="sm"
                   />
-                  <span className="text-sm font-medium text-gray-800">{cw.name}</span>
+                  <span className="text-sm font-medium text-sun-ink">{cw.name}</span>
                 </div>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-sun-mute">
                   {count} shift{count !== 1 ? "s" : ""} together
                 </span>
               </Link>
@@ -254,24 +254,24 @@ export default async function PartTimerProfilePage({
       )}
 
       {/* Shift history */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-700">Shift history</h2>
+      <div className="bg-sun-card rounded-[16px] border border-sun-border">
+        <div className="px-5 py-4 border-b border-sun-border">
+          <h2 className="font-semibold text-sun-body">Shift history</h2>
         </div>
         {assignments.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">No shifts yet.</p>
+          <p className="px-5 py-8 text-sm text-sun-mute text-center">🌱 No shifts yet.</p>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-sun-border">
             {assignments.map((a) => (
               <div key={a.id} className="px-5 py-3 flex items-center justify-between">
                 <div>
                   <Link
                     href={`/dashboard/shifts/${a.shift.id}`}
-                    className="text-sm font-medium text-gray-800 hover:text-blue-600"
+                    className="text-sm font-medium text-sun-ink hover:text-sun-accent-link"
                   >
                     {a.shift.title}
                   </Link>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-sun-mute mt-0.5">
                     {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", {
                       weekday: "short", day: "numeric", month: "short", year: "numeric",
                     })}{" "}
@@ -281,11 +281,11 @@ export default async function PartTimerProfilePage({
                 </div>
                 <div className="text-right shrink-0">
                   {a.payAmount != null ? (
-                    <p className="text-sm font-medium text-gray-800">${Number(a.payAmount).toFixed(2)}</p>
+                    <p className="text-sm font-medium text-sun-accent-link">${Number(a.payAmount).toFixed(2)}</p>
                   ) : (
-                    <p className="text-xs text-gray-400">Not logged</p>
+                    <p className="text-xs text-sun-mute">Not logged</p>
                   )}
-                  <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}`}>
+                  <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-status-confirmed-text" : "text-pending-text"}`}>
                     {a.paymentStatus}
                   </span>
                 </div>

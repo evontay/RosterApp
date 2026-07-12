@@ -79,7 +79,7 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shiftDate, shift, ski
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 border border-gray-300 rounded px-3 py-1.5 hover:bg-gray-50"
+          className="flex items-center gap-1.5 text-sm text-sun-mute hover:text-sun-ink border border-sun-border rounded-full px-3 py-1.5 hover:bg-sun-inset"
         >
           Actions
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,27 +88,27 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shiftDate, shift, ski
         </button>
 
         {menuOpen && (
-          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+          <div className="absolute right-0 mt-1 w-48 bg-sun-card border border-sun-border rounded-[16px] shadow-lg z-20 py-1">
             <button
               onClick={() => { setMenuOpen(false); setEditOpen(true); }}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full text-left px-4 py-2 text-sm text-sun-body hover:bg-sun-inset"
             >
               Edit shift
             </button>
 
             {/* Mark logged — only on/after shift date */}
             {(currentStatus === "open" || currentStatus === "filled") && (
-              <div className="border-t border-gray-100 mt-1 pt-1">
+              <div className="border-t border-sun-border mt-1 pt-1">
                 {canMarkLogged ? (
                   <button
                     onClick={() => handleTransition("completed")}
                     disabled={loading !== null}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="w-full text-left px-4 py-2 text-sm text-sun-body hover:bg-sun-inset disabled:opacity-50"
                   >
                     {loading === "completed" ? "..." : "Mark as logged"}
                   </button>
                 ) : (
-                  <span className="block px-4 py-2 text-sm text-gray-300 cursor-default select-none">
+                  <span className="block px-4 py-2 text-sm text-sun-faint cursor-default select-none">
                     Mark as logged
                   </span>
                 )}
@@ -117,11 +117,11 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shiftDate, shift, ski
 
             {/* Unmark logged — correction */}
             {currentStatus === "completed" && (
-              <div className="border-t border-gray-100 mt-1 pt-1">
+              <div className="border-t border-sun-border mt-1 pt-1">
                 <button
                   onClick={handleUnlog}
                   disabled={loading !== null}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="w-full text-left px-4 py-2 text-sm text-sun-mute hover:bg-sun-inset disabled:opacity-50"
                 >
                   {loading === "unlog" ? "..." : "Unmark as logged"}
                 </button>
@@ -130,11 +130,11 @@ export function ShiftActionsMenu({ shiftId, currentStatus, shiftDate, shift, ski
 
             {/* Cancel */}
             {(currentStatus === "open" || currentStatus === "filled") && (
-              <div className="border-t border-gray-100 mt-1 pt-1">
+              <div className="border-t border-sun-border mt-1 pt-1">
                 <button
                   onClick={() => handleTransition("cancelled")}
                   disabled={loading !== null}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 disabled:opacity-50"
+                  className="w-full text-left px-4 py-2 text-sm text-sun-mute hover:bg-sun-inset disabled:opacity-50"
                 >
                   {loading === "cancelled" ? "..." : "Cancel shift"}
                 </button>

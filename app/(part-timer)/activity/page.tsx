@@ -4,11 +4,11 @@ import Link from "next/link";
 import { MarkReadOnMount } from "./MarkReadOnMount";
 
 const TYPE_CONFIG: Record<string, { label: string; dot: string }> = {
-  INTEREST_CONFIRMED: { label: "Your interest was confirmed — you're assigned!", dot: "bg-green-500" },
-  INTEREST_REJECTED:  { label: "Your interest was not taken up this time.", dot: "bg-gray-400" },
-  ASSIGNED:           { label: "You've been assigned to a shift.", dot: "bg-blue-500" },
-  SHIFT_CANCELLED:    { label: "This shift has been cancelled.", dot: "bg-red-400" },
-  PAID:               { label: "You've been marked as paid.", dot: "bg-green-500" },
+  INTEREST_CONFIRMED: { label: "Your interest was confirmed — you're assigned!", dot: "bg-status-confirmed-dot" },
+  INTEREST_REJECTED:  { label: "Your interest was not taken up this time.", dot: "bg-sun-mute" },
+  ASSIGNED:           { label: "You've been assigned to a shift.", dot: "bg-status-logged-dot" },
+  SHIFT_CANCELLED:    { label: "This shift has been cancelled.", dot: "bg-sun-mute" },
+  PAID:               { label: "You've been marked as paid.", dot: "bg-status-paid-dot" },
 };
 
 export default async function EmployeeActivityPage() {
@@ -33,19 +33,19 @@ export default async function EmployeeActivityPage() {
   return (
     <div>
       <MarkReadOnMount />
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Activity</h1>
+      <h1 className="text-2xl font-bold text-sun-ink mb-6">Activity</h1>
 
       {activities.length === 0 ? (
-        <p className="text-sm text-gray-400">No activity yet.</p>
+        <p className="text-sm text-sun-mute">🌱 No activity yet.</p>
       ) : (
         <div className="space-y-8">
           {[...grouped.entries()].map(([date, items]) => (
             <section key={date}>
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{date}</h2>
-              <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+              <h2 className="text-xs font-semibold text-sun-mute uppercase tracking-wide mb-3">{date}</h2>
+              <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
                 {items.map((a) => {
                   const meta = (a.metadata ?? {}) as Record<string, string | number | null>;
-                  const config = TYPE_CONFIG[a.type] ?? { label: a.type, dot: "bg-gray-300" };
+                  const config = TYPE_CONFIG[a.type] ?? { label: a.type, dot: "bg-sun-mute" };
                   const shiftDate = meta.shiftDate
                     ? new Date(meta.shiftDate as string).toLocaleDateString("en-SG", { day: "numeric", month: "short" })
                     : null;
@@ -59,18 +59,18 @@ export default async function EmployeeActivityPage() {
                     <Link
                       key={a.id}
                       href={href}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                      className="flex items-start gap-3 px-4 py-3 hover:bg-sun-inset transition-colors"
                     >
                       <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${config.dot}`} />
                       <div className="min-w-0">
-                        <p className="text-sm text-gray-800">{config.label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-sm text-sun-ink">{config.label}</p>
+                        <p className="text-xs text-sun-mute mt-0.5">
                           {meta.shiftTitle as string}
                           {shiftDate ? ` · ${shiftDate}` : ""}
                           {meta.payAmount != null ? ` · $${Number(meta.payAmount).toFixed(2)}` : ""}
                         </p>
                       </div>
-                      <span className="ml-auto text-xs text-gray-400 shrink-0 mt-0.5">
+                      <span className="ml-auto text-xs text-sun-mute shrink-0 mt-0.5">
                         {new Date(a.createdAt).toLocaleTimeString("en-SG", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </Link>

@@ -22,7 +22,7 @@ export function UnmarkPaidButton({ assignmentId }: { assignmentId: string }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="text-xs text-gray-400 hover:text-yellow-600 disabled:opacity-50"
+      className="text-xs text-sun-mute hover:text-sun-body disabled:opacity-50"
       title="Unmark as paid"
     >
       {loading ? "..." : "Unmark"}

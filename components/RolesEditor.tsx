@@ -95,35 +95,35 @@ export function RolesEditor({
         <div key={i} className="grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 items-center">
           {/* Skill */}
           <select value={role.skillId} onChange={(e) => updateRole(i, "skillId", e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm">
+            className="border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
             {skills.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
 
           {/* Count */}
           <input type="number" min="1" max="99" value={role.count}
             onChange={(e) => updateRole(i, "count", parseInt(e.target.value) || 1)}
-            className="border border-gray-300 rounded px-2 py-2 text-sm text-center w-full" />
+            className="border border-sun-border rounded-[10px] px-2 py-2 text-sm text-center w-full focus:outline-none focus:border-sun-accent bg-sun-card" />
 
           {/* Pay type */}
           <select value={role.payType} onChange={(e) => updateRole(i, "payType", e.target.value)}
-            className="border border-gray-300 rounded px-2 py-2 text-sm">
+            className="border border-sun-border rounded-[10px] px-2 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
             <option value="hourly">Hourly</option>
             <option value="flat_session">Flat</option>
           </select>
 
           {/* Pay rate */}
           <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sun-mute text-sm">$</span>
             <input type="number" min="0" step="0.01" value={role.payRate}
               onChange={(e) => updateRole(i, "payRate", e.target.value)}
               placeholder="0.00"
-              className="w-full border border-gray-300 rounded pl-5 pr-2 py-2 text-sm" />
+              className="w-full border border-sun-border rounded-[10px] pl-5 pr-2 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" />
           </div>
 
           {/* Remove row */}
           {roles.length > 1
             ? <button type="button" onClick={() => removeRole(i)}
-                className="text-gray-400 hover:text-red-500 text-lg leading-none">×</button>
+                className="text-sun-mute hover:text-sun-body text-lg leading-none">×</button>
             : <div />
           }
         </div>
@@ -131,21 +131,21 @@ export function RolesEditor({
 
       {/* Column labels */}
       <div className="grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 px-0.5">
-        <span className="text-[10px] text-gray-400">Role</span>
-        <span className="text-[10px] text-gray-400 text-center">#</span>
-        <span className="text-[10px] text-gray-400">Pay type</span>
-        <span className="text-[10px] text-gray-400">Rate</span>
+        <span className="text-[10px] text-sun-mute">Role</span>
+        <span className="text-[10px] text-sun-mute text-center">#</span>
+        <span className="text-[10px] text-sun-mute">Pay type</span>
+        <span className="text-[10px] text-sun-mute">Rate</span>
         <span />
       </div>
 
       <div className="flex items-center gap-3 pt-1">
         {roles.length < skills.length && !addingNew && (
           <button type="button" onClick={addRole}
-            className="text-sm text-blue-600 hover:underline">+ Add role</button>
+            className="text-sm text-sun-accent-link hover:underline">+ Add role</button>
         )}
         {!addingNew && (
           <button type="button" onClick={() => setAddingNew(true)}
-            className="text-sm text-gray-500 hover:text-gray-800 hover:underline">
+            className="text-sm text-sun-mute hover:text-sun-body hover:underline">
             + New custom role
           </button>
         )}
@@ -156,17 +156,17 @@ export function RolesEditor({
           <input type="text" value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreateSkill(); } }}
             placeholder="e.g. Photographer"
-            className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm" autoFocus />
+            className="flex-1 border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" autoFocus />
           <button type="button" onClick={handleCreateSkill}
             disabled={creating || !newLabel.trim()}
-            className="text-sm bg-gray-800 text-white px-3 py-1.5 rounded hover:bg-gray-700 disabled:opacity-50">
+            className="text-sm bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
             {creating ? "..." : "Create"}
           </button>
           <button type="button" onClick={() => { setAddingNew(false); setNewLabel(""); setCreateError(""); }}
-            className="text-sm text-gray-400 hover:text-gray-600">Cancel</button>
+            className="text-sm text-sun-mute hover:text-sun-body">Cancel</button>
         </div>
       )}
-      {createError && <p className="text-red-500 text-xs">{createError}</p>}
+      {createError && <p className="text-status-open-text text-xs">{createError}</p>}
     </div>
   );
 }

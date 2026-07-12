@@ -56,7 +56,7 @@ export function AvailabilityEditor({
         const isSaving = saving === day;
         return (
           <div key={day} className="flex items-center gap-3">
-            <span className={`w-8 text-xs font-medium shrink-0 ${selected ? "text-gray-800" : "text-gray-400"}`}>
+            <span className={`w-8 text-xs font-medium shrink-0 ${selected ? "text-sun-ink" : "text-sun-mute"}`}>
               {day}
             </span>
             <div className="flex gap-1.5">
@@ -67,8 +67,8 @@ export function AvailabilityEditor({
                   disabled={isSaving}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
                     selected === opt.value
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                      ? "bg-sun-accent text-white"
+                      : "bg-sun-inset text-sun-mute hover:bg-sun-faint"
                   }`}
                 >
                   {opt.label}
@@ -78,7 +78,7 @@ export function AvailabilityEditor({
           </div>
         );
       })}
-      <p className="text-xs text-gray-400 pt-1">
+      <p className="text-xs text-sun-mute pt-1">
         Tap a day to set your preference. Tap again to clear it.
       </p>
     </div>

@@ -24,8 +24,8 @@ export default async function PerformanceTagsPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Performance tags</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-2xl font-bold text-sun-ink mb-1">Performance tags</h1>
+      <p className="text-sm text-sun-mute mb-6">
         Tags you can apply when recording a shift. Keep them job-relevant and specific.
       </p>
       <TagsManager tags={tags} />

@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 
 const STATUS_STYLE: Record<string, { label: string; dot: string; bg: string; text: string }> = {
-  open:      { label: "Open",      dot: "bg-blue-500",   bg: "bg-blue-50",   text: "text-blue-700" },
-  filled:    { label: "Confirmed", dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
-  completed: { label: "Logged",    dot: "bg-green-500",  bg: "bg-green-50",  text: "text-green-700" },
+  open:      { label: "Open",      dot: "bg-status-open-dot",       bg: "bg-status-open-bg",       text: "text-status-open-text" },
+  filled:    { label: "Confirmed", dot: "bg-status-confirmed-dot",  bg: "bg-status-confirmed-bg",  text: "text-status-confirmed-text" },
+  completed: { label: "Logged",    dot: "bg-status-logged-dot",     bg: "bg-status-logged-bg",     text: "text-status-logged-text" },
 };
 const STATUS_ORDER = ["open", "filled", "completed"] as const;
 
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const business = await prisma.business.findFirst({
     where: { ownerUserId: session!.user.id },
   });
-  if (!business) return <p className="text-gray-500">No business found.</p>;
+  if (!business) return <p className="text-sun-mute">No business found.</p>;
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-gray-800">{business.name}</h1>
+      <h1 className="text-2xl font-bold text-sun-ink">{business.name}</h1>
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -144,9 +144,9 @@ export default async function DashboardPage() {
             const count = statusCounts[status] ?? 0;
             const s = STATUS_STYLE[status];
             return (
-              <div key={status} className={`rounded-lg border border-gray-200 p-4 ${s.bg}`}>
+              <div key={status} className={`rounded-[12px] border border-sun-border p-4 ${s.bg}`}>
                 <div className="flex items-center gap-1.5 mb-2">
-                  <div className={`w-2.5 h-2.5 rounded-sm ${s.dot}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full ${s.dot}`} />
                   <span className={`text-xs font-medium ${s.text}`}>{s.label}</span>
                 </div>
                 <p className={`text-2xl font-bold ${s.text}`}>{count}</p>
@@ -160,19 +160,19 @@ export default async function DashboardPage() {
       {unreadActivityCount > 0 && (
         <Link
           href="/dashboard/activity"
-          className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 hover:border-blue-400 transition-colors"
+          className="flex items-center justify-between bg-sun-accent-soft border border-sun-border rounded-[16px] px-4 py-3 hover:border-sun-accent transition-colors"
         >
-          <p className="text-sm font-medium text-blue-800">
+          <p className="text-sm font-medium text-sun-accent-text">
             {unreadActivityCount} new notification{unreadActivityCount !== 1 ? "s" : ""}
           </p>
-          <span className="text-xs text-blue-600">View activity →</span>
+          <span className="text-xs text-sun-accent-link">View activity →</span>
         </Link>
       )}
 
       {/* Needs attention */}
       {hasAttentionItems && (
         <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Needs attention</h2>
+          <h2 className="text-sm font-semibold text-sun-mute uppercase tracking-wide mb-3">Needs attention</h2>
           <div className="space-y-3">
 
             {/* Understaffed shifts */}
@@ -180,15 +180,15 @@ export default async function DashboardPage() {
               <Link
                 key={s.id}
                 href={`/dashboard/shifts/${s.id}`}
-                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+                className="flex items-center justify-between bg-sun-card rounded-[16px] border border-sun-border px-4 py-3 hover:border-sun-accent transition-colors"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{s.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm font-medium text-sun-ink">{s.title}</p>
+                  <p className="text-xs text-sun-mute mt-0.5">
                     {new Date(s.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
                   </p>
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-600 rounded shrink-0">
+                <span className="text-xs font-medium px-2.5 py-1 bg-status-open-bg text-status-open-text rounded-full shrink-0">
                   {s.emptySlots} slot{s.emptySlots !== 1 ? "s" : ""} unfilled
                 </span>
               </Link>
@@ -199,18 +199,18 @@ export default async function DashboardPage() {
               <Link
                 key={shift.id}
                 href={`/dashboard/shifts/${shift.id}`}
-                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+                className="flex items-center justify-between bg-sun-card rounded-[16px] border border-sun-border px-4 py-3 hover:border-sun-accent transition-colors"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{shift.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm font-medium text-sun-ink">{shift.title}</p>
+                  <p className="text-xs text-sun-mute mt-0.5">
                     {new Date(shift.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
                     {" · "}
                     {people.map((p) => p.partTimer.name).join(", ")}
                   </p>
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-blue-50 text-blue-600 rounded shrink-0">
-                  {people.length} interested
+                <span className="text-xs font-medium px-2.5 py-1 bg-status-logged-bg text-status-logged-text rounded-full shrink-0">
+                  {people.length} raised hands
                 </span>
               </Link>
             ))}
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
               <Link
                 key={a.id}
                 href={`/dashboard/shifts/${a.shift.id}`}
-                className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 hover:border-blue-300 transition-colors"
+                className="flex items-center justify-between bg-sun-card rounded-[16px] border border-sun-border px-4 py-3 hover:border-sun-accent transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Avatar
@@ -231,13 +231,13 @@ export default async function DashboardPage() {
                     size="sm"
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{a.partTimer.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm font-medium text-sun-ink">{a.partTimer.name}</p>
+                    <p className="text-xs text-sun-mute">
                       {a.shift.title} · {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", { day: "numeric", month: "short" })}
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-medium px-2 py-1 bg-yellow-50 text-yellow-700 rounded shrink-0">
+                <span className="text-xs font-medium px-2.5 py-1 bg-status-paid-bg text-status-paid-text rounded-full shrink-0">
                   {a.payAmount != null ? `$${Number(a.payAmount).toFixed(2)} unpaid` : "Unpaid"}
                 </span>
               </Link>
@@ -248,11 +248,11 @@ export default async function DashboardPage() {
 
       {/* Upcoming shifts — next 7 days */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Next 7 days</h2>
+        <h2 className="text-sm font-semibold text-sun-mute uppercase tracking-wide mb-3">Next 7 days</h2>
         {upcomingShifts.length === 0 ? (
-          <p className="text-sm text-gray-400">No shifts in the next 7 days.</p>
+          <p className="text-sm text-sun-mute">🌱 No shifts in the next 7 days.</p>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
             {upcomingShifts.map((s) => {
               const totalSlots = s.roles.reduce((sum, r) => sum + r.count, 0);
               const filledSlots = s.roles.reduce((sum, r) => sum + r.assignments.length, 0);
@@ -261,17 +261,17 @@ export default async function DashboardPage() {
                 <Link
                   key={s.id}
                   href={`/dashboard/shifts/${s.id}`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-sun-inset transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{s.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-sm font-medium text-sun-ink">{s.title}</p>
+                    <p className="text-xs text-sun-mute mt-0.5">
                       {new Date(s.shiftDate).toLocaleDateString("en-SG", { weekday: "short", day: "numeric", month: "short" })}
                       {" · "}{s.startTime}–{s.endTime}
                     </p>
                   </div>
-                  <span className={`text-xs font-medium px-2 py-1 rounded shrink-0 ${
-                    full ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
+                    full ? "bg-status-confirmed-bg text-status-confirmed-text" : "bg-status-open-bg text-status-open-text"
                   }`}>
                     {filledSlots}/{totalSlots} staffed
                   </span>
@@ -288,16 +288,16 @@ export default async function DashboardPage() {
 function StatCard({ label, value, href }: { label: string; value: number; href?: string }) {
   const content = (
     <>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-3xl font-bold text-gray-800 mt-1">{value}</p>
+      <p className="text-sm text-sun-mute">{label}</p>
+      <p className="text-3xl font-bold text-sun-ink mt-1">{value}</p>
     </>
   );
   if (href) {
     return (
-      <Link href={href} className="block bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-300 transition-colors">
+      <Link href={href} className="block bg-sun-card rounded-[16px] border border-sun-border p-5 hover:border-sun-accent transition-colors">
         {content}
       </Link>
     );
   }
-  return <div className="bg-white rounded-lg border border-gray-200 p-5">{content}</div>;
+  return <div className="bg-sun-card rounded-[16px] border border-sun-border p-5">{content}</div>;
 }

@@ -16,8 +16,8 @@ export default async function RolesSettingsPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-1">Role types</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-2xl font-bold text-sun-ink mb-1">Role types</h1>
+      <p className="text-sm text-sun-mute mb-6">
         Edit or archive role types here. To add new ones, use the shift form.
       </p>
       <RolesManager

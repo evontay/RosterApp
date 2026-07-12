@@ -22,7 +22,7 @@ export function MarkPaidButton({ assignmentId }: { assignmentId: string }) {
     <button
       onClick={handleMarkPaid}
       disabled={loading}
-      className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+      className="text-xs bg-sun-accent text-white px-3 py-1 rounded-full hover:opacity-90 disabled:opacity-50"
     >
       {loading ? "..." : "Mark paid"}
     </button>

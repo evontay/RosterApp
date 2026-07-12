@@ -25,7 +25,7 @@ export function ArchivedSection({ shifts }: { shifts: ArchivedShift[] }) {
     <div className="mt-8">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 mb-3"
+        className="flex items-center gap-2 text-sm text-sun-mute hover:text-sun-body mb-3"
       >
         <span className={`transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
         Archived shifts ({shifts.length})
@@ -39,16 +39,16 @@ export function ArchivedSection({ shifts }: { shifts: ArchivedShift[] }) {
               shift.assignments.every((a) => a.paymentStatus === "paid");
 
             return (
-              <div key={shift.id} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div key={shift.id} className="bg-sun-card rounded-[16px] border border-sun-border p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <Link
                       href={`/dashboard/shifts/${shift.id}`}
-                      className="font-bold text-gray-800 hover:text-blue-600"
+                      className="font-bold text-sun-ink hover:text-sun-accent-link"
                     >
                       {shift.title}
                     </Link>
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <p className="text-sm text-sun-mute mt-0.5">
                       {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
                         weekday: "short",
                         day: "numeric",
@@ -63,10 +63,10 @@ export function ArchivedSection({ shifts }: { shifts: ArchivedShift[] }) {
                   </div>
                 </div>
                 {shift.assignments.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="mt-3 pt-3 border-t border-sun-border">
                     <div className="flex gap-2 flex-wrap">
                       {shift.assignments.map((a) => (
-                        <span key={a.id} className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                        <span key={a.id} className="text-xs bg-sun-inset text-sun-body px-2 py-0.5 rounded-full">
                           {a.partTimer.name}
                         </span>
                       ))}

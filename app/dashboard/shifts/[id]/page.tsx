@@ -142,7 +142,7 @@ export default async function ShiftDetailPage({
     <div className="max-w-2xl">
       <BackLink />
       <div className="flex items-start justify-between mb-1">
-        <h1 className="text-2xl font-bold text-gray-800">{shift.title}</h1>
+        <h1 className="text-2xl font-bold text-sun-ink">{shift.title}</h1>
         <ShiftActionsMenu
           shiftId={shift.id}
           currentStatus={shift.status as "open" | "filled" | "completed" | "cancelled"}
@@ -168,7 +168,7 @@ export default async function ShiftDetailPage({
           }))}
         />
       </div>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-sun-mute mb-4">
         {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
           weekday: "long", day: "numeric", month: "long", year: "numeric",
         })}{" "}
@@ -180,9 +180,9 @@ export default async function ShiftDetailPage({
       </div>
 
       {/* Staffing */}
-      <div className="bg-white rounded-lg border border-gray-200 p-5 mb-4">
+      <div className="bg-sun-card rounded-[16px] border border-sun-border p-5 mb-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-gray-700">Staffing</h2>
+          <h2 className="font-semibold text-sun-body">Staffing</h2>
           {shift.status === "completed" && hasUnpaid && (
             <MarkAllPaidButton shiftId={shift.id} />
           )}
@@ -204,8 +204,8 @@ export default async function ShiftDetailPage({
               <div key={role.id}>
                 {/* Role header */}
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-semibold text-gray-800">{role.skill.label}</span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-sm font-semibold text-sun-ink">{role.skill.label}</span>
+                  <span className="text-xs text-sun-mute">
                     {filled.length}/{role.count} filled · {payDisplay}
                   </span>
                 </div>
@@ -215,7 +215,7 @@ export default async function ShiftDetailPage({
                   {filled.map((a) => (
                     <div
                       key={a.id}
-                      className="py-2 px-3 bg-gray-50 rounded-lg"
+                      className="py-2 px-3 bg-sun-inset rounded-[12px]"
                     >
                       <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -239,12 +239,12 @@ export default async function ShiftDetailPage({
                               completedJobs: a.partTimer.assignments.length,
                             }}
                           />
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-sun-mute">
                             {a.payAmount != null
                               ? (a.hoursLogged != null ? `${a.hoursLogged} hrs · ` : "") + `$${Number(a.payAmount).toFixed(2)}`
                               : role.payType === "flat_session" ? "Pending confirmation" : "Hours not logged"}
                             {" · "}
-                            <span className={a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}>
+                            <span className={a.paymentStatus === "paid" ? "text-status-confirmed-text" : "text-pending-text"}>
                               {a.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                             </span>
                             {a.paymentStatus === "paid" && (
@@ -287,9 +287,9 @@ export default async function ShiftDetailPage({
                 {Array.from({ length: emptySlots }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between py-2 px-3 border border-dashed border-gray-200 rounded-lg mb-2"
+                    className="flex items-center justify-between py-2 px-3 border border-dashed border-sun-border rounded-[12px] mb-2"
                   >
-                    <span className="text-xs text-gray-400">Empty slot</span>
+                    <span className="text-xs text-sun-mute">Empty slot</span>
                     {roleAssignableMembers.length > 0 ? (
                       <AssignForm
                         shiftId={shift.id}
@@ -297,7 +297,7 @@ export default async function ShiftDetailPage({
                         members={roleAssignableMembers}
                       />
                     ) : (
-                      <span className="text-xs text-gray-300">No matching employees</span>
+                      <span className="text-xs text-sun-faint">No matching employees</span>
                     )}
                   </div>
                 ))}
@@ -309,9 +309,9 @@ export default async function ShiftDetailPage({
 
       {/* Interested employees */}
       {pendingInterests.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">
-            Interested <span className="text-gray-400 font-normal text-sm">({pendingInterests.length})</span>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-5">
+          <h2 className="font-semibold text-sun-body mb-4">
+            Raised hands <span className="text-sun-mute font-normal text-sm">({pendingInterests.length})</span>
           </h2>
           <div className="space-y-3">
             {pendingInterests.map((interest) => {
@@ -323,7 +323,7 @@ export default async function ShiftDetailPage({
                 .map((r) => ({ id: r.id, label: r.skill.label }));
 
               return (
-                <div key={interest.id} className="flex items-center justify-between gap-4 py-2 border-b border-gray-100 last:border-0">
+                <div key={interest.id} className="flex items-center justify-between gap-4 py-2 border-b border-sun-border last:border-0">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar
                       name={interest.partTimer.name}
@@ -346,7 +346,7 @@ export default async function ShiftDetailPage({
                         }}
                       />
                       {interest.comment && (
-                        <p className="text-xs text-gray-400 italic truncate">"{interest.comment}"</p>
+                        <p className="text-xs text-sun-mute italic truncate">"{interest.comment}"</p>
                       )}
                     </div>
                   </div>

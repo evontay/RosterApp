@@ -14,11 +14,11 @@ const TRANSITIONS: Record<ShiftStatus, ShiftStatus[]> = {
 };
 
 const STATUS_STYLES: Record<ShiftStatus, string> = {
-  draft:     "bg-gray-100 text-gray-600",
-  open:      "bg-blue-100 text-blue-700",
-  filled:    "bg-purple-100 text-purple-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-600",
+  draft:     "bg-sun-inset text-sun-mute",
+  open:      "bg-status-open-bg text-status-open-text",
+  filled:    "bg-status-confirmed-bg text-status-confirmed-text",
+  completed: "bg-status-logged-bg text-status-logged-text",
+  cancelled: "bg-sun-inset text-sun-mute",
 };
 
 const STATUS_LABELS: Record<ShiftStatus, string> = {
@@ -37,10 +37,10 @@ const ACTION_LABELS: Partial<Record<ShiftStatus, string>> = {
 };
 
 const ACTION_STYLES: Partial<Record<ShiftStatus, string>> = {
-  open:      "border-blue-300 text-blue-700 hover:bg-blue-50",
-  filled:    "border-purple-300 text-purple-700 hover:bg-purple-50",
-  completed: "border-green-300 text-green-700 hover:bg-green-50",
-  cancelled: "border-red-200 text-red-500 hover:bg-red-50",
+  open:      "border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-accent-link",
+  filled:    "border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-accent-link",
+  completed: "border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-accent-link",
+  cancelled: "border-sun-border text-sun-mute hover:bg-sun-inset",
 };
 
 export function ShiftStatusControl({
@@ -68,7 +68,7 @@ export function ShiftStatusControl({
 
   return (
     <div className="flex items-center gap-2">
-      <span className={`px-2.5 py-1 rounded text-xs font-semibold ${STATUS_STYLES[currentStatus]}`}>
+      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[currentStatus]}`}>
         {STATUS_LABELS[currentStatus]}
       </span>
       {next.map((toStatus) => (
@@ -76,7 +76,7 @@ export function ShiftStatusControl({
           key={toStatus}
           onClick={() => handleTransition(toStatus)}
           disabled={loading !== null}
-          className={`px-3 py-1 rounded border text-xs font-medium disabled:opacity-50 transition-colors ${ACTION_STYLES[toStatus]}`}
+          className={`px-3 py-1 rounded-full border text-xs font-medium disabled:opacity-50 transition-colors ${ACTION_STYLES[toStatus]}`}
         >
           {loading === toStatus ? "..." : ACTION_LABELS[toStatus]}
         </button>

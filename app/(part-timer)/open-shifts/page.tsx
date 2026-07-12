@@ -49,11 +49,11 @@ export default async function OpenShiftsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Open Shifts</h1>
+      <h1 className="text-2xl font-bold text-sun-ink">Open Shifts</h1>
 
       {shifts.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400 text-sm">
-          No open shifts right now.
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-8 text-center text-sun-mute text-sm">
+          🌱 No open shifts right now.
         </div>
       ) : (
         <div className="space-y-4">
@@ -62,11 +62,11 @@ export default async function OpenShiftsPage() {
             const interest = interestByShift[shift.id] ?? null;
 
             return (
-              <div key={shift.id} className="bg-white rounded-lg border border-gray-200 p-5">
+              <div key={shift.id} className="bg-sun-card rounded-[16px] border border-sun-border p-5">
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
-                    <p className="font-semibold text-gray-800">{shift.title}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <p className="font-semibold text-sun-ink">{shift.title}</p>
+                    <p className="text-sm text-sun-mute mt-0.5">
                       {new Date(shift.shiftDate).toLocaleDateString("en-SG", {
                         weekday: "short",
                         day: "numeric",
@@ -75,10 +75,10 @@ export default async function OpenShiftsPage() {
                       })}{" "}
                       · {shift.startTime}–{shift.endTime}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{shift.business.name}</p>
+                    <p className="text-xs text-sun-mute mt-0.5">{shift.business.name}</p>
                   </div>
                   {isAssigned && (
-                    <span className="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded shrink-0">
+                    <span className="text-xs font-medium px-2 py-1 bg-status-confirmed-bg text-status-confirmed-text rounded-full shrink-0">
                       Assigned
                     </span>
                   )}
@@ -88,7 +88,7 @@ export default async function OpenShiftsPage() {
                 {shift.roles.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {shift.roles.map((r) => (
-                      <span key={r.id} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                      <span key={r.id} className="text-xs bg-sun-inset text-sun-body px-2 py-0.5 rounded-full">
                         {r.skill.label} ×{r.count}
                       </span>
                     ))}

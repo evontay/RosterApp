@@ -16,7 +16,7 @@ export default async function MyShiftsPage({
     where: { userId: session!.user.id },
   });
 
-  if (!partTimer) return <p className="text-gray-500">Profile not found.</p>;
+  if (!partTimer) return <p className="text-sun-mute">Profile not found.</p>;
 
   const assignments = await prisma.shiftAssignment.findMany({
     where: { partTimerId: partTimer.id, status: { not: "cancelled" } },
@@ -30,21 +30,21 @@ export default async function MyShiftsPage({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">My Shifts</h1>
+        <h1 className="text-2xl font-bold text-sun-ink">My Shifts</h1>
         <Link
           href={`/my-shifts?sort=${asc ? "desc" : "asc"}`}
-          className="text-xs border border-gray-300 rounded px-3 py-1.5 text-gray-500 hover:border-gray-400 hover:text-gray-700"
+          className="text-xs border border-sun-border rounded-full px-3 py-1.5 text-sun-mute hover:border-sun-accent hover:text-sun-body"
         >
           Date: {asc ? "Oldest first ↑" : "Newest first ↓"}
         </Link>
       </div>
       <div className="space-y-3">
         {assignments.map((a) => (
-          <Link key={a.id} href={`/shifts/${a.shift.id}`} className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors">
+          <Link key={a.id} href={`/shifts/${a.shift.id}`} className="block bg-sun-card rounded-[16px] border border-sun-border p-4 hover:border-sun-accent transition-colors">
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-medium text-gray-800">{a.shift.title}</p>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <p className="font-medium text-sun-ink">{a.shift.title}</p>
+                <p className="text-sm text-sun-mute mt-0.5">
                   {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", {
                     weekday: "short",
                     day: "numeric",
@@ -53,16 +53,16 @@ export default async function MyShiftsPage({
                   · {a.shift.startTime}–{a.shift.endTime}
                 </p>
                 {a.shiftRole && (
-                  <p className="text-xs text-gray-400 mt-0.5">{a.shiftRole.skill.label}</p>
+                  <p className="text-xs text-sun-mute mt-0.5">{a.shiftRole.skill.label}</p>
                 )}
               </div>
               <div className="text-right shrink-0">
                 {a.payAmount != null ? (
-                  <p className="text-sm font-medium text-gray-800">${Number(a.payAmount).toFixed(2)}</p>
+                  <p className="text-sm font-medium text-sun-accent-link">${Number(a.payAmount).toFixed(2)}</p>
                 ) : (
-                  <p className="text-xs text-gray-400">Not logged</p>
+                  <p className="text-xs text-sun-mute">Not logged</p>
                 )}
-                <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-green-600" : "text-yellow-600"}`}>
+                <span className={`text-xs font-medium ${a.paymentStatus === "paid" ? "text-status-confirmed-text" : "text-pending-text"}`}>
                   {a.paymentStatus === "paid" ? "Paid" : "Unpaid"}
                 </span>
               </div>
@@ -70,8 +70,8 @@ export default async function MyShiftsPage({
           </Link>
         ))}
         {assignments.length === 0 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-gray-400">
-            No shifts assigned yet.
+          <div className="bg-sun-card rounded-[16px] border border-sun-border p-8 text-center text-sun-mute">
+            🌱 No shifts assigned yet.
           </div>
         )}
       </div>

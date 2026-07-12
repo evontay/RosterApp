@@ -29,17 +29,17 @@ export function ArchiveRestoreButton({
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">{archived ? "Restore?" : "Archive?"}</span>
+        <span className="text-xs text-sun-mute">{archived ? "Restore?" : "Archive?"}</span>
         <button
           onClick={handleAction}
           disabled={loading}
-          className="text-xs font-medium hover:underline disabled:opacity-50 text-blue-600"
+          className="text-xs font-medium hover:underline disabled:opacity-50 text-sun-mute"
         >
           {loading ? "..." : "Yes"}
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs text-gray-400 hover:text-gray-600"
+          className="text-xs text-sun-mute hover:text-sun-body"
         >
           No
         </button>
@@ -50,7 +50,7 @@ export function ArchiveRestoreButton({
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+      className="text-xs text-sun-mute hover:text-sun-body transition-colors"
     >
       {archived ? "Restore" : "Archive"}
     </button>

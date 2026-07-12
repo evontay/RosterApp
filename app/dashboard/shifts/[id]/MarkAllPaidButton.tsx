@@ -22,7 +22,7 @@ export function MarkAllPaidButton({ shiftId }: { shiftId: string }) {
     <button
       onClick={handleMarkAllPaid}
       disabled={loading}
-      className="text-sm bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 disabled:opacity-50 font-medium"
+      className="text-sm bg-sun-accent text-white px-4 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50 font-medium"
     >
       {loading ? "..." : "Mark all paid"}
     </button>

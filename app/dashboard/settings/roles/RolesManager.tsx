@@ -84,8 +84,8 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
       <div key={skill.id} className="px-5 py-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="font-medium text-gray-800 text-sm">{skill.label}</p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="font-medium text-sun-ink text-sm">{skill.label}</p>
+            <p className="text-xs text-sun-mute mt-0.5">
               {skill.defaultPayType
                 ? `Default: ${skill.defaultPayType === "hourly" ? `$${skill.defaultPayRate ?? "–"}/hr` : `$${skill.defaultPayRate ?? "–"} flat`}`
                 : "No default pay set"}
@@ -100,7 +100,7 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
             {!skill.archived && (
               <button
                 onClick={() => isEditing ? setEditingId(null) : startEdit(skill)}
-                className={`text-xs px-2.5 py-1.5 rounded border transition-colors ${isEditing ? "border-blue-400 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"}`}
+                className={`text-xs px-2.5 py-1.5 rounded-full border transition-colors ${isEditing ? "border-sun-accent text-sun-accent-link bg-sun-accent-soft" : "border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-accent-link"}`}
               >
                 Edit
               </button>
@@ -108,7 +108,7 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
             <button
               onClick={() => handleArchive(skill.id, !skill.archived)}
               disabled={archivingId === skill.id}
-              className="text-xs px-2.5 py-1.5 rounded border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 disabled:opacity-50"
+              className="text-xs px-2.5 py-1.5 rounded-full border border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-body disabled:opacity-50"
             >
               {archivingId === skill.id ? "..." : skill.archived ? "Unarchive" : "Archive"}
             </button>
@@ -123,7 +123,7 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Escape") setEditingId(null); }}
-                className="flex-1 border border-blue-300 rounded px-3 py-1.5 text-sm"
+                className="flex-1 border border-sun-accent rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent"
                 placeholder="Role name"
                 autoFocus
               />
@@ -132,13 +132,13 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
               <select
                 value={editPayType}
                 onChange={(e) => setEditPayType(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+                className="border border-sun-border rounded-[10px] px-2 py-1.5 text-sm focus:outline-none focus:border-sun-accent"
               >
                 <option value="hourly">Hourly</option>
                 <option value="flat_session">Flat</option>
               </select>
               <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sun-mute text-sm">$</span>
                 <input
                   type="number"
                   min="0"
@@ -146,24 +146,24 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
                   value={editPayRate}
                   onChange={(e) => setEditPayRate(e.target.value)}
                   placeholder="default rate"
-                  className="border border-gray-300 rounded pl-5 pr-2 py-1.5 text-sm w-32"
+                  className="border border-sun-border rounded-[10px] pl-5 pr-2 py-1.5 text-sm w-32 focus:outline-none focus:border-sun-accent"
                 />
               </div>
               <button
                 onClick={() => handleSaveEdit(skill.id)}
                 disabled={editSaving || !editLabel.trim()}
-                className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50"
+                className="text-sm bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
               >
                 {editSaving ? "..." : "Save"}
               </button>
-              <button onClick={() => setEditingId(null)} className="text-sm text-gray-400 hover:text-gray-600">
+              <button onClick={() => setEditingId(null)} className="text-sm text-sun-mute hover:text-sun-body">
                 Cancel
               </button>
             </div>
           </div>
         )}
         {editError && editingId === skill.id && (
-          <p className="text-red-500 text-xs mt-1">{editError}</p>
+          <p className="text-status-open-text text-xs mt-1">{editError}</p>
         )}
       </div>
     );
@@ -171,9 +171,9 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
 
   return (
     <div>
-      <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+      <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
         {active.length === 0 && (
-          <p className="px-5 py-8 text-sm text-gray-400 text-center">No role types yet.</p>
+          <p className="px-5 py-8 text-sm text-sun-mute text-center">🌱 No role types yet.</p>
         )}
         {active.map(renderRow)}
       </div>
@@ -182,14 +182,14 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
         <div className="mt-6">
           <button
             onClick={() => setArchivedOpen((v) => !v)}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 mb-3"
+            className="flex items-center gap-2 text-sm text-sun-mute hover:text-sun-body mb-3"
           >
             <span className={`transition-transform inline-block ${archivedOpen ? "rotate-90" : ""}`}>▶</span>
             Archived role types ({archived.length})
           </button>
 
           {archivedOpen && (
-            <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 opacity-60">
+            <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border opacity-60">
               {archived.map(renderRow)}
             </div>
           )}

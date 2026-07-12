@@ -33,7 +33,7 @@ export default async function RosterPage() {
     where: { ownerUserId: session!.user.id },
   });
 
-  if (!business) return <p className="text-gray-500">No business found.</p>;
+  if (!business) return <p className="text-sun-mute">No business found.</p>;
 
   const members = await prisma.rosterMembership.findMany({
     where: { businessId: business.id },
@@ -60,27 +60,27 @@ export default async function RosterPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold text-gray-800">Roster</h1>
-          <span className="text-sm text-gray-400">{activeCount} active</span>
+          <h1 className="text-2xl font-bold text-sun-ink">Roster</h1>
+          <span className="text-sm text-sun-mute">{activeCount} active</span>
         </div>
         <InviteForm businessId={business.id} />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-sun-card rounded-[16px] border border-sun-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-sun-inset border-b border-sun-border">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Skills</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Jobs done</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Next available</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-sun-body">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-sun-body">Skills</th>
+              <th className="text-left px-4 py-3 font-medium text-sun-body">Jobs done</th>
+              <th className="text-left px-4 py-3 font-medium text-sun-body">Next available</th>
+              <th className="text-left px-4 py-3 font-medium text-sun-body">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {active.map((m) => (
-              <tr key={m.id} className="border-b border-gray-100 last:border-0">
+              <tr key={m.id} className="border-b border-sun-border last:border-0">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -91,20 +91,20 @@ export default async function RosterPage() {
                       size="sm"
                     />
                     <div>
-                      <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-gray-800 hover:text-blue-600">
+                      <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-sun-ink hover:text-sun-accent-link">
                         {m.partTimer.name}
                       </Link>
-                      <p className="text-xs text-gray-400">{m.partTimer.email}</p>
+                      <p className="text-xs text-sun-mute">{m.partTimer.email}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-sun-body">
                   {m.partTimer.skills.map((s) => s.skill.label).join(", ") || "—"}
                 </td>
-                <td className="px-4 py-3 text-gray-800 font-medium">
+                <td className="px-4 py-3 text-sun-ink font-medium">
                   {m.partTimer.assignments.length}
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-sun-body">
                   {nextAvailability(m.partTimer.availability)}
                 </td>
                 <td className="px-4 py-3">
@@ -117,8 +117,8 @@ export default async function RosterPage() {
             ))}
             {active.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                  No employees yet. Invite someone to get started.
+                <td colSpan={6} className="px-4 py-8 text-center text-sun-mute">
+                  🌱 No employees yet. Invite someone to get started.
                 </td>
               </tr>
             )}
@@ -145,11 +145,11 @@ export default async function RosterPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    invited: "bg-yellow-100 text-yellow-700",
-    active: "bg-green-100 text-green-700",
+    invited: "bg-pending-bg text-pending-text",
+    active: "bg-status-confirmed-bg text-status-confirmed-text",
   };
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status] ?? ""}`}>
+    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[status] ?? ""}`}>
       {status}
     </span>
   );

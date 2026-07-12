@@ -32,31 +32,31 @@ export function KudosButton({
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-xs text-yellow-600 hover:underline">
-        {existing ? "Edit kudos" : "Send kudos"}
+      <button onClick={() => setOpen(true)} className="text-xs text-sun-accent-link hover:underline">
+        {existing ? "Edit kudos 💛" : "Send kudos 💛"}
       </button>
     );
   }
 
   return (
-    <div className="mt-1.5 p-3 bg-yellow-50 border border-yellow-200 rounded-lg space-y-2">
+    <div className="mt-1.5 p-3 bg-sun-accent-soft border border-sun-border rounded-[12px] space-y-2">
       <textarea
         autoFocus
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Great work today…"
         rows={2}
-        className="w-full border border-yellow-300 rounded px-2.5 py-1.5 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-yellow-400 bg-white resize-none"
+        className="w-full border border-sun-border rounded-[10px] px-2.5 py-1.5 text-xs text-sun-ink placeholder-sun-mute focus:outline-none focus:border-sun-accent bg-sun-card resize-none"
       />
       <div className="flex gap-2">
         <button
           onClick={handleSend}
           disabled={saving || !message.trim()}
-          className="text-xs bg-yellow-500 text-white px-3 py-1.5 rounded hover:bg-yellow-600 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Sending…" : "Send"}
         </button>
-        <button onClick={() => setOpen(false)} className="text-xs text-gray-400 hover:text-gray-600">
+        <button onClick={() => setOpen(false)} className="text-xs text-sun-mute hover:text-sun-body">
           Cancel
         </button>
       </div>

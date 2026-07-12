@@ -31,20 +31,20 @@ export default async function MySettingsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold text-sun-ink mb-6">Settings</h1>
       <ProfileForm partTimer={partTimer} memberSince={memberSince} />
 
-      <div className="mt-6 bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">Skills</h2>
+      <div className="mt-6 bg-sun-card rounded-[16px] border border-sun-border p-5">
+        <h2 className="text-sm font-semibold text-sun-body mb-4">Skills</h2>
         {allSkills.length === 0 ? (
-          <p className="text-sm text-gray-400">No skill types have been set up yet.</p>
+          <p className="text-sm text-sun-mute">No skill types have been set up yet.</p>
         ) : (
           <SkillsEditor allSkills={allSkills} currentSkillIds={currentSkillIds} />
         )}
       </div>
 
-      <div className="mt-6 bg-white rounded-lg border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-700 mb-4">Availability preference</h2>
+      <div className="mt-6 bg-sun-card rounded-[16px] border border-sun-border p-5">
+        <h2 className="text-sm font-semibold text-sun-body mb-4">Availability preference</h2>
         <AvailabilityEditor
           initial={partTimer.availability.map((a) => ({
             dayOfWeek: a.dayOfWeek,

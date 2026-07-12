@@ -8,7 +8,7 @@ export default async function NewShiftPage() {
     where: { ownerUserId: session!.user.id },
   });
 
-  if (!business) return <p className="text-gray-500">No business found.</p>;
+  if (!business) return <p className="text-sun-mute">No business found.</p>;
 
   const skills = await prisma.skill.findMany({
     where: { archived: false },
@@ -18,7 +18,7 @@ export default async function NewShiftPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">New Shift</h1>
+      <h1 className="text-2xl font-bold text-sun-ink mb-6">New Shift</h1>
       <NewShiftForm
         businessId={business.id}
         skills={skills.map((s) => ({

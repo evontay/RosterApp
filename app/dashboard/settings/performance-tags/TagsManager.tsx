@@ -68,12 +68,12 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
           onChange={(e) => setNewLabel(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           placeholder="New tag label…"
-          className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
+          className="flex-1 border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card"
         />
         <button
           onClick={handleCreate}
           disabled={creating || !newLabel.trim()}
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-sun-accent text-white text-sm rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {creating ? "Adding…" : "Add"}
         </button>
@@ -81,7 +81,7 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
 
       {/* Active tags */}
       {active.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+        <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
           {active.map((tag) => (
             <div key={tag.id} className="flex items-center justify-between px-4 py-3">
               {editingId === tag.id ? (
@@ -93,12 +93,12 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
                     if (e.key === "Enter") handleRename(tag.id);
                     if (e.key === "Escape") setEditingId(null);
                   }}
-                  className="flex-1 border border-blue-400 rounded px-2 py-1 text-sm focus:outline-none mr-3"
+                  className="flex-1 border border-sun-accent rounded-[10px] px-2 py-1 text-sm focus:outline-none mr-3"
                 />
               ) : (
                 <div>
-                  <span className="text-sm text-gray-800">{tag.label}</span>
-                  <span className="text-xs text-gray-400 ml-2">{tag._count.records} uses</span>
+                  <span className="text-sm text-sun-ink">{tag.label}</span>
+                  <span className="text-xs text-sun-mute ml-2">{tag._count.records} uses</span>
                 </div>
               )}
               <div className="flex items-center gap-3 shrink-0">
@@ -107,11 +107,11 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
                     <button
                       onClick={() => handleRename(tag.id)}
                       disabled={loading === tag.id}
-                      className="text-xs text-blue-600 hover:underline disabled:opacity-50"
+                      className="text-xs text-sun-accent-link hover:underline disabled:opacity-50"
                     >
                       Save
                     </button>
-                    <button onClick={() => setEditingId(null)} className="text-xs text-gray-400">
+                    <button onClick={() => setEditingId(null)} className="text-xs text-sun-mute">
                       Cancel
                     </button>
                   </>
@@ -119,14 +119,14 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
                   <>
                     <button
                       onClick={() => { setEditingId(tag.id); setEditLabel(tag.label); }}
-                      className="text-xs text-gray-400 hover:text-gray-700"
+                      className="text-xs text-sun-mute hover:text-sun-body"
                     >
                       Rename
                     </button>
                     <button
                       onClick={() => handleToggleArchive(tag.id, tag.archived)}
                       disabled={loading === tag.id}
-                      className="text-xs text-gray-400 hover:text-red-500 disabled:opacity-50"
+                      className="text-xs text-sun-mute hover:text-sun-body disabled:opacity-50"
                     >
                       Archive
                     </button>
@@ -139,21 +139,21 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
       )}
 
       {active.length === 0 && (
-        <p className="text-sm text-gray-400">No tags yet. Add one above.</p>
+        <p className="text-sm text-sun-mute">🌱 No tags yet. Add one above.</p>
       )}
 
       {/* Archived */}
       {archived.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Archived</h3>
-          <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+          <h3 className="text-xs font-semibold text-sun-mute uppercase tracking-wide mb-2">Archived</h3>
+          <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
             {archived.map((tag) => (
               <div key={tag.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-400">{tag.label}</span>
+                <span className="text-sm text-sun-mute">{tag.label}</span>
                 <button
                   onClick={() => handleToggleArchive(tag.id, tag.archived)}
                   disabled={loading === tag.id}
-                  className="text-xs text-gray-400 hover:text-blue-600 disabled:opacity-50"
+                  className="text-xs text-sun-mute hover:text-sun-accent-link disabled:opacity-50"
                 >
                   Restore
                 </button>

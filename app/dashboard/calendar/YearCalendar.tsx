@@ -17,8 +17,8 @@ type Slot = "AM" | "PM";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const STATUS_DOT: Record<string, string> = {
-  open: "bg-blue-500", filled: "bg-purple-500",
-  completed: "bg-green-500",
+  open: "bg-status-open-dot", filled: "bg-status-confirmed-dot",
+  completed: "bg-status-logged-dot",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -107,7 +107,7 @@ export function YearCalendar({
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-3)}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-body"
             title="Previous 3 months"
           >
             ←
@@ -117,7 +117,7 @@ export function YearCalendar({
           <select
             value={startMonth}
             onChange={(e) => navigateTo(startYear, parseInt(e.target.value))}
-            className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+            className="border border-sun-border rounded-full px-2 py-1.5 text-sm focus:outline-none focus:border-sun-accent"
           >
             {MONTHS.map((name, i) => (
               <option key={i} value={i}>{name}</option>
@@ -127,7 +127,7 @@ export function YearCalendar({
           <select
             value={startYear}
             onChange={(e) => navigateTo(parseInt(e.target.value), startMonth)}
-            className="border border-gray-300 rounded px-2 py-1.5 text-sm"
+            className="border border-sun-border rounded-full px-2 py-1.5 text-sm focus:outline-none focus:border-sun-accent"
           >
             {YEAR_RANGE.map((y) => (
               <option key={y} value={y}>{y}</option>
@@ -137,7 +137,7 @@ export function YearCalendar({
           {!isCurrentMonth && (
             <button
               onClick={() => navigateTo(today.getFullYear(), today.getMonth())}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-body"
             >
               Today
             </button>
@@ -145,7 +145,7 @@ export function YearCalendar({
 
           <button
             onClick={() => navigate(3)}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-body"
             title="Next 3 months"
           >
             →
@@ -155,17 +155,17 @@ export function YearCalendar({
 
       {/* Legend */}
       <div className="flex items-center gap-4 mb-4 flex-wrap">
-        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">Status</span>
+        <span className="text-xs text-sun-mute font-medium uppercase tracking-wide">Status</span>
         {Object.entries(STATUS_DOT).map(([s, cls]) => (
           <div key={s} className="flex items-center gap-1.5">
-            <div className={`w-2.5 h-2.5 rounded-sm ${cls}`} />
-            <span className="text-xs text-gray-600">{STATUS_LABEL[s] ?? s}</span>
-            <span className="text-xs text-gray-400">({statusCounts[s] ?? 0})</span>
+            <div className={`w-2.5 h-2.5 rounded-full ${cls}`} />
+            <span className="text-xs text-sun-body">{STATUS_LABEL[s] ?? s}</span>
+            <span className="text-xs text-sun-mute">({statusCounts[s] ?? 0})</span>
           </div>
         ))}
         <div className="flex items-center gap-1.5 ml-4">
-          <div className="w-2.5 h-2.5 rounded-sm bg-gray-100 border border-gray-200" />
-          <span className="text-xs text-gray-400">Empty slot (click to add)</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-sun-faint border border-sun-border" />
+          <span className="text-xs text-sun-mute">Empty slot (click to add)</span>
         </div>
       </div>
 
@@ -221,13 +221,13 @@ function MonthGrid({
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3">
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">
-        {monthName} <span className="text-gray-400 font-normal">{year}</span>
+    <div className="bg-sun-card rounded-[16px] border border-sun-border p-3">
+      <h3 className="text-sm font-semibold text-sun-body mb-2">
+        {monthName} <span className="text-sun-mute font-normal">{year}</span>
       </h3>
       <div className="grid grid-cols-7 gap-px text-center mb-1">
         {["M","T","W","T","F","S","S"].map((d, i) => (
-          <div key={i} className="text-[9px] font-medium text-gray-400">{d}</div>
+          <div key={i} className="text-[9px] font-medium text-sun-mute">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-px">
@@ -242,7 +242,7 @@ function MonthGrid({
           return (
             <div key={i} className="flex flex-col gap-px">
               <div className={`text-xs text-center leading-none py-0.5 ${
-                isToday ? "font-bold text-red-500" : "font-medium text-gray-600"
+                isToday ? "font-bold text-sun-accent-text" : "font-medium text-sun-body"
               }`}>
                 {day}
               </div>
@@ -251,7 +251,7 @@ function MonthGrid({
                 className={`h-2.5 rounded-sm w-full transition-colors ${
                   amShifts.length > 0
                     ? `${STATUS_DOT[amShifts[0].status]} opacity-70 hover:opacity-100`
-                    : "bg-gray-100 hover:bg-blue-100"
+                    : "bg-sun-faint hover:bg-sun-accent-soft"
                 }`}
                 title={amShifts.length > 0 ? amShifts.map((s) => s.title).join(", ") : "Add AM shift"}
               />
@@ -260,7 +260,7 @@ function MonthGrid({
                 className={`h-2.5 rounded-sm w-full transition-colors ${
                   pmShifts.length > 0
                     ? `${STATUS_DOT[pmShifts[0].status]} opacity-70 hover:opacity-100`
-                    : "bg-gray-100 hover:bg-blue-100"
+                    : "bg-sun-faint hover:bg-sun-accent-soft"
                 }`}
                 title={pmShifts.length > 0 ? pmShifts.map((s) => s.title).join(", ") : "Add PM shift"}
               />
@@ -288,31 +288,31 @@ function SlotModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="bg-sun-card rounded-[16px] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-sun-border">
           <div>
-            <p className="font-semibold text-gray-800">{display}</p>
-            <p className="text-xs text-gray-500">{slot === "AM" ? "Morning" : "Afternoon"} shifts</p>
+            <p className="font-semibold text-sun-ink">{display}</p>
+            <p className="text-xs text-sun-mute">{slot === "AM" ? "Morning" : "Afternoon"} shifts</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl">×</button>
+          <button onClick={onClose} className="text-sun-mute hover:text-sun-body text-xl">×</button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-4">
           {!creating && !editingShift && (
             <>
               {slotShifts.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No shifts yet for this slot.</p>
+                <p className="text-sm text-sun-mute text-center py-4">🌱 No shifts yet for this slot.</p>
               ) : (
                 <div className="space-y-2 mb-4">
                   {slotShifts.map((s) => (
                     <button
                       key={s.id}
                       onClick={() => onEditShift(s)}
-                      className="w-full text-left bg-gray-50 hover:bg-blue-50 border border-gray-200 rounded-lg p-3 transition-colors"
+                      className="w-full text-left bg-sun-inset hover:bg-sun-accent-soft border border-sun-border rounded-[12px] p-3 transition-colors"
                     >
-                      <p className="font-medium text-sm text-gray-800">{s.title}</p>
-                      <p className="text-xs text-gray-500">{s.startTime}–{s.endTime}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="font-medium text-sm text-sun-ink">{s.title}</p>
+                      <p className="text-xs text-sun-mute">{s.startTime}–{s.endTime}</p>
+                      <p className="text-xs text-sun-mute">
                         {s.roles.map((r) => `${r.skillLabel} ×${r.count}`).join(", ")}
                       </p>
                     </button>
@@ -321,7 +321,7 @@ function SlotModal({
               )}
               <button
                 onClick={onStartCreate}
-                className="w-full border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 rounded-lg py-3 text-sm font-medium transition-colors"
+                className="w-full border-2 border-dashed border-sun-border text-sun-mute hover:border-sun-accent hover:text-sun-accent-link rounded-[12px] py-3 text-sm font-medium transition-colors"
               >
                 + New shift
               </button>
@@ -422,51 +422,51 @@ function ShiftForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <h3 className="font-semibold text-gray-800 text-sm mb-3">
+      <h3 className="font-semibold text-sun-ink text-sm mb-3">
         {mode === "create" ? "New shift" : "Edit shift"}
       </h3>
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Title</label>
+        <label className="block text-xs font-medium text-sun-body mb-1">Title</label>
         <input type="text" value={form.title} onChange={(e) => setField("title", e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
+          className="w-full border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent"
           placeholder="e.g. Weekend pottery workshop" required />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+        <label className="block text-xs font-medium text-sun-body mb-1">Date</label>
         <input type="date" value={form.shiftDate} onChange={(e) => setField("shiftDate", e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm" required />
+          className="w-full border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent" required />
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Start</label>
+          <label className="block text-xs font-medium text-sun-body mb-1">Start</label>
           <input type="time" value={form.startTime} onChange={(e) => setField("startTime", e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm" required />
+            className="w-full border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent" required />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">End</label>
+          <label className="block text-xs font-medium text-sun-body mb-1">End</label>
           <input type="time" value={form.endTime} onChange={(e) => setField("endTime", e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm" required />
+            className="w-full border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent" required />
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Roles & pay</label>
+        <label className="block text-xs font-medium text-sun-body mb-1">Roles & pay</label>
         <RolesEditor skills={currentSkills} roles={roles}
           onChange={(r, s) => { setRoles(r); setCurrentSkills(s); }} />
       </div>
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-status-open-text text-xs">{error}</p>}
       <div className="flex gap-2 pt-1">
         <button type="button" onClick={onCancel}
-          className="flex-1 border border-gray-300 text-gray-600 py-2 rounded text-sm">
+          className="flex-1 border border-sun-border text-sun-body py-2 rounded-full text-sm">
           {cancelLabel ?? "Cancel"}
         </button>
         <button type="submit" disabled={loading}
-          className="flex-1 bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+          className="flex-1 bg-sun-accent text-white py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50">
           {loading ? "Saving..." : mode === "create" ? "Create shift" : "Save changes"}
         </button>
       </div>
       {mode === "edit" && (
         <Link href={`/dashboard/shifts/${shift!.id}`}
-          className="block text-center text-xs text-blue-600 hover:underline pt-1">
+          className="block text-center text-xs text-sun-accent-link hover:underline pt-1">
           View full shift details →
         </Link>
       )}

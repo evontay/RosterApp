@@ -23,17 +23,17 @@ export function UnassignButton({ assignmentId }: { assignmentId: string }) {
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">Remove?</span>
+        <span className="text-xs text-sun-mute">Remove?</span>
         <button
           onClick={handleUnassign}
           disabled={loading}
-          className="text-xs text-red-600 font-medium hover:underline disabled:opacity-50"
+          className="text-xs text-sun-mute font-medium hover:underline disabled:opacity-50"
         >
           {loading ? "..." : "Yes"}
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="text-xs text-gray-400 hover:text-gray-600"
+          className="text-xs text-sun-mute hover:text-sun-body"
         >
           No
         </button>
@@ -44,7 +44,7 @@ export function UnassignButton({ assignmentId }: { assignmentId: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+      className="text-xs border border-gray-200 text-sun-mute px-3 py-1 rounded-full hover:bg-sun-inset transition-colors"
     >
       Remove
     </button>

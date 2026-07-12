@@ -82,7 +82,7 @@ export default async function EmployeeHomePage() {
   return (
     <div className="space-y-6">
       {/* Profile card */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-sun-card rounded-[16px] border border-sun-border p-6">
         <div className="flex items-center gap-5">
           <Avatar
             name={partTimer.name}
@@ -92,13 +92,13 @@ export default async function EmployeeHomePage() {
             size="lg"
           />
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-gray-800">{partTimer.name}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{partTimer.email}</p>
+            <h1 className="text-xl font-bold text-sun-ink">{partTimer.name}</h1>
+            <p className="text-sm text-sun-mute mt-0.5">{partTimer.email}</p>
             {partTimer.phone && (
-              <p className="text-sm text-gray-500">{partTimer.phone}</p>
+              <p className="text-sm text-sun-mute">{partTimer.phone}</p>
             )}
             {memberSince && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-sun-mute mt-1">
                 Member since{" "}
                 {memberSince.toLocaleDateString("en-SG", {
                   day: "numeric",
@@ -110,7 +110,7 @@ export default async function EmployeeHomePage() {
             {partTimer.skills.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {partTimer.skills.map((s) => (
-                  <span key={s.skillId} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                  <span key={s.skillId} className="px-2 py-0.5 bg-sun-inset text-sun-body rounded-full text-xs">
                     {s.skill.label}
                   </span>
                 ))}
@@ -121,24 +121,24 @@ export default async function EmployeeHomePage() {
 
         {/* Shift stats */}
         {totalShifts > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+          <div className="mt-4 pt-4 border-t border-sun-border grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-lg font-bold text-gray-800">{totalShifts}</p>
-              <p className="text-xs text-gray-400">Shifts</p>
+              <p className="text-lg font-bold text-sun-ink">{totalShifts}</p>
+              <p className="text-xs text-sun-mute">Shifts</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-800">{totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1)}</p>
-              <p className="text-xs text-gray-400">Hours</p>
+              <p className="text-lg font-bold text-sun-ink">{totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1)}</p>
+              <p className="text-xs text-sun-mute">Hours</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-800">${totalEarned.toFixed(0)}</p>
-              <p className="text-xs text-gray-400">Earned</p>
+              <p className="text-lg font-bold text-sun-accent-link">${totalEarned.toFixed(0)}</p>
+              <p className="text-xs text-sun-mute">Earned</p>
             </div>
           </div>
         )}
 
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <Link href="/my-settings" className="text-sm text-blue-600 hover:underline">
+        <div className="mt-4 pt-4 border-t border-sun-border">
+          <Link href="/my-settings" className="text-sm text-sun-accent-link hover:underline">
             Edit profile →
           </Link>
         </div>
@@ -146,8 +146,8 @@ export default async function EmployeeHomePage() {
 
       {/* Milestones */}
       {(unlocked.length > 0 || next) && (
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Milestones</h2>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-5">
+          <h2 className="text-sm font-semibold text-sun-body mb-3">Milestones</h2>
 
           {unlocked.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -155,7 +155,7 @@ export default async function EmployeeHomePage() {
                 <div
                   key={m.id}
                   title={m.description}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 border border-yellow-200 rounded-full text-xs font-medium text-yellow-800"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sun-accent-soft border border-sun-border rounded-full text-xs font-medium text-sun-accent-text"
                 >
                   <span>{m.emoji}</span>
                   <span>{m.label}</span>
@@ -165,28 +165,27 @@ export default async function EmployeeHomePage() {
           )}
 
           {next && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-sun-mute">
               Next: {next.emoji} {next.label} — {next.description}
             </p>
           )}
 
           {unlocked.length === 0 && (
-            <p className="text-xs text-gray-400">Complete your first shift to earn your first badge.</p>
+            <p className="text-xs text-sun-mute">Complete your first shift to earn your first badge.</p>
           )}
         </div>
       )}
 
       {/* Kudos */}
       {kudosList.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Kudos</h2>
+        <div className="bg-sun-card rounded-[16px] border border-sun-border p-5">
+          <h2 className="text-sm font-semibold text-sun-body mb-3">Kudos 💛</h2>
           <div className="space-y-3">
             {kudosList.map((k) => (
-              <div key={k.id} className="flex gap-3">
-                <span className="text-lg leading-none mt-0.5">⭐</span>
+              <div key={k.id} className="flex gap-3 bg-sun-inset rounded-[12px] p-3">
                 <div>
-                  <p className="text-sm text-gray-700">{k.message}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-sm text-sun-body">{k.message}</p>
+                  <p className="text-xs text-sun-mute mt-0.5">
                     {shiftTitleMap.get(k.shiftId) ?? "Shift"} ·{" "}
                     {k.createdAt.toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
@@ -199,7 +198,7 @@ export default async function EmployeeHomePage() {
 
       {/* Upcoming shifts */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-sun-mute uppercase tracking-wide mb-3">
           Upcoming shifts
         </h2>
         <div className="space-y-3">
@@ -207,12 +206,12 @@ export default async function EmployeeHomePage() {
             <Link
               key={a.id}
               href={`/shifts/${a.shift.id}`}
-              className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors"
+              className="block bg-sun-card rounded-[16px] border border-sun-border p-4 hover:border-sun-accent transition-colors"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-gray-800">{a.shift.title}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">
+                  <p className="font-medium text-sun-ink">{a.shift.title}</p>
+                  <p className="text-sm text-sun-mute mt-0.5">
                     {new Date(a.shift.shiftDate).toLocaleDateString("en-SG", {
                       weekday: "short",
                       day: "numeric",
@@ -221,11 +220,11 @@ export default async function EmployeeHomePage() {
                     · {a.shift.startTime}–{a.shift.endTime}
                   </p>
                   {a.shiftRole && (
-                    <p className="text-xs text-gray-400 mt-0.5">{a.shiftRole.skill.label}</p>
+                    <p className="text-xs text-sun-mute mt-0.5">{a.shiftRole.skill.label}</p>
                   )}
                 </div>
                 {a.payAmount != null && (
-                  <p className="text-sm font-semibold text-gray-800 shrink-0">
+                  <p className="text-sm font-semibold text-sun-accent-link shrink-0">
                     ${Number(a.payAmount).toFixed(2)}
                   </p>
                 )}
@@ -233,8 +232,8 @@ export default async function EmployeeHomePage() {
             </Link>
           ))}
           {upcomingAssignments.length === 0 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 text-center text-gray-400 text-sm">
-              No upcoming shifts.
+            <div className="bg-sun-card rounded-[16px] border border-sun-border p-6 text-center text-sun-mute text-sm">
+              🌱 No upcoming shifts.
             </div>
           )}
         </div>

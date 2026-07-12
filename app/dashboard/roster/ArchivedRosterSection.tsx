@@ -26,18 +26,18 @@ export function ArchivedRosterSection({ members }: { members: ArchivedMember[] }
     <div className="mt-4">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
+        className="text-sm text-sun-mute hover:text-sun-body flex items-center gap-1"
       >
         <span>{open ? "▼" : "▶"}</span>
         <span>Archived employees ({members.length})</span>
       </button>
 
       {open && (
-        <div className="mt-2 bg-white rounded-lg border border-gray-200 overflow-hidden opacity-60">
+        <div className="mt-2 bg-sun-card rounded-[16px] border border-sun-border overflow-hidden opacity-60">
           <table className="w-full text-sm">
             <tbody>
               {members.map((m) => (
-                <tr key={m.id} className="border-b border-gray-100 last:border-0">
+                <tr key={m.id} className="border-b border-sun-border last:border-0">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar
@@ -50,11 +50,11 @@ export function ArchivedRosterSection({ members }: { members: ArchivedMember[] }
                       <div>
                         <Link
                           href={`/dashboard/roster/${m.partTimer.id}`}
-                          className="font-medium text-gray-800 hover:text-blue-600"
+                          className="font-medium text-sun-ink hover:text-sun-accent-link"
                         >
                           {m.partTimer.name}
                         </Link>
-                        <p className="text-xs text-gray-400">{m.partTimer.email}</p>
+                        <p className="text-xs text-sun-mute">{m.partTimer.email}</p>
                       </div>
                     </div>
                   </td>

@@ -20,7 +20,7 @@ export function AvatarPicker({ name, id, emoji, color, onChange }: Props) {
 
       {/* Color swatches */}
       <div>
-        <p className="text-xs font-medium text-gray-600 mb-2">Background color</p>
+        <p className="text-xs font-medium text-sun-body mb-2">Background color</p>
         <div className="flex flex-wrap gap-2">
           {AVATAR_COLOR_KEYS.map((key) => {
             const { bg, text } = AVATAR_COLORS[key];
@@ -43,7 +43,7 @@ export function AvatarPicker({ name, id, emoji, color, onChange }: Props) {
 
       {/* Avatar options */}
       <div>
-        <p className="text-xs font-medium text-gray-600 mb-2">Avatar</p>
+        <p className="text-xs font-medium text-sun-body mb-2">Avatar</p>
         <div className="flex flex-wrap gap-2">
           {/* Initials option */}
           <button
@@ -51,8 +51,8 @@ export function AvatarPicker({ name, id, emoji, color, onChange }: Props) {
             onClick={() => onChange(null, color)}
             className={`w-9 h-9 rounded-full border-2 text-xs font-semibold transition-transform flex items-center justify-center ${
               emoji === null
-                ? "border-blue-500 scale-110"
-                : "border-gray-200 hover:border-gray-400 hover:scale-105"
+                ? "border-sun-accent scale-110"
+                : "border-sun-border hover:border-sun-accent hover:scale-105"
             }`}
             style={
               emoji === null
@@ -72,8 +72,8 @@ export function AvatarPicker({ name, id, emoji, color, onChange }: Props) {
               onClick={() => onChange(e, color)}
               className={`w-9 h-9 rounded-full border-2 text-xl transition-transform flex items-center justify-center ${
                 emoji === e
-                  ? "border-blue-500 scale-110"
-                  : "border-gray-200 hover:border-gray-400 hover:scale-105"
+                  ? "border-sun-accent scale-110"
+                  : "border-sun-border hover:border-sun-accent hover:scale-105"
               }`}
               style={{ backgroundColor: "#f9fafb" }}
             >

@@ -52,10 +52,10 @@ export function SkillEditor({
             key={s.id}
             type="button"
             onClick={() => toggle(s.id)}
-            className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
               selected.includes(s.id)
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-600"
+                ? "bg-sun-accent text-white border-sun-accent"
+                : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent hover:text-sun-accent-link"
             }`}
           >
             {s.label}
@@ -66,7 +66,7 @@ export function SkillEditor({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving..." : saved ? "Saved!" : "Save"}
         </button>

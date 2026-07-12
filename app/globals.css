@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Canvas + surfaces */
+  --color-sun-page: #FFFBF2;
+  --color-sun-card: #FFFFFF;
+  --color-sun-inset: #FFFBF2;
+  --color-sun-border: #FDE8C8;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Brand accent (amber) */
+  --color-sun-accent: #F59E0B;
+  --color-sun-accent-soft: #FEF3C7;
+  --color-sun-accent-text: #92400E;
+  --color-sun-accent-link: #B45309;
+
+  /* Text */
+  --color-sun-ink: #1F2937;
+  --color-sun-body: #4B5563;
+  --color-sun-mute: #9CA3AF;
+  --color-sun-faint: #D1D5DB;
+
+  /* Status — Open */
+  --color-status-open-bg: #FEE2E2;
+  --color-status-open-text: #B91C1C;
+  --color-status-open-dot: #F87171;
+
+  /* Status — Confirmed */
+  --color-status-confirmed-bg: #D1FAE5;
+  --color-status-confirmed-text: #065F46;
+  --color-status-confirmed-dot: #34D399;
+
+  /* Status — Logged */
+  --color-status-logged-bg: #DBEAFE;
+  --color-status-logged-text: #1D4ED8;
+  --color-status-logged-dot: #60A5FA;
+
+  /* Status — Paid */
+  --color-status-paid-bg: #FEF3C7;
+  --color-status-paid-text: #92400E;
+
+  /* Pending / waiting */
+  --color-pending-bg: #FEF9C3;
+  --color-pending-text: #713F12;
+  --color-pending-mute: #A16207;
+  --color-pending-border: #FDE047;
+
+  /* Role pill palette */
+  --color-role-purple-bg: #F3E8FF;  --color-role-purple-text: #7C3AED;
+  --color-role-blue-bg: #DBEAFE;    --color-role-blue-text: #1D4ED8;
+  --color-role-pink-bg: #FCE7F3;    --color-role-pink-text: #BE185D;
+  --color-role-green-bg: #D1FAE5;   --color-role-green-text: #065F46;
+
+  /* Avatar pastel backgrounds */
+  --color-avatar-1: #DBEAFE;
+  --color-avatar-2: #E9D5FF;
+  --color-avatar-3: #FDE68A;
+  --color-avatar-4: #FCE7F3;
+  --color-avatar-5: #D1FAE5;
+
+  /* Radii */
+  --radius-card: 16px;
+  --radius-tile: 12px;
+  --radius-cell: 10px;
+  --radius-pill: 9999px;
+
+  /* Alert red */
+  --color-alert: #F87171;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: #FFFBF2;
+  color: #1F2937;
   font-family: Arial, Helvetica, sans-serif;
 }
