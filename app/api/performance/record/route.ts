@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   });
   if (!business) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { shiftId, partTimerId, attendance, qualityFlag, tagIds } = await req.json();
+  const { shiftId, partTimerId, attendance, qualityFlag, tagIds, comment } = await req.json();
   if (!shiftId || !partTimerId || !attendance) {
     return NextResponse.json({ error: "shiftId, partTimerId, attendance required" }, { status: 400 });
   }
@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
       data: {
         attendance,
         qualityFlag: qualityFlag ?? null,
+        comment: comment?.trim() || null,
         updatedAt: new Date(),
         tags: tagIds?.length > 0
           ? { create: tagIds.map((tagId: string) => ({ tagId })) }
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
         businessId: business.id,
         attendance,
         qualityFlag: qualityFlag ?? null,
+        comment: comment?.trim() || null,
         tags: tagIds?.length > 0
           ? { create: tagIds.map((tagId: string) => ({ tagId })) }
           : undefined,

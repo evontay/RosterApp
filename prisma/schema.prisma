@@ -233,6 +233,7 @@ model ObjectiveRecord {
   businessId  String
   attendance  Attendance
   qualityFlag QualityFlag?
+  comment     String?
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   tags        ObjectiveRecordTag[]

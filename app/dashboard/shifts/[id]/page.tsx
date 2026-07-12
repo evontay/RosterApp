@@ -102,7 +102,12 @@ export default async function ShiftDetailPage({
   const recordByPartTimer = new Map(
     objectiveRecords.map((r) => [
       r.partTimerId,
-      { attendance: r.attendance as "attended" | "late" | "no_show", qualityFlag: r.qualityFlag as "good" | "issues" | null, tagIds: r.tags.map((t) => t.tagId) },
+      {
+        attendance: r.attendance as "attended" | "late" | "no_show",
+        qualityFlag: r.qualityFlag as "good" | "issues" | null,
+        tagIds: r.tags.map((t) => t.tagId),
+        comment: r.comment,
+      },
     ])
   );
 

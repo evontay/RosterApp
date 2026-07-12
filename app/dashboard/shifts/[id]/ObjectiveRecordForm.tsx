@@ -12,6 +12,7 @@ interface ExistingRecord {
   attendance: Attendance;
   qualityFlag: QualityFlag;
   tagIds: string[];
+  comment: string | null;
 }
 
 const ATTENDANCE_OPTIONS: { value: Attendance; label: string }[] = [
@@ -36,6 +37,7 @@ export function ObjectiveRecordForm({
   const [attendance, setAttendance] = useState<Attendance>(existing?.attendance ?? "attended");
   const [qualityFlag, setQualityFlag] = useState<QualityFlag>(existing?.qualityFlag ?? null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(existing?.tagIds ?? []);
+  const [comment, setComment] = useState(existing?.comment ?? "");
   const [saving, setSaving] = useState(false);
 
   function toggleTag(tagId: string) {
@@ -49,7 +51,7 @@ export function ObjectiveRecordForm({
     await fetch("/api/performance/record", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ shiftId, partTimerId, attendance, qualityFlag, tagIds: selectedTagIds }),
+      body: JSON.stringify({ shiftId, partTimerId, attendance, qualityFlag, tagIds: selectedTagIds, comment }),
     });
     setSaving(false);
     setOpen(false);
@@ -58,10 +60,7 @@ export function ObjectiveRecordForm({
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="text-xs text-blue-600 hover:underline"
-      >
+      <button onClick={() => setOpen(true)} className="text-xs text-blue-600 hover:underline">
         {existing ? "Edit record" : "Add record"}
       </button>
     );
@@ -139,6 +138,18 @@ export function ObjectiveRecordForm({
           </div>
         </div>
       )}
+
+      {/* Comment */}
+      <div>
+        <p className="text-xs font-medium text-gray-500 mb-1.5">Notes <span className="font-normal text-gray-400">(optional)</span></p>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Private notes about this shift…"
+          rows={2}
+          className="w-full border border-gray-300 rounded px-2.5 py-1.5 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
+        />
+      </div>
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">

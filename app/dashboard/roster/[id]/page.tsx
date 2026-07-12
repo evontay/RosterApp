@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SkillEditor } from "./SkillEditor";
 import { Avatar } from "@/components/Avatar";
 import { TrustSignalsDisplay } from "./TrustSignals";
+import { PerformanceLog } from "./PerformanceLog";
 import { computeTrustSignals } from "@/lib/trust";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -63,7 +64,15 @@ export default async function PartTimerProfilePage({
     }),
     prisma.objectiveRecord.findMany({
       where: { partTimerId: id, businessId: business.id },
-      select: { attendance: true, qualityFlag: true, createdAt: true },
+      select: {
+        attendance: true,
+        qualityFlag: true,
+        comment: true,
+        createdAt: true,
+        shiftId: true,
+        tags: { select: { tag: { select: { label: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
@@ -85,6 +94,16 @@ export default async function PartTimerProfilePage({
       createdAt: r.createdAt,
     }))
   );
+
+  // Fetch shift titles for the performance log
+  const shiftIds = [...new Set(objectiveRecords.map((r) => r.shiftId))];
+  const shiftsForLog = shiftIds.length > 0
+    ? await prisma.shift.findMany({
+        where: { id: { in: shiftIds } },
+        select: { id: true, title: true, shiftDate: true },
+      })
+    : [];
+  const shiftMap = new Map(shiftsForLog.map((s) => [s.id, s]));
 
   const totalEarned = assignments.reduce(
     (sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0
@@ -132,9 +151,25 @@ export default async function PartTimerProfilePage({
       </div>
 
       {/* Performance signals */}
-      <div className="mb-6">
+      <div className="mb-4">
         <TrustSignalsDisplay signals={trustSignals} />
       </div>
+
+      {/* Performance log */}
+      {objectiveRecords.length > 0 && (
+        <div className="mb-6">
+          <PerformanceLog
+            records={objectiveRecords.map((r) => ({
+              attendance: r.attendance as "attended" | "late" | "no_show",
+              qualityFlag: r.qualityFlag as "good" | "issues" | null,
+              comment: r.comment,
+              createdAt: r.createdAt,
+              tags: r.tags.map((t) => t.tag.label),
+              shift: shiftMap.get(r.shiftId) ?? null,
+            }))}
+          />
+        </div>
+      )}
 
       {/* Skills & Availability */}
       <div className="grid grid-cols-2 gap-4 mb-6">
