@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
-import { computeTrustSignals } from "@/lib/trust";
-
+import { computeMilestones } from "@/lib/milestones";
 
 export default async function EmployeeHomePage() {
   const session = await auth();
@@ -22,34 +21,63 @@ export default async function EmployeeHomePage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcomingAssignments = await prisma.shiftAssignment.findMany({
-    where: {
-      partTimerId: partTimer.id,
-      status: "assigned",
-      shift: { shiftDate: { gte: today }, status: { not: "cancelled" } },
-    },
-    include: {
-      shift: {
-        include: { business: true },
+  const [upcomingAssignments, completedAssignments, kudosList] = await Promise.all([
+    prisma.shiftAssignment.findMany({
+      where: {
+        partTimerId: partTimer.id,
+        status: "assigned",
+        shift: { shiftDate: { gte: today }, status: { not: "cancelled" } },
       },
-      shiftRole: { include: { skill: true } },
-    },
-    orderBy: { shift: { shiftDate: "asc" } },
+      include: {
+        shift: { include: { business: true } },
+        shiftRole: { include: { skill: true } },
+      },
+      orderBy: { shift: { shiftDate: "asc" } },
+    }),
+    prisma.shiftAssignment.findMany({
+      where: { partTimerId: partTimer.id, status: "completed" },
+      include: {
+        shift: {
+          include: {
+            assignments: {
+              where: { status: "completed", partTimerId: { not: partTimer.id } },
+              select: { partTimerId: true },
+            },
+          },
+        },
+      },
+    }),
+    prisma.kudos.findMany({
+      where: { partTimerId: partTimer.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
+
+  // Shift history stats
+  const totalShifts = completedAssignments.length;
+  const totalHours = completedAssignments.reduce((sum, a) => sum + (a.hoursLogged ? Number(a.hoursLogged) : 0), 0);
+  const totalEarned = completedAssignments.reduce((sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0);
+
+  // Unique coworkers across all completed shifts
+  const allCoworkerIds = new Set(
+    completedAssignments.flatMap((a) => a.shift.assignments.map((x) => x.partTimerId))
+  );
+
+  const { unlocked, next } = computeMilestones({
+    completedShifts: totalShifts,
+    uniqueCoworkers: allCoworkerIds.size,
   });
 
   const memberSince = partTimer.memberships[0]?.invitedAt ?? null;
 
-  const objectiveRecords = await prisma.objectiveRecord.findMany({
-    where: { partTimerId: partTimer.id },
-    select: { attendance: true, qualityFlag: true, createdAt: true },
+  // Fetch shift titles for kudos
+  const kudosShiftIds = [...new Set(kudosList.map((k) => k.shiftId))];
+  const kudosShifts = await prisma.shift.findMany({
+    where: { id: { in: kudosShiftIds } },
+    select: { id: true, title: true },
   });
-  const performance = computeTrustSignals(
-    objectiveRecords.map((r) => ({
-      attendance: r.attendance as "attended" | "late" | "no_show",
-      qualityFlag: r.qualityFlag as "good" | "issues" | null,
-      createdAt: r.createdAt,
-    }))
-  );
+  const shiftTitleMap = new Map(kudosShifts.map((s) => [s.id, s.title]));
 
   return (
     <div className="space-y-6">
@@ -90,65 +118,82 @@ export default async function EmployeeHomePage() {
             )}
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+
+        {/* Shift stats */}
+        {totalShifts > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-lg font-bold text-gray-800">{totalShifts}</p>
+              <p className="text-xs text-gray-400">Shifts</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-800">{totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1)}</p>
+              <p className="text-xs text-gray-400">Hours</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-gray-800">${totalEarned.toFixed(0)}</p>
+              <p className="text-xs text-gray-400">Earned</p>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 pt-4 border-t border-gray-100">
           <Link href="/my-settings" className="text-sm text-blue-600 hover:underline">
             Edit profile →
           </Link>
         </div>
       </div>
 
-      {/* Performance */}
-      {performance.recordCount > 0 && (
+      {/* Milestones */}
+      {(unlocked.length > 0 || next) && (
         <div className="bg-white rounded-lg border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Your performance</h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Reliability</p>
-              <p className={`text-2xl font-bold ${
-                performance.reliability !== null && performance.reliability >= 80 ? "text-green-600" :
-                performance.reliability !== null && performance.reliability >= 60 ? "text-yellow-600" :
-                "text-red-500"
-              }`}>
-                {performance.reliability !== null ? `${performance.reliability}%` : "—"}
-              </p>
-              {performance.reliability !== null && (
-                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                  <div
-                    className={`h-1.5 rounded-full ${
-                      performance.reliability >= 80 ? "bg-green-500" :
-                      performance.reliability >= 60 ? "bg-yellow-400" : "bg-red-400"
-                    }`}
-                    style={{ width: `${performance.reliability}%` }}
-                  />
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Milestones</h2>
+
+          {unlocked.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {unlocked.map((m) => (
+                <div
+                  key={m.id}
+                  title={m.description}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 border border-yellow-200 rounded-full text-xs font-medium text-yellow-800"
+                >
+                  <span>{m.emoji}</span>
+                  <span>{m.label}</span>
                 </div>
-              )}
+              ))}
             </div>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Quality</p>
-              {performance.quality !== null ? (
-                <>
-                  <p className={`text-2xl font-bold ${
-                    performance.quality >= 80 ? "text-green-600" :
-                    performance.quality >= 60 ? "text-yellow-600" : "text-red-500"
-                  }`}>
-                    {performance.quality}%
+          )}
+
+          {next && (
+            <p className="text-xs text-gray-400">
+              Next: {next.emoji} {next.label} — {next.description}
+            </p>
+          )}
+
+          {unlocked.length === 0 && (
+            <p className="text-xs text-gray-400">Complete your first shift to earn your first badge.</p>
+          )}
+        </div>
+      )}
+
+      {/* Kudos */}
+      {kudosList.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">Kudos</h2>
+          <div className="space-y-3">
+            {kudosList.map((k) => (
+              <div key={k.id} className="flex gap-3">
+                <span className="text-lg leading-none mt-0.5">⭐</span>
+                <div>
+                  <p className="text-sm text-gray-700">{k.message}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {shiftTitleMap.get(k.shiftId) ?? "Shift"} ·{" "}
+                    {k.createdAt.toLocaleDateString("en-SG", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-2">
-                    <div
-                      className={`h-1.5 rounded-full ${
-                        performance.quality >= 80 ? "bg-green-500" :
-                        performance.quality >= 60 ? "bg-yellow-400" : "bg-red-400"
-                      }`}
-                      style={{ width: `${performance.quality}%` }}
-                    />
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-gray-400 mt-1">Not yet rated</p>
-              )}
-            </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-gray-400 mt-4">Based on {performance.recordCount} completed shift{performance.recordCount !== 1 ? "s" : ""}.</p>
         </div>
       )}
 
@@ -194,7 +239,6 @@ export default async function EmployeeHomePage() {
           )}
         </div>
       </div>
-
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { Avatar } from "@/components/Avatar";
 import { InterestActions } from "./InterestActions";
 import { EmployeeProfileModal } from "./EmployeeProfileModal";
 import { ObjectiveRecordForm } from "./ObjectiveRecordForm";
+import { KudosButton } from "./KudosButton";
 
 export default async function ShiftDetailPage({
   params,
@@ -54,7 +55,7 @@ export default async function ShiftDetailPage({
   });
   if (!shift) notFound();
 
-  const [skills, performanceTags, objectiveRecords] = await Promise.all([
+  const [skills, performanceTags, objectiveRecords, kudosList] = await Promise.all([
     prisma.skill.findMany({
       where: { archived: false },
       orderBy: { label: "asc" },
@@ -68,6 +69,9 @@ export default async function ShiftDetailPage({
     prisma.objectiveRecord.findMany({
       where: { shiftId: id, businessId: business.id },
       include: { tags: { select: { tagId: true } } },
+    }),
+    prisma.kudos.findMany({
+      where: { shiftId: id, businessId: business.id },
     }),
   ]);
 
@@ -109,6 +113,11 @@ export default async function ShiftDetailPage({
         comment: r.comment,
       },
     ])
+  );
+
+  // Kudos lookup by partTimerId
+  const kudosByPartTimer = new Map(
+    kudosList.map((k) => [k.partTimerId, k.message])
   );
 
   // Default hours from shift duration
@@ -256,12 +265,17 @@ export default async function ShiftDetailPage({
                       </div>
                       </div>
                       {shift.status === "completed" && (
-                        <div className="mt-2 pl-1">
+                        <div className="mt-2 pl-1 space-y-1">
                           <ObjectiveRecordForm
                             shiftId={shift.id}
                             partTimerId={a.partTimerId}
                             availableTags={performanceTags}
                             existing={recordByPartTimer.get(a.partTimerId) ?? null}
+                          />
+                          <KudosButton
+                            shiftId={shift.id}
+                            partTimerId={a.partTimerId}
+                            existing={kudosByPartTimer.get(a.partTimerId) ?? null}
                           />
                         </div>
                       )}

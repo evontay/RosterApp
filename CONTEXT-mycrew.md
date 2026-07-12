@@ -58,10 +58,11 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Performance records**: on completed shift detail, each assignment row shows Add/Edit record — attendance (attended/late/no-show), optional quality flag (good/issues), optional tags, optional private notes. Retroactively editable.
 - **Trust signals on roster profile**: Performance section shows Reliability % and Quality %, both computed with 180-day exponential decay (recent shifts weighted more). Raw record count shown as context. Color-coded green ≥80 / yellow 60–79 / red <60. Quality shows "—" until at least one quality flag is set.
 - **Performance log on roster profile**: below the score bars, a chronological log (newest first) of every ObjectiveRecord — shift name, date, attendance/quality badges, tags, and private notes if written. Visible to owner only, never to employee.
+- **Kudos**: on a completed shift detail, each assigned employee has a "Send kudos" link below the performance record form. Owner writes a short message; upserted one per shift per employee. Employees see kudos in their home feed.
 
 ### Employee-side features
 - Auth (email + password)
-- **Home** (`/home`): avatar, profile info, skills, upcoming shifts
+- **Home** (`/home`): avatar, profile info, skills, shift history stats (Shifts / Hours / Earned), milestone badges, kudos feed, upcoming shifts
 - **Open Shifts** (`/open-shifts`): all upcoming open shifts across active businesses; express interest with optional comment; withdraw if still pending
 - **My Shifts** (`/my-shifts`): full assignment history, sort by date, clickable cards
 - **Shift detail** (`/shifts/[id]`): shift info, assigned role, pay rate, payment status
@@ -89,7 +90,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 ### Employee (`/*`)
 | Route | Description |
 |-------|-------------|
-| `/home` | Employee home — avatar, profile, skills, upcoming shifts |
+| `/home` | Employee home — avatar, profile, stats, milestones, kudos feed, upcoming shifts |
 | `/open-shifts` | All upcoming open shifts; express/withdraw interest |
 | `/my-shifts` | All assigned shifts |
 | `/shifts/[id]` | Shift detail — role, rate, pay amount, payment status |
@@ -259,6 +260,16 @@ model Activity {
   read        Boolean      @default(false)
   createdAt   DateTime     @default(now())
 }
+
+model Kudos {
+  id          String   @id @default(cuid())
+  partTimerId String
+  businessId  String
+  shiftId     String
+  message     String
+  createdAt   DateTime @default(now())
+  @@unique([shiftId, partTimerId])  -- one kudos per employee per shift, upsert on re-send
+}
 ```
 
 ### Enums
@@ -294,17 +305,18 @@ model Activity {
 - **Activity feed**: append-only `Activity` table, scoped by `recipientId` (userId). Written by API routes on key events. Nav badge shows unread count (server-rendered per request). Visiting the activity page marks all as read.
 - **Employee skills**: employees set their own skills from Settings; applied across all active business memberships. Owner can also edit skills from the roster profile.
 - **Nav**: "MyCrew" logo is the homepage link for both roles (owner → `/dashboard`, employee → `/home`). No separate Home/Dashboard nav item. Owner Settings is a hover dropdown with Role types and Performance tags.
-- **Trust signals** (`lib/trust.ts`): `computeTrustSignals(records)` returns `{ reliability, quality, recordCount }`. Both scores use 180-day half-life exponential decay. Reliability counts all records; Quality counts only flagged ones. Returns `null` when no data exists for that signal.
+- **Trust signals** (`lib/trust.ts`): `computeTrustSignals(records)` returns `{ reliability, quality, recordCount }`. Both scores use 180-day half-life exponential decay. Reliability counts all records; Quality counts only flagged ones. Returns `null` when no data exists for that signal. Scores are owner-only — never shown to employees.
 - **Performance records**: declines and withdrawals never create ObjectiveRecords — only actual shift attendance.
+- **Milestones** (`lib/milestones.ts`): `MILESTONES` array (7 badges) checked against `{ completedShifts, uniqueCoworkers }`. `computeMilestones(stats)` returns `{ unlocked, next }`. Computed on the fly from existing data — no separate table.
+- **Kudos**: one per employee per shift (upsert). Written by owner on the shift detail page after completion. Employee sees them in a feed on their home page. Never negative — purely positive recognition.
+- **Employee home stats**: computed from `ShiftAssignment` where status=completed — total shift count, total hours logged, total pay earned. Shown inline in the profile card once there's at least one completed shift.
 - **Avatar**: employees pick an emoji (or use initials) + a pastel background colour. Fallback colour is deterministically hashed from the partTimer's `id`.
 
 ---
 
 ## Why this document exists
 
-Phases 1 and 2 are complete. Later phases will add: an objective performance record, a private Trust Rating, milestone-based retention nudges, and a team-fit/pairing-notes layer.
-
-**Do not build those yet** — but keep the schema extensible.
+Phases 1–4 are complete. Phase 5 (team-fit / pairing notes) is next. Keep the schema extensible for multi-business support and richer analytics.
 
 ---
 
@@ -323,13 +335,16 @@ Employees see all open shifts and express interest (with optional comment). Owne
 - Nav: MyCrew logo as homepage link, removed redundant Home/Dashboard items
 
 ### Phase 3 — complete ✅
-ObjectiveRecord per shift per employee (attendance + quality flag + tags). PerformanceTag vocabulary scoped per business, managed in Settings. Trust signals (Reliability %, Quality %) computed with recency weighting, displayed on roster profile. Entry point is the completed shift detail page.
+ObjectiveRecord per shift per employee (attendance + quality flag + tags + private notes). PerformanceTag vocabulary scoped per business, managed in Settings. Trust signals (Reliability %, Quality %) computed with recency weighting, displayed on roster profile (owner-only). Entry point is the completed shift detail page. Private notes shown in the performance log on the roster profile.
 
-### Phase 3
-ObjectiveRecord, SubjectiveNote, TrustRating tables — scoped per business per part-timer. Trust Rating visible to owner only.
+### Phase 4 — complete ✅
+Gamification for employee motivation (no visible ratings). Three features built:
+- **Milestone badges**: 7 milestones (first shift, 5/10/25/50 shifts, 3/10 unique teammates), computed from existing data, displayed as yellow pill badges on employee home. Next upcoming milestone shown as a prompt.
+- **Shift history stats**: total completed shifts, total hours, total earned — inline in the profile card on employee home.
+- **Kudos feed**: owner writes a short positive message per employee per shift (upsert) on the completed shift detail. Employee sees a feed on their home page. Purely positive — no negative mechanism.
 
-### Phase 4
-Milestone detection, retention nudges, RewardLog. Rewards stay personal and owner-authored.
+### Phase 5
+Team-fit / pairing notes layer. Owner-customizable skill tags.
 
 ### Phase 5
 Team-fit / pairing notes layer. Owner-customizable skill tags.

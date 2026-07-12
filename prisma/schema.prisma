@@ -260,6 +260,17 @@ model ObjectiveRecordTag {
   @@id([recordId, tagId])
 }
 
+model Kudos {
+  id          String   @id @default(cuid())
+  partTimerId String
+  businessId  String
+  shiftId     String
+  message     String
+  createdAt   DateTime @default(now())
+
+  @@unique([shiftId, partTimerId])
+}
+
 enum Attendance {
   attended
   late
