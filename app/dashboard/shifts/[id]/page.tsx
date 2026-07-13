@@ -75,7 +75,7 @@ export default async function ShiftDetailPage({
   });
   if (!shift) notFound();
 
-  const [skills, performanceTags, objectiveRecords, kudosList] = await Promise.all([
+  const [skills, performanceTags, objectiveRecords, kudosList, pendingInterests, activeMembers] = await Promise.all([
     prisma.skill.findMany({
       where: { archived: false },
       orderBy: { label: "asc" },
@@ -93,34 +93,32 @@ export default async function ShiftDetailPage({
     prisma.kudos.findMany({
       where: { shiftId: id, businessId: business.id },
     }),
-  ]);
-
-  const pendingInterests = await prisma.shiftInterest.findMany({
-    where: { shiftId: id, status: "pending" },
-    include: {
-      partTimer: {
-        include: {
-          skills: { where: { businessId: business.id }, include: { skill: true } },
-          assignments: {
-            where: { status: "completed", shift: { businessId: business.id } },
-            select: { id: true },
+    prisma.shiftInterest.findMany({
+      where: { shiftId: id, status: "pending" },
+      include: {
+        partTimer: {
+          include: {
+            skills: { where: { businessId: business.id }, include: { skill: true } },
+            assignments: {
+              where: { status: "completed", shift: { businessId: business.id } },
+              select: { id: true },
+            },
           },
         },
+        shiftRole: { include: { skill: true } },
       },
-      shiftRole: { include: { skill: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-
-  const activeMembers = await prisma.rosterMembership.findMany({
-    where: { businessId: business.id, status: "active" },
-    include: {
-      partTimer: {
-        include: { skills: { where: { businessId: business.id } } },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.rosterMembership.findMany({
+      where: { businessId: business.id, status: "active" },
+      include: {
+        partTimer: {
+          include: { skills: { where: { businessId: business.id } } },
+        },
       },
-    },
-    orderBy: { partTimer: { name: "asc" } },
-  });
+      orderBy: { partTimer: { name: "asc" } },
+    }),
+  ]);
 
   // ObjectiveRecord lookup by partTimerId
   const recordByPartTimer = new Map(
