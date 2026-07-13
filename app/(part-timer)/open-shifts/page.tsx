@@ -23,6 +23,7 @@ export default async function OpenShiftsPage() {
     where: { userId: session.user.id },
     include: {
       memberships: { where: { status: "active" }, select: { businessId: true } },
+      skills: { select: { skillId: true } },
     },
   });
   if (!partTimer) redirect("/login");
@@ -58,6 +59,7 @@ export default async function OpenShiftsPage() {
 
   const assignedShiftIds = new Set(myAssignments.map((a) => a.shiftId));
   const interestByShift = Object.fromEntries(myInterests.map((i) => [i.shiftId, i]));
+  const mySkillIds = new Set(partTimer.skills.map((s) => s.skillId));
 
   return (
     <div className="space-y-4">
@@ -76,6 +78,7 @@ export default async function OpenShiftsPage() {
             const isAssigned = assignedShiftIds.has(shift.id);
             const interest = interestByShift[shift.id] ?? null;
             const { emoji, bg } = getShiftIcon(shift.title, shift.id);
+            const matchesSkill = shift.roles.some((r) => mySkillIds.has(r.skillId));
 
             return (
               <div key={shift.id} className="bg-sun-card rounded-[16px] border border-sun-border p-5">
@@ -109,12 +112,15 @@ export default async function OpenShiftsPage() {
 
                 {/* Roles summary */}
                 {shift.roles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
                     {shift.roles.map((r) => (
                       <span key={r.id} className="text-xs bg-sun-inset text-sun-body px-2 py-0.5 rounded-full">
                         {r.skill.label} ×{r.count}
                       </span>
                     ))}
+                    {matchesSkill && (
+                      <span className="text-xs text-sun-mute">matches your skills ✓</span>
+                    )}
                   </div>
                 )}
 

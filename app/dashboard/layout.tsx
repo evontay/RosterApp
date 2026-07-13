@@ -13,9 +13,12 @@ export default async function DashboardLayout({
   if (!session) redirect("/login");
   if (session.user.role !== "owner") redirect("/my-shifts");
 
-  const unreadCount = await prisma.activity.count({
-    where: { recipientId: session.user.id, read: false },
-  });
+  const [unreadCount, business] = await Promise.all([
+    prisma.activity.count({ where: { recipientId: session.user.id, read: false } }),
+    prisma.business.findFirst({ where: { ownerUserId: session.user.id }, select: { name: true } }),
+  ]);
+
+  const emailInitial = (session.user.email ?? "O")[0].toUpperCase();
 
   return (
     <div className="min-h-screen bg-sun-page">
@@ -54,16 +57,24 @@ export default async function DashboardLayout({
             </div>
           </div>
         </div>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}
-        >
-          <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
-            Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/login" });
+            }}
+          >
+            <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
+              Sign out
+            </button>
+          </form>
+          <div
+            title={business?.name ?? session.user.email ?? ""}
+            className="w-8 h-8 rounded-full bg-sun-accent-soft border border-sun-border flex items-center justify-center text-xs font-bold text-sun-accent-text shrink-0"
+          >
+            {emailInitial}
+          </div>
+        </div>
       </nav>
       <main className="p-6">{children}</main>
     </div>

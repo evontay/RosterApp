@@ -17,6 +17,11 @@ export default async function DashboardPage() {
   });
   if (!business) return <p className="text-sun-mute">No business found.</p>;
 
+  // Derive a first name from the owner's email (e.g. "evon@…" → "Evon")
+  const ownerEmail = session!.user.email ?? "";
+  const ownerFirstName = ownerEmail.split("@")[0].split(".")[0];
+  const ownerDisplayName = ownerFirstName.charAt(0).toUpperCase() + ownerFirstName.slice(1);
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -105,6 +110,8 @@ export default async function DashboardPage() {
     shiftStatusGroups.map((g) => [g.status, g._count.id])
   );
 
+  const owedTotal = unpaidAssignments.reduce((sum, a) => sum + (a.payAmount ? Number(a.payAmount) : 0), 0);
+
   // Shifts with at least one unfilled slot
   const understaffedShifts = openShifts.filter((s) =>
     s.roles.some((r) => r.assignments.length < r.count)
@@ -130,19 +137,20 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <div className="mb-4">
-        <h1 className="text-lg font-medium text-sun-ink">Good morning</h1>
+        <h1 className="text-lg font-medium text-sun-ink">Good morning, {ownerDisplayName}</h1>
         <p className="text-xs text-sun-mute">{new Date().toLocaleDateString("en-SG", { weekday: "long", day: "numeric", month: "long" })}</p>
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <StatCard label="Active employees" value={activeRosterCount} />
         <StatCard
           label="Shifts this month"
           value={shiftsThisMonth}
           href={`/dashboard/shifts?year=${now.getFullYear()}&month=${now.getMonth()}`}
         />
-        <div className="grid grid-cols-3 col-span-3 gap-3">
+        <StatCard label="Owed to crew" value={owedTotal} money />
+        <div className="grid grid-cols-3 col-span-4 gap-3">
           {STATUS_ORDER.map((status) => {
             const count = statusCounts[status] ?? 0;
             const s = STATUS_STYLE[status];
@@ -288,11 +296,12 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({ label, value, href }: { label: string; value: number; href?: string }) {
+function StatCard({ label, value, href, money }: { label: string; value: number; href?: string; money?: boolean }) {
+  const displayValue = money ? `$${value.toFixed(0)}` : value;
   const content = (
     <>
       <p className="text-sm text-sun-mute">{label}</p>
-      <p className="text-3xl font-bold text-sun-ink mt-1">{value}</p>
+      <p className={`text-3xl font-bold mt-1 ${money ? "text-sun-accent-link" : "text-sun-ink"}`}>{displayValue}</p>
     </>
   );
   if (href) {

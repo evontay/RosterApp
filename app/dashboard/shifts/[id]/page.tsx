@@ -15,6 +15,14 @@ import { EmployeeProfileModal } from "./EmployeeProfileModal";
 import { ObjectiveRecordForm } from "./ObjectiveRecordForm";
 import { KudosButton } from "./KudosButton";
 
+function formatTimeAgo(date: Date): string {
+  const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 const SHIFT_EMOJIS = ["🎨", "🏺", "📦", "✂️", "🕯️", "🧶", "🌿", "🎸", "🌸", "🧑‍🎨"];
 const SHIFT_BGS = ["#FDE68A", "#DBEAFE", "#D1FAE5", "#E9D5FF", "#FCE7F3"];
 
@@ -346,43 +354,65 @@ export default async function ShiftDetailPage({
                 })
                 .map((r) => ({ id: r.id, label: r.skill.label }));
 
+              const shiftSkillIds = new Set(shift.roles.map((r) => r.skillId));
+              const matchingSkill = interest.partTimer.skills.find((s) => shiftSkillIds.has(s.skillId));
+              const hasSkillMatch = matchingSkill != null;
+              const completedShifts = interest.partTimer.assignments.length;
+              const timeAgo = formatTimeAgo(interest.createdAt);
+
               return (
-                <div key={interest.id} className="flex items-center justify-between gap-4 py-2 border-b border-sun-border last:border-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Avatar
-                      name={interest.partTimer.name}
-                      avatarEmoji={interest.partTimer.avatarEmoji}
-                      avatarColor={interest.partTimer.avatarColor}
-                      id={interest.partTimer.id}
-                      size="sm"
-                    />
-                    <div className="min-w-0">
-                      <EmployeeProfileModal
-                        partTimer={{
-                          id: interest.partTimer.id,
-                          name: interest.partTimer.name,
-                          email: interest.partTimer.email,
-                          phone: interest.partTimer.phone,
-                          avatarEmoji: interest.partTimer.avatarEmoji,
-                          avatarColor: interest.partTimer.avatarColor,
-                          skills: interest.partTimer.skills.map((s) => s.skill.label),
-                          completedJobs: interest.partTimer.assignments.length,
-                        }}
+                <div key={interest.id} className="bg-sun-inset rounded-[12px] px-3 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <Avatar
+                        name={interest.partTimer.name}
+                        avatarEmoji={interest.partTimer.avatarEmoji}
+                        avatarColor={interest.partTimer.avatarColor}
+                        id={interest.partTimer.id}
+                        size="sm"
                       />
-                      {interest.comment && (
-                        <p className="text-xs text-sun-mute italic truncate">"{interest.comment}"</p>
-                      )}
+                      <div className="min-w-0">
+                        <EmployeeProfileModal
+                          partTimer={{
+                            id: interest.partTimer.id,
+                            name: interest.partTimer.name,
+                            email: interest.partTimer.email,
+                            phone: interest.partTimer.phone,
+                            avatarEmoji: interest.partTimer.avatarEmoji,
+                            avatarColor: interest.partTimer.avatarColor,
+                            skills: interest.partTimer.skills.map((s) => s.skill.label),
+                            completedJobs: completedShifts,
+                          }}
+                        />
+                        <p className="text-[10px] text-sun-mute mt-0.5">
+                          {completedShifts} shift{completedShifts !== 1 ? "s" : ""} done
+                          {" · "}
+                          {hasSkillMatch
+                            ? <span className="text-status-confirmed-text">{matchingSkill!.skill.label} ✓</span>
+                            : <span>no matching skill</span>
+                          }
+                          {" · "}{timeAgo}
+                        </p>
+                        {interest.comment && (
+                          <div className="mt-1.5 bg-sun-card rounded-[8px] px-2 py-1.5 text-xs text-sun-body">
+                            "{interest.comment}"
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <InterestActions
+                      interestId={interest.id}
+                      preferredRoleId={interest.shiftRoleId}
+                      roleOptions={roleOptions}
+                    />
                   </div>
-                  <InterestActions
-                    interestId={interest.id}
-                    preferredRoleId={interest.shiftRoleId}
-                    roleOptions={roleOptions}
-                  />
                 </div>
               );
             })}
           </div>
+          <p className="text-[10px] text-sun-mute mt-4 leading-relaxed">
+            Confirming fills the next open slot for that role. Rejecting sends a friendly note — it never affects their record.
+          </p>
         </div>
       )}
     </div>

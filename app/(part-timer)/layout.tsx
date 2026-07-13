@@ -12,9 +12,13 @@ export default async function PartTimerLayout({
   if (!session) redirect("/login");
   if (session.user.role !== "part_timer") redirect("/dashboard");
 
-  const unreadCount = await prisma.activity.count({
-    where: { recipientId: session.user.id, read: false },
-  });
+  const [unreadCount, partTimer] = await Promise.all([
+    prisma.activity.count({ where: { recipientId: session.user.id, read: false } }),
+    prisma.partTimer.findFirst({
+      where: { userId: session.user.id },
+      select: { id: true, name: true, avatarEmoji: true, avatarColor: true },
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-sun-page">
@@ -41,18 +45,46 @@ export default async function PartTimerLayout({
             Settings
           </Link>
         </div>
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}
-        >
-          <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
-            Sign out
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/login" });
+            }}
+          >
+            <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
+              Sign out
+            </button>
+          </form>
+          {partTimer && (
+            <Link href="/home">
+              <NavAvatar
+                name={partTimer.name}
+                emoji={partTimer.avatarEmoji}
+                color={partTimer.avatarColor}
+                id={partTimer.id}
+              />
+            </Link>
+          )}
+        </div>
       </nav>
       <main className="p-6 max-w-xl mx-auto">{children}</main>
+    </div>
+  );
+}
+
+function NavAvatar({ name, emoji, color, id }: { name: string; emoji: string | null; color: string | null; id: string }) {
+  const PASTEL = ["#DBEAFE", "#E9D5FF", "#FDE68A", "#FCE7F3", "#D1FAE5"];
+  const bg = color ?? PASTEL[id.charCodeAt(0) % PASTEL.length];
+  const initial = name[0]?.toUpperCase() ?? "?";
+
+  return (
+    <div
+      className="w-8 h-8 rounded-full border border-sun-border flex items-center justify-center text-sm shrink-0"
+      style={{ background: bg }}
+      title={name}
+    >
+      {emoji ?? initial}
     </div>
   );
 }
