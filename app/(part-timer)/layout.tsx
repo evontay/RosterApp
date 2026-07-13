@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PartTimerNavLinks } from "./PartTimerNavLinks";
+import { Avatar } from "@/components/Avatar";
 
 export default async function PartTimerLayout({
   children,
@@ -45,16 +46,16 @@ export default async function PartTimerLayout({
   ]);
 
   return (
-    <div className="min-h-screen bg-sun-page">
-      <nav aria-label="Main navigation" className="bg-sun-page border-b border-sun-border">
-        <div className="w-[80vw] mx-auto py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+    <div className="site-shell">
+      <nav aria-label="Main navigation" className="site-nav">
+        <div className="site-nav-inner">
+          <div className="site-nav-left">
             <Link href="/home" className="font-medium text-sun-ink hover:text-sun-body" style={{ fontSize: 17 }}>
               MyCrew <span className="text-sun-accent">☀</span>
             </Link>
             <PartTimerNavLinks unreadCount={unreadCount} openShiftsCount={openShiftsCount} />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="site-nav-right">
             <form
               action={async () => {
                 "use server";
@@ -66,33 +67,19 @@ export default async function PartTimerLayout({
               </button>
             </form>
             <Link href="/home" title={partTimer.name} aria-label={partTimer.name}>
-              <NavAvatar
+              <Avatar
                 name={partTimer.name}
-                emoji={partTimer.avatarEmoji}
-                color={partTimer.avatarColor}
+                avatarEmoji={partTimer.avatarEmoji}
+                avatarColor={partTimer.avatarColor}
                 id={partTimer.id}
+                size="xs"
               />
             </Link>
           </div>
         </div>
       </nav>
-      <main id="main-content" className="py-6 w-[80vw] mx-auto">{children}</main>
+      <main id="main-content" className="site-main">{children}</main>
     </div>
   );
 }
 
-function NavAvatar({ name, emoji, color, id }: { name: string; emoji: string | null; color: string | null; id: string }) {
-  const PASTEL = ["#DBEAFE", "#E9D5FF", "#FDE68A", "#FCE7F3", "#D1FAE5"];
-  const bg = color ?? PASTEL[id.charCodeAt(0) % PASTEL.length];
-  const initial = name[0]?.toUpperCase() ?? "?";
-
-  return (
-    <div
-      className="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0"
-      style={{ background: bg }}
-      title={name}
-    >
-      {emoji ?? initial}
-    </div>
-  );
-}

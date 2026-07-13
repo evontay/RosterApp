@@ -121,7 +121,7 @@ export default async function EmployeeHomePage() {
     : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl">
       {/* Profile card */}
       <div className="bg-sun-card rounded-[16px] border border-sun-border p-4">
         <div className="flex items-center gap-4">

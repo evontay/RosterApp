@@ -24,16 +24,16 @@ export default async function DashboardLayout({
   ]);
 
   return (
-    <div className="min-h-screen bg-sun-page">
-      <nav aria-label="Dashboard navigation" className="bg-sun-page border-b border-sun-border">
-        <div className="w-[80vw] mx-auto py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+    <div className="site-shell">
+      <nav aria-label="Dashboard navigation" className="site-nav">
+        <div className="site-nav-inner">
+          <div className="site-nav-left">
             <Link href="/dashboard" className="font-medium text-sun-ink hover:text-sun-body" style={{ fontSize: 17 }}>
               MyCrew <span className="text-sun-accent">☀</span>
             </Link>
             <DashboardNavLinks unreadCount={unreadCount} />
           </div>
-          <div className="flex items-center gap-4">
+          <div className="site-nav-right">
             <form
               action={async () => {
                 "use server";
@@ -62,7 +62,7 @@ export default async function DashboardLayout({
           </div>
         </div>
       </nav>
-      <main id="main-content" className="py-6 w-[80vw] mx-auto">{children}</main>
+      <main id="main-content" className="site-main">{children}</main>
     </div>
   );
 }

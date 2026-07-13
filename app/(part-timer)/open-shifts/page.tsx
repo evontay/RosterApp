@@ -62,7 +62,7 @@ export default async function OpenShiftsPage() {
   const mySkillIds = new Set(partTimer.skills.map((s) => s.skillId));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold text-sun-ink">Open Shifts</h1>
         <p className="text-xs text-sun-mute mb-4">{shifts.length} upcoming shift{shifts.length !== 1 ? "s" : ""} you could join · interest is never a commitment until confirmed</p>

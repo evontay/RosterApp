@@ -41,7 +41,7 @@ export default async function EmployeeShiftDetailPage({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-2xl">
       <Link href="/my-shifts" className="text-sm text-sun-mute hover:text-sun-body">
         ← My Shifts
       </Link>

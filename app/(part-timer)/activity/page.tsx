@@ -46,7 +46,7 @@ export default async function EmployeeActivityPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-2xl">
       <MarkReadOnMount />
       <h1 className="text-2xl font-bold text-sun-ink mb-6">Activity</h1>
 

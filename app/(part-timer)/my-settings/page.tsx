@@ -30,7 +30,7 @@ export default async function MySettingsPage() {
   });
 
   return (
-    <>
+    <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-sun-ink mb-6">Settings</h1>
       <ProfileForm partTimer={partTimer} memberSince={memberSince} />
 
@@ -52,6 +52,6 @@ export default async function MySettingsPage() {
           }))}
         />
       </div>
-    </>
+    </div>
   );
 }
