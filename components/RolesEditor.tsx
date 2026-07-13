@@ -95,6 +95,7 @@ export function RolesEditor({
         <div key={i} className="grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 items-center">
           {/* Skill */}
           <select value={role.skillId} onChange={(e) => updateRole(i, "skillId", e.target.value)}
+            aria-label={`Role ${i + 1}: skill`}
             className="border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
             {skills.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
@@ -102,10 +103,12 @@ export function RolesEditor({
           {/* Count */}
           <input type="number" min="1" max="99" value={role.count}
             onChange={(e) => updateRole(i, "count", parseInt(e.target.value) || 1)}
+            aria-label={`Role ${i + 1}: number of slots`}
             className="border border-sun-border rounded-[10px] px-2 py-2 text-sm text-center w-full focus:outline-none focus:border-sun-accent bg-sun-card" />
 
           {/* Pay type */}
           <select value={role.payType} onChange={(e) => updateRole(i, "payType", e.target.value)}
+            aria-label={`Role ${i + 1}: pay type`}
             className="border border-sun-border rounded-[10px] px-2 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
             <option value="hourly">Hourly</option>
             <option value="flat_session">Flat</option>
@@ -113,16 +116,18 @@ export function RolesEditor({
 
           {/* Pay rate */}
           <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sun-mute text-sm">$</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sun-mute text-sm" aria-hidden="true">$</span>
             <input type="number" min="0" step="0.01" value={role.payRate}
               onChange={(e) => updateRole(i, "payRate", e.target.value)}
               placeholder="0.00"
+              aria-label={`Role ${i + 1}: pay rate in dollars`}
               className="w-full border border-sun-border rounded-[10px] pl-5 pr-2 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" />
           </div>
 
           {/* Remove row */}
           {roles.length > 1
             ? <button type="button" onClick={() => removeRole(i)}
+                aria-label={`Remove role ${i + 1}`}
                 className="text-sun-mute hover:text-sun-body text-lg leading-none">×</button>
             : <div />
           }
@@ -156,6 +161,7 @@ export function RolesEditor({
           <input type="text" value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreateSkill(); } }}
             placeholder="e.g. Photographer"
+            aria-label="New role name"
             className="flex-1 border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" autoFocus />
           <button type="button" onClick={handleCreateSkill}
             disabled={creating || !newLabel.trim()}

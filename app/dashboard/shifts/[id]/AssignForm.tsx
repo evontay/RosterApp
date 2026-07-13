@@ -66,6 +66,7 @@ export function AssignForm({
         value={partTimerId}
         onChange={(e) => setPartTimerId(e.target.value)}
         className="border border-sun-border rounded-full px-2 py-1 text-xs"
+        aria-label="Select employee to assign"
       >
         <option value="">Select employee...</option>
         {members.map((m) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RolesEditor, RoleRow } from "@/components/RolesEditor";
@@ -286,15 +286,26 @@ function SlotModal({
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-sun-card rounded-[16px] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" aria-hidden="true">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="slot-modal-title"
+        className="bg-sun-card rounded-[16px] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col"
+      >
         <div className="flex items-center justify-between p-4 border-b border-sun-border">
           <div>
-            <p className="font-semibold text-sun-ink">{display}</p>
+            <p id="slot-modal-title" className="font-semibold text-sun-ink">{display}</p>
             <p className="text-xs text-sun-mute">{slot === "AM" ? "Morning" : "Afternoon"} shifts</p>
           </div>
-          <button onClick={onClose} className="text-sun-mute hover:text-sun-body text-xl">×</button>
+          <button onClick={onClose} aria-label="Close" className="text-sun-mute hover:text-sun-body text-xl">×</button>
         </div>
 
         <div className="overflow-y-auto flex-1 p-4">

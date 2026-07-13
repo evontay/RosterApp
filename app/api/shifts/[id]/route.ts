@@ -32,36 +32,48 @@ export async function PUT(
   }
 
   const { title, shiftDate, startTime, endTime, roles } = await req.json();
+  type RoleInput = { skillId: string; count: number; payType: string; payRate: number };
+  const newRoles = roles as RoleInput[];
 
   const shift = await prisma.shift.findFirst({
     where: { id, business: { ownerUserId: session.user.id } },
+    include: { roles: true },
   });
   if (!shift) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.$transaction([
-    prisma.shiftAssignment.updateMany({
-      where: { shiftRole: { shiftId: id } },
+  const existingBySkill = new Map(shift.roles.map((r) => [r.skillId, r]));
+  const newSkillIds = new Set(newRoles.map((r) => r.skillId));
+
+  // Remove roles that are no longer in the list, nulling out their assignments first
+  const toRemove = shift.roles.filter((r) => !newSkillIds.has(r.skillId));
+  if (toRemove.length > 0) {
+    const removeIds = toRemove.map((r) => r.id);
+    await prisma.shiftAssignment.updateMany({
+      where: { shiftRoleId: { in: removeIds } },
       data: { shiftRoleId: null },
-    }),
-    prisma.shiftRole.deleteMany({ where: { shiftId: id } }),
-  ]);
+    });
+    await prisma.shiftRole.deleteMany({ where: { id: { in: removeIds } } });
+  }
+
+  // Update existing roles in-place (preserves assignment links), create new ones
+  await Promise.all(
+    newRoles.map((r) => {
+      const existing = existingBySkill.get(r.skillId);
+      if (existing) {
+        return prisma.shiftRole.update({
+          where: { id: existing.id },
+          data: { count: r.count, payType: r.payType as "hourly" | "flat_session", payRate: r.payRate },
+        });
+      }
+      return prisma.shiftRole.create({
+        data: { shiftId: id, skillId: r.skillId, count: r.count, payType: r.payType as "hourly" | "flat_session", payRate: r.payRate },
+      });
+    })
+  );
 
   const updated = await prisma.shift.update({
     where: { id },
-    data: {
-      title,
-      shiftDate: new Date(shiftDate),
-      startTime,
-      endTime,
-      roles: {
-        create: (roles as { skillId: string; count: number; payType: string; payRate: number }[]).map((r) => ({
-          skillId: r.skillId,
-          count: r.count,
-          payType: r.payType as "hourly" | "flat_session",
-          payRate: r.payRate,
-        })),
-      },
-    },
+    data: { title, shiftDate: new Date(shiftDate), startTime, endTime },
     include: { roles: { include: { skill: true } } },
   });
 

@@ -15,7 +15,7 @@ export function StatusLegend({ counts }: { counts: Partial<Record<string, number
         const count = counts[status] ?? 0;
         return (
           <div key={status} className="flex items-center gap-1.5">
-            <div className={`w-2.5 h-2.5 rounded-full ${STATUS_DOT[status]}`} />
+            <div className={`w-2.5 h-2.5 rounded-full ${STATUS_DOT[status]}`} aria-hidden="true" />
             <span className="text-xs text-sun-body capitalize">{status}</span>
             <span className="text-xs text-sun-mute">({count})</span>
           </div>

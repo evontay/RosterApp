@@ -22,7 +22,7 @@ export default async function PartTimerLayout({
 
   return (
     <div className="min-h-screen bg-sun-page">
-      <nav className="bg-sun-card border-b border-sun-border px-6 py-3 flex items-center justify-between">
+      <nav aria-label="Main navigation" className="bg-sun-card border-b border-sun-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/home" className="font-bold text-sun-ink hover:text-sun-body">
             MyCrew <span className="text-sun-accent">☀</span>
@@ -68,7 +68,7 @@ export default async function PartTimerLayout({
           )}
         </div>
       </nav>
-      <main className="p-6 max-w-xl mx-auto">{children}</main>
+      <main id="main-content" className="p-6 max-w-xl mx-auto">{children}</main>
     </div>
   );
 }

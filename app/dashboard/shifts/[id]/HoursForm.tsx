@@ -65,6 +65,7 @@ export function HoursForm({
         onChange={(e) => setHours(e.target.value)}
         className="border border-sun-border rounded-full px-2 py-1 text-xs w-20 focus:outline-none focus:border-sun-accent"
         placeholder="hrs"
+        aria-label="Hours worked"
       />
       <button
         onClick={handleSave}
@@ -73,7 +74,7 @@ export function HoursForm({
       >
         {loading ? "..." : "Save"}
       </button>
-      <button onClick={() => setOpen(false)} className="text-xs text-sun-mute">✕</button>
+      <button onClick={() => setOpen(false)} className="text-xs text-sun-mute" aria-label="Cancel">✕</button>
     </div>
   );
 }

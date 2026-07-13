@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 
@@ -17,6 +17,15 @@ interface PartTimerProfile {
 
 export function EmployeeProfileModal({ partTimer }: { partTimer: PartTimerProfile }) {
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
+    document.addEventListener("keydown", onKey);
+    dialogRef.current?.focus();
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <>
@@ -31,9 +40,15 @@ export function EmployeeProfileModal({ partTimer }: { partTimer: PartTimerProfil
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={() => setOpen(false)}
+          aria-hidden="true"
         >
           <div
-            className="bg-sun-card rounded-[16px] shadow-xl w-80 p-6 space-y-5"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="emp-modal-name"
+            tabIndex={-1}
+            className="bg-sun-card rounded-[16px] shadow-xl w-80 p-6 space-y-5 focus:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -46,7 +61,7 @@ export function EmployeeProfileModal({ partTimer }: { partTimer: PartTimerProfil
                 size="lg"
               />
               <div className="min-w-0">
-                <p className="font-semibold text-sun-ink">{partTimer.name}</p>
+                <p id="emp-modal-name" className="font-semibold text-sun-ink">{partTimer.name}</p>
                 <p className="text-xs text-sun-mute mt-0.5">{partTimer.email}</p>
                 {partTimer.phone && (
                   <p className="text-xs text-sun-mute">{partTimer.phone}</p>

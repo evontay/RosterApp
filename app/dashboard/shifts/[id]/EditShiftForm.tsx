@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RolesEditor, RoleRow } from "@/components/RolesEditor";
 
@@ -45,6 +45,13 @@ export function EditShiftForm({ open, onClose, shift, skills }: Props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   function setField(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
@@ -80,10 +87,15 @@ export function EditShiftForm({ open, onClose, shift, skills }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-sun-card rounded-[16px] w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" aria-hidden="true">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-shift-title"
+        className="bg-sun-card rounded-[16px] w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto"
+      >
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <h2 className="font-semibold text-sun-ink text-lg">Edit shift</h2>
+          <h2 id="edit-shift-title" className="font-semibold text-sun-ink text-lg">Edit shift</h2>
           <div>
             <label className="block text-xs font-medium text-sun-body mb-1">Title</label>
             <input type="text" value={form.title} onChange={(e) => setField("title", e.target.value)}
