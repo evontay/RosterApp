@@ -66,7 +66,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Open Shifts** (`/open-shifts`): all upcoming open shifts across active businesses; express interest with optional comment; withdraw if still pending
 - **My Shifts** (`/my-shifts`): full assignment history, sort by date, clickable cards
 - **Shift detail** (`/shifts/[id]`): shift info, assigned role, pay rate, payment status
-- **Activity feed** (`/activity`): notifications for interest confirmed/rejected, assigned, shift cancelled, paid; badge count in nav; marks all read on visit
+- **Activity feed** (`/activity`): notifications for interest confirmed/rejected, assigned, shift cancelled, paid, hours logged, kudos received; badge count in nav; marks all read on visit
 - **Settings** (`/my-settings`): edit name, phone, avatar (emoji + background colour); skills (pill selector, applies across all active business memberships); availability preference per day (Morning/Afternoon/Flexible)
 
 ---
@@ -284,7 +284,7 @@ model Kudos {
 | `DayOfWeek` | `Mon`–`Sun` |
 | `AvailabilityPreference` | `morning`, `afternoon`, `flexible` |
 | `InterestStatus` | `pending`, `confirmed`, `rejected`, `withdrawn` |
-| `ActivityType` | `INTEREST_CONFIRMED`, `INTEREST_REJECTED`, `ASSIGNED`, `SHIFT_CANCELLED`, `PAID`, `INTEREST_RECEIVED`, `INTEREST_WITHDRAWN` |
+| `ActivityType` | `INTEREST_CONFIRMED`, `INTEREST_REJECTED`, `ASSIGNED`, `SHIFT_CANCELLED`, `PAID`, `INTEREST_RECEIVED`, `INTEREST_WITHDRAWN`, `HOURS_LOGGED`, `KUDOS_RECEIVED` |
 | `Attendance` | `attended`, `late`, `no_show` |
 | `QualityFlag` | `good`, `issues` |
 
@@ -293,7 +293,9 @@ model Kudos {
 ## Key business logic
 
 - **Slot-based assignment**: each `ShiftRole` has a `count` (slots). Boss fills slots one by one via manual assign OR by confirming a `ShiftInterest`. Each `ShiftAssignment` links to a `shiftRoleId`. Manual dropdown filtered to employees with matching skill.
-- **One employee per shift**: an employee cannot fill two slots on the same shift.
+- **One employee per shift**: an employee cannot fill two slots on the same shift. The assign API checks for any non-cancelled assignment (not just role-linked ones) to prevent duplicates after a shift edit.
+- **Edit shift — role diffing**: the PUT `/api/shifts/[id]` route diffs new roles against existing ones by `skillId`. Matching roles are updated in-place (preserving assignment links). New skillIds create fresh roles. Removed skillIds null out their assignments' `shiftRoleId` before deletion. This ensures staffing is retained after an edit unless a role type is explicitly removed.
+- **Orphaned assignments**: if a `ShiftAssignment` has `shiftRoleId: null` (left by a role deletion during edit) and the owner tries to re-assign the same employee, the API re-uses the orphaned record (updates it) rather than creating a duplicate.
 - **Auto-advance status**: when all slots across all roles are filled → shift auto-advances to `filled`. Unassigning reverts `filled` → `open`. Confirming an interest also triggers this check.
 - **Interest flow**: employees express interest in open shifts (with optional comment) via `/open-shifts`. Owner confirms (picks role) or rejects on the shift detail page. Confirming creates a `ShiftAssignment`. Employee can withdraw if still `pending`.
 - **Interest uniqueness**: `@@unique([shiftId, partTimerId, shiftRoleId])` — one general interest per employee per shift (`shiftRoleId = null`).
@@ -302,7 +304,7 @@ model Kudos {
 - **Status labels** (UI only, DB values unchanged): `open` → Open, `filled` → Confirmed, `completed` → Logged. Consistent across shift list badges, stepper, calendar legend, and dashboard.
 - **Mark as logged gate**: cannot mark a shift as logged before its `shiftDate`. Enforced at the API level and grayed out in the UI.
 - **Status corrections**: "Unmark as logged" recalculates status from slot fill state (→ `filled` if full, → `open` if not). "Unmark paid" per assignment reverts `paymentStatus` to `unpaid`. Both are owner-only.
-- **Activity feed**: append-only `Activity` table, scoped by `recipientId` (userId). Written by API routes on key events. Nav badge shows unread count (server-rendered per request). Visiting the activity page marks all as read.
+- **Activity feed**: append-only `Activity` table, scoped by `recipientId` (userId). Written by API routes on key events. Nav badge shows unread count (server-rendered per request). Visiting the activity page marks all as read. Employee-side events: `ASSIGNED`, `INTEREST_CONFIRMED`, `INTEREST_REJECTED`, `SHIFT_CANCELLED`, `PAID`, `HOURS_LOGGED` (shows hours + pay amount), `KUDOS_RECEIVED` (shows message).
 - **Employee skills**: employees set their own skills from Settings; applied across all active business memberships. Owner can also edit skills from the roster profile.
 - **Nav**: "MyCrew" logo is the homepage link for both roles (owner → `/dashboard`, employee → `/home`). No separate Home/Dashboard nav item. Owner Settings is a hover dropdown with Role types and Performance tags.
 - **Trust signals** (`lib/trust.ts`): `computeTrustSignals(records)` returns `{ reliability, quality, recordCount }`. Both scores use 180-day half-life exponential decay. Reliability counts all records; Quality counts only flagged ones. Returns `null` when no data exists for that signal. Scores are owner-only — never shown to employees.
