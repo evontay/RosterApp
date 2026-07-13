@@ -372,6 +372,34 @@ Team-fit / pairing notes layer. Owner-customizable skill tags.
 
 ---
 
+## Accessibility & visual standards
+
+### Colour tokens (globals.css)
+All custom colours defined in `@theme` AND hardcoded in `@layer utilities` (Turbopack skips `@theme`).
+
+| Token | Hex | Notes |
+|-------|-----|-------|
+| `sun-mute` | `#6B7280` | Darkened from #9CA3AF — passes WCAG AA (4.8:1 on white) |
+| `sun-accent` | `#F59E0B` | Amber — buttons use `text-sun-ink` not `text-white` (dark text = 6.8:1) |
+| `alert` | `#DC2626` | Darkened from #F87171 — nav badge passes WCAG AA (4.8:1 with white text) |
+
+### WCAG AA status (last audited 2026-07-13)
+- **All primary buttons**: `bg-sun-accent text-sun-ink` — dark text on amber (6.8:1 ✓)
+- **Secondary/muted text** (`text-sun-mute`): 4.8:1 on white ✓
+- **All status badges** (open/confirmed/logged/paid): 5.3–6.8:1 ✓
+- **Role pills** (purple/blue/pink/green): 4.8–6.8:1 ✓
+- **Nav unread badge** (`bg-alert text-white`): 4.8:1 ✓
+- **Decorative elements** (status dots, `$` prefix): `aria-hidden="true"`
+
+### Accessibility (last audited 2026-07-13)
+- All modals have `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, and Escape-key handler
+- All icon-only buttons have `aria-label`
+- All unlabelled form inputs have `aria-label`
+- Nav elements have `aria-label` (`"Dashboard navigation"` / `"Main navigation"`)
+- Skip-to-content link in root layout targets `id="main-content"` on each layout's `<main>`
+
+---
+
 ## Seed accounts (local dev)
 
 | Role | Email | Password |
