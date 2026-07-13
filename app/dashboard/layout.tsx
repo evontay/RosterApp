@@ -25,7 +25,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-sun-page">
-      <nav aria-label="Dashboard navigation" className="bg-sun-page">
+      <nav aria-label="Dashboard navigation" className="bg-sun-page border-b border-sun-border">
         <div className="w-[80vw] mx-auto py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/dashboard" className="font-medium text-sun-ink hover:text-sun-body" style={{ fontSize: 17 }}>
@@ -62,7 +62,7 @@ export default async function DashboardLayout({
           </div>
         </div>
       </nav>
-      <main id="main-content" className="px-6 py-6 w-[80vw] mx-auto">{children}</main>
+      <main id="main-content" className="py-6 w-[80vw] mx-auto">{children}</main>
     </div>
   );
 }
