@@ -22,11 +22,16 @@ enum UserRole {
 }
 
 model Business {
-  id            String             @id @default(cuid())
-  name          String
-  owner         User               @relation(fields: [ownerUserId], references: [id])
-  ownerUserId   String
-  createdAt     DateTime           @default(now())
+  id              String             @id @default(cuid())
+  name            String
+  owner           User               @relation(fields: [ownerUserId], references: [id])
+  ownerUserId     String
+  ownerName       String?
+  ownerPhone      String?
+  avatarEmoji     String?
+  avatarColor     String?
+  businessAddress String?
+  createdAt       DateTime           @default(now())
   rosterMembers   RosterMembership[]
   shifts          Shift[]
   partTimerSkills PartTimerSkill[]

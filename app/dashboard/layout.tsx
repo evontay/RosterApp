@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Avatar, hashColor } from "@/components/Avatar";
+import { DashboardNavLinks } from "./DashboardNavLinks";
 
 export default async function DashboardLayout({
   children,
@@ -15,68 +17,52 @@ export default async function DashboardLayout({
 
   const [unreadCount, business] = await Promise.all([
     prisma.activity.count({ where: { recipientId: session.user.id, read: false } }),
-    prisma.business.findFirst({ where: { ownerUserId: session.user.id }, select: { name: true } }),
+    prisma.business.findFirst({
+      where: { ownerUserId: session.user.id },
+      select: { id: true, name: true, ownerName: true, avatarEmoji: true, avatarColor: true },
+    }),
   ]);
-
-  const emailInitial = (session.user.email ?? "O")[0].toUpperCase();
 
   return (
     <div className="min-h-screen bg-sun-page">
-      <nav aria-label="Dashboard navigation" className="bg-sun-card border-b border-sun-border px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="font-bold text-sun-ink hover:text-sun-body">
-            MyCrew <span className="text-sun-accent">☀</span>
-          </Link>
-          <Link href="/dashboard/roster" className="text-sm text-sun-mute hover:text-sun-ink">
-            Roster
-          </Link>
-          <Link href="/dashboard/shifts" className="text-sm text-sun-mute hover:text-sun-ink">
-            Shifts
-          </Link>
-          <Link href="/dashboard/activity" className="relative text-sm text-sun-mute hover:text-sun-ink">
-            Activity
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-3 min-w-[16px] h-4 px-1 bg-alert text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </Link>
-          <div className="group relative">
-            <span className="text-sm text-sun-mute hover:text-sun-ink cursor-default select-none">
-              Settings
-            </span>
-            <div className="absolute left-0 top-full pt-2 hidden group-hover:block z-20">
-              <div className="bg-sun-card border border-sun-border rounded-[16px] shadow-lg py-1 w-44">
-                <Link href="/dashboard/settings/roles" className="block px-4 py-2 text-sm text-sun-body hover:bg-sun-inset">
-                  Role types
-                </Link>
-                <Link href="/dashboard/settings/performance-tags" className="block px-4 py-2 text-sm text-sun-body hover:bg-sun-inset">
-                  Performance tags
-                </Link>
-              </div>
-            </div>
+      <nav aria-label="Dashboard navigation" className="bg-sun-page">
+        <div className="w-[80vw] mx-auto py-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/dashboard" className="font-medium text-sun-ink hover:text-sun-body" style={{ fontSize: 17 }}>
+              MyCrew <span className="text-sun-accent">☀</span>
+            </Link>
+            <DashboardNavLinks unreadCount={unreadCount} />
           </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
-              Sign out
-            </button>
-          </form>
-          <div
-            title={business?.name ?? session.user.email ?? ""}
-            className="w-8 h-8 rounded-full bg-sun-accent-soft border border-sun-border flex items-center justify-center text-xs font-bold text-sun-accent-text shrink-0"
-          >
-            {emailInitial}
+          <div className="flex items-center gap-4">
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/login" });
+              }}
+            >
+              <button type="submit" className="text-xs text-sun-mute hover:text-sun-ink">
+                Sign out
+              </button>
+            </form>
+            <Link href="/dashboard/settings/profile" title={business?.ownerName ?? business?.name ?? session.user.email ?? ""}>
+              {business ? (
+                <Avatar
+                  name={business.ownerName ?? business.name}
+                  avatarEmoji={business.avatarEmoji}
+                  avatarColor={business.avatarColor ?? hashColor(business.id)}
+                  id={business.id}
+                  size="xs"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-sun-accent-soft flex items-center justify-center text-xs font-medium text-sun-accent-text shrink-0">
+                  {(session.user.email ?? "O")[0].toUpperCase()}
+                </div>
+              )}
+            </Link>
           </div>
         </div>
       </nav>
-      <main id="main-content" className="p-6">{children}</main>
+      <main id="main-content" className="px-6 py-6 w-[80vw] mx-auto">{children}</main>
     </div>
   );
 }

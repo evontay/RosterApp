@@ -30,6 +30,7 @@ function initials(name: string) {
 }
 
 const SIZE = {
+  xs: { wrap: "w-7 h-7 text-xs",  emoji: "text-sm"  },
   sm: { wrap: "w-8 h-8 text-xs",  emoji: "text-base" },
   md: { wrap: "w-10 h-10 text-sm", emoji: "text-xl"  },
   lg: { wrap: "w-16 h-16 text-xl", emoji: "text-3xl" },
@@ -46,7 +47,7 @@ export function Avatar({
   avatarEmoji?: string | null;
   avatarColor?: string | null;
   id: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }) {
   const colorKey = avatarColor && avatarColor in AVATAR_COLORS ? avatarColor : hashColor(id);
   const { bg, text } = AVATAR_COLORS[colorKey];

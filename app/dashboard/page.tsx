@@ -17,12 +17,15 @@ export default async function DashboardPage() {
   });
   if (!business) return <p className="text-sun-mute">No business found.</p>;
 
-  // Derive a first name from the owner's email (e.g. "evon@…" → "Evon")
-  const ownerEmail = session!.user.email ?? "";
-  const ownerFirstName = ownerEmail.split("@")[0].split(".")[0];
-  const ownerDisplayName = ownerFirstName.charAt(0).toUpperCase() + ownerFirstName.slice(1);
-
   const now = new Date();
+
+  // Display name: ownerName field first, then first word of business name, then email prefix
+  const rawName = business.ownerName
+    ?? (session!.user.email ?? "").split("@")[0].split(".")[0];
+  const ownerDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+  const hour = now.getHours();
+  const greeting = hour >= 5 && hour < 12 ? "Good morning" : "Hello";
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -137,7 +140,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <div className="mb-4">
-        <h1 className="text-lg font-medium text-sun-ink">Good morning, {ownerDisplayName}</h1>
+        <h1 className="text-lg font-medium text-sun-ink">{greeting}, {ownerDisplayName}</h1>
         <p className="text-xs text-sun-mute">{new Date().toLocaleDateString("en-SG", { weekday: "long", day: "numeric", month: "long" })}</p>
       </div>
 

@@ -2,6 +2,7 @@ import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { PartTimerNavLinks } from "./PartTimerNavLinks";
 
 export default async function PartTimerLayout({
   children,
@@ -12,52 +13,59 @@ export default async function PartTimerLayout({
   if (!session) redirect("/login");
   if (session.user.role !== "part_timer") redirect("/dashboard");
 
-  const [unreadCount, partTimer] = await Promise.all([
+  const partTimer = await prisma.partTimer.findFirst({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      avatarEmoji: true,
+      avatarColor: true,
+      memberships: { where: { status: "active" }, select: { businessId: true } },
+    },
+  });
+  if (!partTimer) redirect("/login");
+
+  const businessIds = partTimer.memberships.map((m) => m.businessId);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const [unreadCount, openShiftsCount] = await Promise.all([
     prisma.activity.count({ where: { recipientId: session.user.id, read: false } }),
-    prisma.partTimer.findFirst({
-      where: { userId: session.user.id },
-      select: { id: true, name: true, avatarEmoji: true, avatarColor: true },
+    prisma.shift.count({
+      where: {
+        businessId: { in: businessIds },
+        status: "open",
+        archived: false,
+        shiftDate: { gte: today },
+        NOT: [
+          { assignments: { some: { partTimerId: partTimer.id, status: { not: "cancelled" } } } },
+          { interests: { some: { partTimerId: partTimer.id, status: { in: ["pending", "confirmed"] } } } },
+        ],
+      },
     }),
   ]);
 
   return (
     <div className="min-h-screen bg-sun-page">
-      <nav aria-label="Main navigation" className="bg-sun-card border-b border-sun-border px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/home" className="font-bold text-sun-ink hover:text-sun-body">
-            MyCrew <span className="text-sun-accent">☀</span>
-          </Link>
-          <Link href="/open-shifts" className="text-sm text-sun-mute hover:text-sun-ink">
-            Open Shifts
-          </Link>
-          <Link href="/my-shifts" className="text-sm text-sun-mute hover:text-sun-ink">
-            My Shifts
-          </Link>
-          <Link href="/activity" className="relative text-sm text-sun-mute hover:text-sun-ink">
-            Activity
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-3 min-w-[16px] h-4 px-1 bg-alert text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </Link>
-          <Link href="/my-settings" className="text-sm text-sun-mute hover:text-sun-ink">
-            Settings
-          </Link>
-        </div>
-        <div className="flex items-center gap-4">
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button type="submit" className="text-sm text-sun-mute hover:text-sun-ink">
-              Sign out
-            </button>
-          </form>
-          {partTimer && (
-            <Link href="/home">
+      <nav aria-label="Main navigation" className="bg-sun-page">
+        <div className="w-[80vw] mx-auto py-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/home" className="font-medium text-sun-ink hover:text-sun-body" style={{ fontSize: 17 }}>
+              MyCrew <span className="text-sun-accent">☀</span>
+            </Link>
+            <PartTimerNavLinks unreadCount={unreadCount} openShiftsCount={openShiftsCount} />
+          </div>
+          <div className="flex items-center gap-4">
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/login" });
+              }}
+            >
+              <button type="submit" className="text-xs text-sun-mute hover:text-sun-ink">
+                Sign out
+              </button>
+            </form>
+            <Link href="/home" title={partTimer.name} aria-label={partTimer.name}>
               <NavAvatar
                 name={partTimer.name}
                 emoji={partTimer.avatarEmoji}
@@ -65,10 +73,10 @@ export default async function PartTimerLayout({
                 id={partTimer.id}
               />
             </Link>
-          )}
+          </div>
         </div>
       </nav>
-      <main id="main-content" className="p-6 max-w-xl mx-auto">{children}</main>
+      <main id="main-content" className="px-6 py-6 w-[80vw] mx-auto">{children}</main>
     </div>
   );
 }
@@ -80,7 +88,7 @@ function NavAvatar({ name, emoji, color, id }: { name: string; emoji: string | n
 
   return (
     <div
-      className="w-8 h-8 rounded-full border border-sun-border flex items-center justify-center text-sm shrink-0"
+      className="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0"
       style={{ background: bg }}
       title={name}
     >
