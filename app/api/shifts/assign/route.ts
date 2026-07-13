@@ -25,11 +25,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Employee not on active roster" }, { status: 400 });
   }
 
-  // Prevent duplicate assignment — only check slot-based assignments (shiftRoleId set).
+  // Check for any existing non-cancelled assignment for this person on this shift
   const existing = await prisma.shiftAssignment.findFirst({
-    where: { shiftId, partTimerId, shiftRoleId: { not: null }, status: { not: "cancelled" } },
+    where: { shiftId, partTimerId, status: { not: "cancelled" } },
   });
-  if (existing) {
+  // If they already have a role-linked assignment, they're properly assigned
+  if (existing?.shiftRoleId) {
     return NextResponse.json({ error: "Employee is already assigned to this shift" }, { status: 400 });
   }
 
@@ -47,9 +48,18 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const assignment = await prisma.shiftAssignment.create({
-    data: { shiftId, partTimerId, shiftRoleId: shiftRoleId ?? null, status: "assigned" },
-  });
+  // Re-use an orphaned assignment (shiftRoleId nulled by a prior shift edit) to avoid duplicates
+  let assignment;
+  if (existing && !existing.shiftRoleId) {
+    assignment = await prisma.shiftAssignment.update({
+      where: { id: existing.id },
+      data: { shiftRoleId: shiftRoleId ?? null, status: "assigned" },
+    });
+  } else {
+    assignment = await prisma.shiftAssignment.create({
+      data: { shiftId, partTimerId, shiftRoleId: shiftRoleId ?? null, status: "assigned" },
+    });
+  }
 
   // Auto-advance to "filled" if all slots are now taken
   if (shift.status === "open") {
