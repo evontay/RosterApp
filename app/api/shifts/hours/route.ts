@@ -18,6 +18,25 @@ export async function POST(req: NextRequest) {
   const assignment = await prisma.shiftAssignment.update({
     where: { id: assignmentId },
     data: { hoursLogged: hours, payAmount, status: "completed" },
+    include: {
+      partTimer: { select: { userId: true } },
+      shift: { select: { id: true, title: true, shiftDate: true } },
+    },
+  });
+
+  await prisma.activity.create({
+    data: {
+      type: "HOURS_LOGGED",
+      recipientId: assignment.partTimer.userId,
+      entityType: "shift",
+      entityId: assignment.shift.id,
+      metadata: {
+        shiftTitle: assignment.shift.title,
+        shiftDate: assignment.shift.shiftDate,
+        hoursLogged: hours,
+        payAmount,
+      },
+    },
   });
 
   return NextResponse.json(assignment);

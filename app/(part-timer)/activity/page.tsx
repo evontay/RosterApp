@@ -3,12 +3,27 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { MarkReadOnMount } from "./MarkReadOnMount";
 
-const TYPE_CONFIG: Record<string, { label: string; dot: string }> = {
+const TYPE_CONFIG: Record<string, { label: string; dot: string; renderMeta?: (meta: Record<string, string | number | null>) => string | null }> = {
   INTEREST_CONFIRMED: { label: "Your interest was confirmed — you're assigned!", dot: "bg-status-confirmed-dot" },
   INTEREST_REJECTED:  { label: "Your interest was not taken up this time.", dot: "bg-sun-mute" },
   ASSIGNED:           { label: "You've been assigned to a shift.", dot: "bg-status-logged-dot" },
   SHIFT_CANCELLED:    { label: "This shift has been cancelled.", dot: "bg-sun-mute" },
   PAID:               { label: "You've been marked as paid.", dot: "bg-status-paid-dot" },
+  HOURS_LOGGED: {
+    label: "Your hours have been logged.",
+    dot: "bg-status-logged-dot",
+    renderMeta: (meta) => {
+      const parts = [];
+      if (meta.hoursLogged != null) parts.push(`${meta.hoursLogged}h`);
+      if (meta.payAmount != null) parts.push(`$${Number(meta.payAmount).toFixed(2)}`);
+      return parts.length ? parts.join(" · ") : null;
+    },
+  },
+  KUDOS_RECEIVED: {
+    label: "You received kudos from your boss 💛",
+    dot: "bg-status-confirmed-dot",
+    renderMeta: (meta) => meta.message as string ?? null,
+  },
 };
 
 export default async function EmployeeActivityPage() {
@@ -67,7 +82,9 @@ export default async function EmployeeActivityPage() {
                         <p className="text-xs text-sun-mute mt-0.5">
                           {meta.shiftTitle as string}
                           {shiftDate ? ` · ${shiftDate}` : ""}
-                          {meta.payAmount != null ? ` · $${Number(meta.payAmount).toFixed(2)}` : ""}
+                          {config.renderMeta
+                            ? config.renderMeta(meta) ? ` · ${config.renderMeta(meta)}` : ""
+                            : meta.payAmount != null ? ` · $${Number(meta.payAmount).toFixed(2)}` : ""}
                         </p>
                       </div>
                       <span className="ml-auto text-xs text-sun-mute shrink-0 mt-0.5">

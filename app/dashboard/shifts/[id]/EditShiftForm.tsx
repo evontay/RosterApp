@@ -56,19 +56,24 @@ export function EditShiftForm({ open, onClose, shift, skills }: Props) {
     setLoading(true);
     setError("");
 
-    const res = await fetch(`/api/shifts/${shift.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, roles }),
-    });
+    try {
+      const res = await fetch(`/api/shifts/${shift.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, roles }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? "Something went wrong");
+      } else {
+        onClose();
+        router.refresh();
+      }
+    } catch {
+      setError("Something went wrong");
+    } finally {
       setLoading(false);
-    } else {
-      onClose();
-      router.refresh();
     }
   }
 

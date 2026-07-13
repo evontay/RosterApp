@@ -25,11 +25,32 @@ export async function POST(req: NextRequest) {
   });
   if (!shift) return NextResponse.json({ error: "Shift not found" }, { status: 404 });
 
+  // Fetch partTimer userId for activity notification
+  const partTimer = await prisma.partTimer.findUnique({
+    where: { id: partTimerId },
+    select: { userId: true },
+  });
+  if (!partTimer) return NextResponse.json({ error: "Part-timer not found" }, { status: 404 });
+
   // Upsert — one kudos per employee per shift
   const kudos = await prisma.kudos.upsert({
     where: { shiftId_partTimerId: { shiftId, partTimerId } },
     create: { shiftId, partTimerId, businessId: business.id, message: trimmed },
     update: { message: trimmed },
+  });
+
+  await prisma.activity.create({
+    data: {
+      type: "KUDOS_RECEIVED",
+      recipientId: partTimer.userId,
+      entityType: "shift",
+      entityId: shiftId,
+      metadata: {
+        shiftTitle: shift.title,
+        shiftDate: shift.shiftDate,
+        message: trimmed,
+      },
+    },
   });
 
   return NextResponse.json(kudos);

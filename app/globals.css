@@ -120,10 +120,22 @@
   .border-pending-border { border-color: #FDE047; }
   .border-sun-faint    { border-color: #D1D5DB; }
 
+  /* Extended backgrounds */
+  .bg-sun-mute         { background-color: #9CA3AF; }
+  .bg-sun-faint        { background-color: #D1D5DB; }
+  .bg-status-open-dot       { background-color: #F87171; }
+  .bg-status-confirmed-dot  { background-color: #34D399; }
+  .bg-status-logged-dot     { background-color: #60A5FA; }
+  .bg-status-paid-dot       { background-color: #F59E0B; }
+
+  /* Dividers */
+  .divide-sun-border > :not([hidden]) ~ :not([hidden]) { border-color: #FDE8C8; }
+
   /* Hover */
   .hover\:border-sun-accent:hover  { border-color: #F59E0B; }
   .hover\:text-sun-ink:hover       { color: #1F2937; }
   .hover\:bg-sun-inset:hover       { background-color: #FFFBF2; }
+  .hover\:bg-sun-faint:hover       { background-color: #D1D5DB; }
 
   /* Focus */
   .focus\:border-sun-accent:focus  { border-color: #F59E0B; }

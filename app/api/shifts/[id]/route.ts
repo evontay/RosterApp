@@ -38,7 +38,13 @@ export async function PUT(
   });
   if (!shift) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.shiftRole.deleteMany({ where: { shiftId: id } });
+  await prisma.$transaction([
+    prisma.shiftAssignment.updateMany({
+      where: { shiftRole: { shiftId: id } },
+      data: { shiftRoleId: null },
+    }),
+    prisma.shiftRole.deleteMany({ where: { shiftId: id } }),
+  ]);
 
   const updated = await prisma.shift.update({
     where: { id },

@@ -224,6 +224,8 @@ enum ActivityType {
   PAID
   INTEREST_RECEIVED
   INTEREST_WITHDRAWN
+  HOURS_LOGGED
+  KUDOS_RECEIVED
 }
 
 model ObjectiveRecord {
