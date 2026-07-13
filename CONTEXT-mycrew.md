@@ -59,6 +59,8 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Trust signals on roster profile**: Performance section shows Reliability % and Quality %, both computed with 180-day exponential decay (recent shifts weighted more). Raw record count shown as context. Color-coded green ≥80 / yellow 60–79 / red <60. Quality shows "—" until at least one quality flag is set.
 - **Performance log on roster profile**: below the score bars, a chronological log (newest first) of every ObjectiveRecord — shift name, date, attendance/quality badges, tags, and private notes if written. Visible to owner only, never to employee.
 - **Kudos**: on a completed shift detail, each assigned employee has a "Send kudos" link below the performance record form. Owner writes a short message; upserted one per shift per employee. Employees see kudos in their home feed.
+- **Owner profile** (`/dashboard/settings/profile`): owner sets display name, phone, business address, avatar (emoji + colour picker). Business name is editable here. Email is read-only. Avatar stored on `Business` model; shown in nav top-right (links to profile page). Also accessible via Settings → My profile dropdown.
+- **Dashboard greeting**: time-aware — "Good morning" 5am–11:59am, "Hello" at all other times. Name resolved from `Business.ownerName` → email prefix fallback.
 
 ### Employee-side features
 - Auth (email + password)
@@ -84,6 +86,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 | `/dashboard/shifts/[id]` | Shift detail — staffing slots, hours logging, pay, actions menu |
 | `/dashboard/activity` | Activity feed — interest received/withdrawn, grouped by date |
 | `/dashboard/calendar` | Redirects to `/dashboard/shifts` |
+| `/dashboard/settings/profile` | Owner profile — display name, avatar, phone, email, business address |
 | `/dashboard/settings/roles` | Role type management |
 | `/dashboard/settings/performance-tags` | Performance tag management |
 
@@ -114,12 +117,17 @@ model User {
 }
 
 model Business {
-  id            String             @id @default(cuid())
-  name          String
-  ownerUserId   String
-  createdAt     DateTime           @default(now())
-  rosterMembers RosterMembership[]
-  shifts        Shift[]
+  id              String             @id @default(cuid())
+  name            String
+  ownerUserId     String
+  ownerName       String?            -- owner's display name (shown in nav + greeting)
+  ownerPhone      String?
+  avatarEmoji     String?
+  avatarColor     String?
+  businessAddress String?
+  createdAt       DateTime           @default(now())
+  rosterMembers   RosterMembership[]
+  shifts          Shift[]
   partTimerSkills PartTimerSkill[]
 }
 
