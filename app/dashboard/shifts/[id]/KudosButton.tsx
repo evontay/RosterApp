@@ -52,7 +52,7 @@ export function KudosButton({
         <button
           onClick={handleSend}
           disabled={saving || !message.trim()}
-          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-sun-ink px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Sending…" : "Send"}
         </button>

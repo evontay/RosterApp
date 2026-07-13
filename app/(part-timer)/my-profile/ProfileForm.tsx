@@ -221,7 +221,7 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-sun-accent text-white px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                className="bg-sun-accent text-sun-ink px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save"}
               </button>

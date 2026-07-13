@@ -53,7 +53,7 @@ export function SkillsEditor({
             onClick={() => toggle(s.id)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
               selected.includes(s.id)
-                ? "bg-sun-accent text-white border-sun-accent"
+                ? "bg-sun-accent text-sun-ink border-sun-accent"
                 : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent hover:text-sun-accent-link"
             }`}
           >
@@ -65,7 +65,7 @@ export function SkillsEditor({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-sun-ink px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving..." : saved ? "Saved!" : "Save"}
         </button>

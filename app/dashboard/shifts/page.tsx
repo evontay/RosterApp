@@ -169,7 +169,7 @@ export default async function ShiftsPage({
         <div className="flex justify-end mb-0">
           <Link
             href="/dashboard/shifts/new"
-            className="bg-sun-accent text-white px-4 py-2 rounded-full text-sm font-medium hover:opacity-90"
+            className="bg-sun-accent text-sun-ink px-4 py-2 rounded-full text-sm font-medium hover:opacity-90"
           >
             + New shift
           </Link>

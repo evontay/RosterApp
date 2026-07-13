@@ -131,7 +131,7 @@ export function EditShiftForm({ open, onClose, shift, skills }: Props) {
             <button type="button" onClick={onClose}
               className="flex-1 border border-sun-border text-sun-body py-2 rounded-full text-sm">Cancel</button>
             <button type="submit" disabled={loading}
-              className="flex-1 bg-sun-accent text-white py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50">
+              className="flex-1 bg-sun-accent text-sun-ink py-2 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50">
               {loading ? "Saving..." : "Save changes"}
             </button>
           </div>

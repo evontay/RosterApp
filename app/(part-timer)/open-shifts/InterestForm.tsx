@@ -96,7 +96,7 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
             <button
               onClick={submit}
               disabled={loading}
-              className="text-sm px-4 py-1.5 bg-sun-accent text-white rounded-full font-medium hover:opacity-90 disabled:opacity-50"
+              className="text-sm px-4 py-1.5 bg-sun-accent text-sun-ink rounded-full font-medium hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Submitting..." : "I'm interested"}
             </button>

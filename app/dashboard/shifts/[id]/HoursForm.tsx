@@ -70,7 +70,7 @@ export function HoursForm({
       <button
         onClick={handleSave}
         disabled={loading || !hours}
-        className="text-xs bg-sun-accent text-white px-2 py-1 rounded-full hover:opacity-90 disabled:opacity-50"
+        className="text-xs bg-sun-accent text-sun-ink px-2 py-1 rounded-full hover:opacity-90 disabled:opacity-50"
       >
         {loading ? "..." : "Save"}
       </button>

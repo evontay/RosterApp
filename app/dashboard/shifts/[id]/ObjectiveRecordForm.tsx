@@ -82,7 +82,7 @@ export function ObjectiveRecordForm({
                   ? opt.value === "attended"
                     ? "bg-status-confirmed-dot text-white border-status-confirmed-dot"
                     : opt.value === "late"
-                    ? "bg-sun-accent text-white border-sun-accent"
+                    ? "bg-sun-accent text-sun-ink border-sun-accent"
                     : "bg-status-open-dot text-white border-status-open-dot"
                   : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent"
               }`}
@@ -106,7 +106,7 @@ export function ObjectiveRecordForm({
                 qualityFlag === flag
                   ? flag === "good"
                     ? "bg-status-logged-dot text-white border-status-logged-dot"
-                    : "bg-sun-accent text-white border-sun-accent"
+                    : "bg-sun-accent text-sun-ink border-sun-accent"
                   : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent"
               }`}
             >
@@ -156,7 +156,7 @@ export function ObjectiveRecordForm({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="text-xs bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+          className="text-xs bg-sun-accent text-sun-ink px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}
         </button>

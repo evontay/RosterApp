@@ -103,7 +103,7 @@ export function CalendarView({
           </button>
           <Link
             href="/dashboard/shifts/new"
-            className="ml-2 px-3 py-1.5 text-sm bg-sun-accent text-white rounded-full hover:opacity-90"
+            className="ml-2 px-3 py-1.5 text-sm bg-sun-accent text-sun-ink rounded-full hover:opacity-90"
           >
             + New shift
           </Link>
@@ -122,7 +122,7 @@ export function CalendarView({
               </p>
               <p
                 className={`text-lg font-semibold mt-0.5 w-8 h-8 mx-auto flex items-center justify-center rounded-full ${
-                  isToday ? "bg-sun-accent text-white" : "text-sun-body"
+                  isToday ? "bg-sun-accent text-sun-ink" : "text-sun-body"
                 }`}
               >
                 {day.getDate()}

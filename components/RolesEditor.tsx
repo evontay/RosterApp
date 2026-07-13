@@ -165,7 +165,7 @@ export function RolesEditor({
             className="flex-1 border border-sun-border rounded-[10px] px-3 py-1.5 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" autoFocus />
           <button type="button" onClick={handleCreateSkill}
             disabled={creating || !newLabel.trim()}
-            className="text-sm bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
+            className="text-sm bg-sun-accent text-sun-ink px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50">
             {creating ? "..." : "Create"}
           </button>
           <button type="button" onClick={() => { setAddingNew(false); setNewLabel(""); setCreateError(""); }}

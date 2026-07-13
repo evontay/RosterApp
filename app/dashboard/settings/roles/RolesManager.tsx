@@ -152,7 +152,7 @@ export function RolesManager({ skills: initial }: { skills: SkillRow[] }) {
               <button
                 onClick={() => handleSaveEdit(skill.id)}
                 disabled={editSaving || !editLabel.trim()}
-                className="text-sm bg-sun-accent text-white px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                className="text-sm bg-sun-accent text-sun-ink px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
               >
                 {editSaving ? "..." : "Save"}
               </button>

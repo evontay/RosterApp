@@ -73,7 +73,7 @@ export function TagsManager({ tags }: { tags: Tag[] }) {
         <button
           onClick={handleCreate}
           disabled={creating || !newLabel.trim()}
-          className="px-4 py-2 bg-sun-accent text-white text-sm rounded-full hover:opacity-90 disabled:opacity-50"
+          className="px-4 py-2 bg-sun-accent text-sun-ink text-sm rounded-full hover:opacity-90 disabled:opacity-50"
         >
           {creating ? "Adding…" : "Add"}
         </button>

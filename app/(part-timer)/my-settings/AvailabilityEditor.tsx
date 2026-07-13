@@ -67,7 +67,7 @@ export function AvailabilityEditor({
                   disabled={isSaving}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-50 ${
                     selected === opt.value
-                      ? "bg-sun-accent text-white"
+                      ? "bg-sun-accent text-sun-ink"
                       : "bg-sun-inset text-sun-mute hover:bg-sun-faint"
                   }`}
                 >
