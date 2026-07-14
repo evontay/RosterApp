@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { MarketingNav } from "@/components/MarketingNav";
 
 export default async function Home() {
   const session = await auth();
@@ -10,16 +11,7 @@ export default async function Home() {
   return (
     <div style={{ background: "#FFFBF2", minHeight: "100vh", fontFamily: "Arial, Helvetica, sans-serif" }}>
 
-      {/* Nav */}
-      <nav style={{ background: "#FFFBF2", borderBottom: "1px solid #FDE8C8" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 18, fontWeight: 500, color: "#1F2937" }}>MyCrew <span style={{ color: "#F59E0B" }}>☀</span></span>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link href="/login" style={{ fontSize: 13, color: "#4B5563", textDecoration: "none" }}>Log in</Link>
-            <Link href="/signup" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 13, fontWeight: 500, padding: "7px 18px", borderRadius: 999, textDecoration: "none" }}>Start free</Link>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 64px" }}>
 
