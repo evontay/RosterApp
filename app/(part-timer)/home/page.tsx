@@ -37,7 +37,7 @@ export default async function EmployeeHomePage() {
   });
   if (!partTimer) redirect("/login");
 
-  const businessIds = partTimer.memberships.map((m) => m.businessId);
+  const businessIds = partTimer.memberships.map((m: { businessId: string }) => m.businessId);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
