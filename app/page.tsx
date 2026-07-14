@@ -16,7 +16,7 @@ export default async function Home() {
           <span style={{ fontSize: 18, fontWeight: 500, color: "#1F2937" }}>MyCrew <span style={{ color: "#F59E0B" }}>☀</span></span>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Link href="/login" style={{ fontSize: 13, color: "#4B5563", textDecoration: "none" }}>Log in</Link>
-            <Link href="/login" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 13, fontWeight: 500, padding: "7px 18px", borderRadius: 999, textDecoration: "none" }}>Start free</Link>
+            <Link href="/signup" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 13, fontWeight: 500, padding: "7px 18px", borderRadius: 999, textDecoration: "none" }}>Start free</Link>
           </div>
         </div>
       </nav>
@@ -36,7 +36,7 @@ export default async function Home() {
               Kudos after every shift. Milestones worth chasing. Quiet reliability signals only you can see. No public ratings, no penalty for saying no — just recognition that makes your best people want to come back.
             </p>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <Link href="/login" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 14, fontWeight: 500, padding: "10px 22px", borderRadius: 999, textDecoration: "none" }}>Build your crew — free</Link>
+              <Link href="/signup" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 14, fontWeight: 500, padding: "10px 22px", borderRadius: 999, textDecoration: "none" }}>Build your crew — free</Link>
               <a href="#how-it-works" style={{ border: "1px solid #FDE8C8", color: "#4B5563", fontSize: 14, padding: "10px 20px", borderRadius: 999, background: "#FFFFFF", textDecoration: "none" }}>See how it works</a>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -151,7 +151,7 @@ export default async function Home() {
         <div style={{ textAlign: "center", paddingTop: 32, borderTop: "1px solid #FDE8C8" }}>
           <h2 style={{ fontSize: 22, fontWeight: 500, color: "#1F2937", marginBottom: 8, marginTop: 0 }}>Your best people are already on your roster</h2>
           <p style={{ fontSize: 14, color: "#4B5563", marginBottom: 18 }}>Give them a reason to keep showing up.</p>
-          <Link href="/login" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 14, fontWeight: 500, padding: "11px 26px", borderRadius: 999, textDecoration: "none" }}>Build your crew — free</Link>
+          <Link href="/signup" style={{ background: "#F59E0B", color: "#FFFFFF", fontSize: 14, fontWeight: 500, padding: "11px 26px", borderRadius: 999, textDecoration: "none" }}>Build your crew — free</Link>
           <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 12 }}>Free while you grow · no credit card · your crew joins by invite</div>
         </div>
 
