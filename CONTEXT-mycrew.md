@@ -45,11 +45,12 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - Unauthenticated visitors see the landing page; authenticated users are redirected to their respective dashboard
 - "Start free" / "Build your crew — free" CTAs → `/signup`; "Log in" → `/login`
 
-### Signup
-- `/signup` — owner self-registration: name, business name, email, password (min 8 chars)
+### Auth pages (login + signup)
+- `/login` — centered ☀ icon, "Welcome back" heading, "Forgot it?" label (non-functional placeholder), password show/hide toggle, "Log in" button, "New here? Start your crew free" footer link
+- `/signup` — 🙌 icon, "Start your crew" heading, fields: owner name + business name + email + password (min 8 chars), password hint text, show/hide toggle, "Create my crew" button, "No credit card · free while you grow" note, part-timer invite notice card, "Already have a crew? Log in" footer link
 - `POST /api/auth/signup` creates `User` (role: owner) + `Business` in one transaction, then auto-signs in via NextAuth credentials
 - Part-timers join via invite link only — no public signup path for them
-- Login page has "Create an account" link → `/signup`; both pages have MyCrew logo linking back to `/`
+- Both pages: clicking the emoji icon at top links back to `/`
 
 ### Owner-side features
 - Auth (email + password login)
