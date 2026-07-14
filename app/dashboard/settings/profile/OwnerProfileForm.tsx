@@ -81,11 +81,36 @@ export function OwnerProfileForm({
     await saveProfile({ avatarEmoji: emoji, avatarColor: color });
   }
 
+  function compressImage(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const MAX = 256;
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], "logo.jpg", { type: "image/jpeg" })),
+          "image/jpeg",
+          0.8
+        );
+      };
+      img.src = url;
+    });
+  }
+
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const raw = e.target.files?.[0];
+    if (!raw) return;
     setLogoUploading(true);
     setLogoError("");
+    const file = await compressImage(raw);
     const form = new FormData();
     form.append("file", file);
     const res = await fetch("/api/owner/logo", { method: "POST", body: form });
