@@ -37,10 +37,19 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 
 ## Current state
 
-### Landing page
-- Public landing page at `/` — hero, trust bar, 3-step how-it-works, for-part-timers section, CTA
+### Marketing pages
+- `/` — landing page: hero, trust bar, 3-step how-it-works summary, for-part-timers section, CTA
+- `/how-it-works` — expanded 3-step page with alternating copy + product card layout
+- `/for-part-timers` — dedicated page: hero, 3 benefit cards, joining flow, CTA
+- Shared `MarketingNav` component (`components/MarketingNav.tsx`) with active state highlighting
 - Unauthenticated visitors see the landing page; authenticated users are redirected to their respective dashboard
-- "Start free" and "Build your crew — free" CTAs point to `/login` (no self-serve signup yet — accounts created via seed or manually)
+- "Start free" / "Build your crew — free" CTAs → `/signup`; "Log in" → `/login`
+
+### Signup
+- `/signup` — owner self-registration: name, business name, email, password (min 8 chars)
+- `POST /api/auth/signup` creates `User` (role: owner) + `Business` in one transaction, then auto-signs in via NextAuth credentials
+- Part-timers join via invite link only — no public signup path for them
+- Login page has "Create an account" link → `/signup`; both pages have MyCrew logo linking back to `/`
 
 ### Owner-side features
 - Auth (email + password login)
