@@ -341,6 +341,18 @@ model Kudos {
 
 ---
 
+### Invite acceptance page (`/invite/[token]`)
+- Personal header: owner avatar pill showing owner name + business name
+- "You're invited to join the crew 🙌" heading + subtitle
+- **Basics card**: editable name, optional phone, password (show/hide toggle); email shown as read-only note
+- **Avatar card**: emoji picker (10 options) with live preview, 5 pastel color swatches
+- **Skills card**: toggleable skill pills for all non-archived skills; saved scoped to the business
+- **Button**: "Join [Business Name] 🙌"
+- **Privacy note**: "Only [Business] can see your profile. No public listing, no ratings — and you can leave anytime."
+- `POST /api/invite/accept` now saves: name, phone, avatarEmoji, avatarColor, skillIds (in addition to password + membership activation)
+
+---
+
 ## Why this document exists
 
 Phases 1–4 are complete. Phase 5 (team-fit / pairing notes) is next. Keep the schema extensible for multi-business support and richer analytics.
