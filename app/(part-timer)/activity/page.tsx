@@ -58,7 +58,7 @@ export default async function EmployeeActivityPage() {
             <section key={date}>
               <h2 className="text-xs font-semibold text-sun-mute uppercase tracking-wide mb-3">{date}</h2>
               <div className="bg-sun-card rounded-[16px] border border-sun-border divide-y divide-sun-border">
-                {items.map((a) => {
+                {items.map((a: typeof activities[number]) => {
                   const meta = (a.metadata ?? {}) as Record<string, string | number | null>;
                   const config = TYPE_CONFIG[a.type] ?? { label: a.type, dot: "bg-sun-mute" };
                   const shiftDate = meta.shiftDate
