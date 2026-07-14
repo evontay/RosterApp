@@ -16,6 +16,7 @@ export default async function OwnerProfilePage() {
       ownerPhone: true,
       avatarEmoji: true,
       avatarColor: true,
+      logoUrl: true,
       businessAddress: true,
     },
   });

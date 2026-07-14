@@ -30,6 +30,7 @@ model Business {
   ownerPhone      String?
   avatarEmoji     String?
   avatarColor     String?
+  logoUrl         String?
   businessAddress String?
   createdAt       DateTime           @default(now())
   rosterMembers   RosterMembership[]

@@ -19,7 +19,7 @@ export default async function DashboardLayout({
     prisma.activity.count({ where: { recipientId: session.user.id, read: false } }),
     prisma.business.findFirst({
       where: { ownerUserId: session.user.id },
-      select: { id: true, name: true, ownerName: true, avatarEmoji: true, avatarColor: true },
+      select: { id: true, name: true, ownerName: true, avatarEmoji: true, avatarColor: true, logoUrl: true },
     }),
   ]);
 
@@ -50,6 +50,7 @@ export default async function DashboardLayout({
                   name={business.ownerName ?? business.name}
                   avatarEmoji={business.avatarEmoji}
                   avatarColor={business.avatarColor ?? hashColor(business.id)}
+                  logoUrl={business.logoUrl}
                   id={business.id}
                   size="xs"
                 />

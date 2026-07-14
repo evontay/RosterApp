@@ -40,18 +40,26 @@ export function Avatar({
   name,
   avatarEmoji,
   avatarColor,
+  logoUrl,
   id,
   size = "md",
 }: {
   name: string;
   avatarEmoji?: string | null;
   avatarColor?: string | null;
+  logoUrl?: string | null;
   id: string;
   size?: "xs" | "sm" | "md" | "lg";
 }) {
+  const s = SIZE[size];
+
+  if (logoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={logoUrl} alt={name} className={`${s.wrap} rounded-full object-cover shrink-0`} />;
+  }
+
   const colorKey = avatarColor && avatarColor in AVATAR_COLORS ? avatarColor : hashColor(id);
   const { bg, text } = AVATAR_COLORS[colorKey];
-  const s = SIZE[size];
 
   return (
     <div

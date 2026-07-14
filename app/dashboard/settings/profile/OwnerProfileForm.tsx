@@ -11,6 +11,7 @@ interface Business {
   ownerPhone: string | null;
   avatarEmoji: string | null;
   avatarColor: string | null;
+  logoUrl: string | null;
   businessAddress: string | null;
 }
 
@@ -30,6 +31,10 @@ export function OwnerProfileForm({
   const [avatarColor, setAvatarColor] = useState<string | null>(
     business.avatarColor ?? hashColor(business.id)
   );
+  const [logoUrl, setLogoUrl] = useState<string | null>(business.logoUrl);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
@@ -76,6 +81,33 @@ export function OwnerProfileForm({
     await saveProfile({ avatarEmoji: emoji, avatarColor: color });
   }
 
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    setLogoError("");
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/owner/logo", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) {
+      setLogoError(data.error ?? "Upload failed");
+    } else {
+      setLogoUrl(data.url);
+      router.refresh();
+    }
+    setLogoUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleLogoRemove() {
+    setLogoUploading(true);
+    await fetch("/api/owner/logo", { method: "DELETE" });
+    setLogoUrl(null);
+    setLogoUploading(false);
+    router.refresh();
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -113,6 +145,7 @@ export function OwnerProfileForm({
             name={displayName}
             avatarEmoji={avatarEmoji}
             avatarColor={avatarColor}
+            logoUrl={logoUrl}
             id={business.id}
             size="lg"
           />
@@ -144,9 +177,32 @@ export function OwnerProfileForm({
         )}
       </div>
 
+      {/* Hidden file input */}
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleLogoUpload} />
+
       {/* Inline avatar picker */}
       {avatarOpen && (
         <div className="border border-sun-border rounded-[12px] bg-sun-inset p-4 space-y-4">
+          <div>
+            <p className="text-xs font-medium text-sun-body mb-2">Company logo</p>
+            <div className="flex items-center gap-3">
+              {logoUrl ? (
+                <>
+                  <img src={logoUrl} alt="logo" className="w-10 h-10 rounded-full object-cover border border-sun-border" />
+                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="text-xs text-sun-accent-link hover:underline disabled:opacity-50">Replace</button>
+                  <button type="button" onClick={handleLogoRemove} disabled={logoUploading} className="text-xs text-sun-mute hover:text-sun-ink disabled:opacity-50">Remove</button>
+                </>
+              ) : (
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="text-xs bg-sun-card border border-sun-border rounded-[8px] px-3 py-1.5 text-sun-body hover:border-sun-accent disabled:opacity-50">
+                  {logoUploading ? "Uploading…" : "↑ Upload logo"}
+                </button>
+              )}
+              {logoUploading && !logoUrl && <span className="text-xs text-sun-mute">Uploading…</span>}
+            </div>
+            {logoError && <p className="text-xs text-status-open-text mt-1">{logoError}</p>}
+            <p className="text-xs text-sun-mute mt-1">JPG, PNG, WebP or GIF · max 2 MB</p>
+          </div>
+          <div className="border-t border-sun-border" />
           <div>
             <p className="text-xs font-medium text-sun-body mb-2">Background color</p>
             <div className="flex flex-wrap gap-2">
