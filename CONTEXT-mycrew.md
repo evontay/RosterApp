@@ -25,6 +25,8 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Prisma config:** URL lives in `prisma.config.ts`, not in `schema.prisma`
 - **Migrations:** Manual SQL via `prisma migrate deploy` (non-interactive env)
 - **GitHub:** `https://github.com/evontay/RosterApp` (private)
+- **Production:** Vercel — `https://mycrew-dun.vercel.app`
+- **Production DB:** Neon (PostgreSQL) — connection string stored in Vercel env vars
 
 ### Key Prisma v7 notes
 - No bundled engine — requires `@prisma/adapter-pg` + `pg`
@@ -34,6 +36,11 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 ---
 
 ## Current state
+
+### Landing page
+- Public landing page at `/` — hero, trust bar, 3-step how-it-works, for-part-timers section, CTA
+- Unauthenticated visitors see the landing page; authenticated users are redirected to their respective dashboard
+- "Start free" and "Build your crew — free" CTAs point to `/login` (no self-serve signup yet — accounts created via seed or manually)
 
 ### Owner-side features
 - Auth (email + password login)
@@ -408,10 +415,22 @@ All custom colours defined in `@theme` AND hardcoded in `@layer utilities` (Turb
 
 ---
 
-## Seed accounts (local dev)
+## Deployment workflow
+
+- **Local dev:** `npm run dev` → `http://localhost:3000` (local Postgres via Postgres.app)
+- **Deploy to prod:** `vercel --prod --force` from project root
+- **Schema changes:** `npx prisma migrate dev --name <name>` (local) → `DATABASE_URL="<neon-url>" npx prisma migrate deploy` (production)
+- **Env vars:** local secrets in `.env` (gitignored); production secrets managed via `vercel env add` or Vercel dashboard
+- **Build script:** `prisma generate && next build` — `prisma generate` runs first to ensure Prisma client types are fresh on Vercel
+
+---
+
+## Seed accounts (local + production)
 
 | Role | Email | Password |
 |------|-------|----------|
 | Owner | owner@craftworkshop.com | password123 |
 | Part-timer | sarah@example.com | password123 |
 | Part-timer | james@example.com | password123 |
+
+Seed was applied to production Neon DB on 2026-07-14. To re-seed: `DATABASE_URL="<neon-url>" npx tsx prisma/seed.ts`
