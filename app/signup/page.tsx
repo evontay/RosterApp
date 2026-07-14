@@ -52,9 +52,9 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-sun-page">
       <div className="bg-sun-card p-8 rounded-[16px] border border-sun-border shadow-sm w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-1 text-sun-ink">
+        <a href="/" className="text-2xl font-bold mb-1 text-sun-ink block hover:opacity-80">
           MyCrew <span className="text-sun-accent">☀</span>
-        </h1>
+        </a>
         <p className="text-sm text-sun-mute mb-6">Create your owner account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

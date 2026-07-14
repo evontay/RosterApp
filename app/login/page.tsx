@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-sun-page">
       <div className="bg-sun-card p-8 rounded-[16px] border border-sun-border shadow-sm w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-sun-ink">MyCrew <span className="text-sun-accent">☀</span></h1>
+        <a href="/" className="text-2xl font-bold mb-6 text-sun-ink block hover:opacity-80">MyCrew <span className="text-sun-accent">☀</span></a>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-sun-body mb-1">
