@@ -33,6 +33,7 @@ export function OwnerProfileForm({
   );
   const [logoUrl, setLogoUrl] = useState<string | null>(business.logoUrl);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [logoProgress, setLogoProgress] = useState(0);
   const [logoError, setLogoError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
@@ -109,19 +110,34 @@ export function OwnerProfileForm({
     const raw = e.target.files?.[0];
     if (!raw) return;
     setLogoUploading(true);
+    setLogoProgress(0);
     setLogoError("");
     const file = await compressImage(raw);
     const form = new FormData();
     form.append("file", file);
-    const res = await fetch("/api/owner/logo", { method: "POST", body: form });
-    const data = await res.json();
-    if (!res.ok) {
-      setLogoError(data.error ?? "Upload failed");
-    } else {
-      setLogoUrl(data.url);
-      router.refresh();
-    }
+
+    await new Promise<void>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) setLogoProgress(Math.round((ev.loaded / ev.total) * 100));
+      };
+      xhr.onload = () => {
+        const data = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setLogoUrl(data.url);
+          router.refresh();
+        } else {
+          setLogoError(data.error ?? "Upload failed");
+        }
+        resolve();
+      };
+      xhr.onerror = () => { setLogoError("Upload failed — check your connection"); resolve(); };
+      xhr.open("POST", "/api/owner/logo");
+      xhr.send(form);
+    });
+
     setLogoUploading(false);
+    setLogoProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -219,10 +235,10 @@ export function OwnerProfileForm({
                 </>
               ) : (
                 <button type="button" onClick={() => fileInputRef.current?.click()} disabled={logoUploading} className="text-xs bg-sun-card border border-sun-border rounded-[8px] px-3 py-1.5 text-sun-body hover:border-sun-accent disabled:opacity-50">
-                  {logoUploading ? "Uploading…" : "↑ Upload logo"}
+                  {logoUploading ? `Uploading… ${logoProgress}%` : "↑ Upload logo"}
                 </button>
               )}
-              {logoUploading && !logoUrl && <span className="text-xs text-sun-mute">Uploading…</span>}
+              {logoUploading && logoUrl && <span className="text-xs text-sun-mute">Uploading… {logoProgress}%</span>}
             </div>
             {logoError && <p className="text-xs text-status-open-text mt-1">{logoError}</p>}
             <p className="text-xs text-sun-mute mt-1">JPG, PNG, WebP or GIF · max 2 MB</p>
