@@ -125,7 +125,6 @@ export function OwnerProfileForm({
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
           setLogoUrl(data.url);
-          router.refresh();
         } else {
           setLogoError(data.error ?? "Upload failed");
         }
@@ -139,6 +138,7 @@ export function OwnerProfileForm({
     setLogoUploading(false);
     setLogoProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    router.refresh();
   }
 
   async function handleLogoRemove() {
