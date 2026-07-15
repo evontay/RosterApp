@@ -122,11 +122,15 @@ export function OwnerProfileForm({
         if (ev.lengthComputable) setLogoProgress(Math.round((ev.loaded / ev.total) * 100));
       };
       xhr.onload = () => {
-        const data = JSON.parse(xhr.responseText);
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setLogoUrl(data.url);
-        } else {
-          setLogoError(data.error ?? "Upload failed");
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setLogoUrl(data.url);
+          } else {
+            setLogoError(data.error ?? "Upload failed");
+          }
+        } catch {
+          setLogoError(`Upload failed (${xhr.status})`);
         }
         resolve();
       };
