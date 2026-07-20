@@ -24,6 +24,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Auth:** NextAuth.js v5 beta (Auth.js) — Credentials provider, JWT sessions
 - **Prisma config:** URL lives in `prisma.config.ts`, not in `schema.prisma`
 - **Migrations:** Manual SQL via `prisma migrate deploy` (non-interactive env)
+- **File storage:** Vercel Blob (public store `store_rve0E8RgLbbSrbnN`) — used for business logo uploads. Requires `BLOB_READ_WRITE_TOKEN` in `.env.local`. Do NOT set `BLOB_STORE_ID` locally (triggers OIDC mode which breaks dev). Do NOT set `VERCEL_OIDC_TOKEN` locally (same issue).
 - **GitHub:** `https://github.com/evontay/RosterApp` (private)
 - **Production:** Vercel — `https://mycrew-dun.vercel.app`
 - **Production DB:** Neon (PostgreSQL) — connection string stored in Vercel env vars
@@ -76,7 +77,7 @@ This is **not** an open marketplace. Part-timers cannot browse or apply to jobs.
 - **Trust signals on roster profile**: Performance section shows Reliability % and Quality %, both computed with 180-day exponential decay (recent shifts weighted more). Raw record count shown as context. Color-coded green ≥80 / yellow 60–79 / red <60. Quality shows "—" until at least one quality flag is set.
 - **Performance log on roster profile**: below the score bars, a chronological log (newest first) of every ObjectiveRecord — shift name, date, attendance/quality badges, tags, and private notes if written. Visible to owner only, never to employee.
 - **Kudos**: on a completed shift detail, each assigned employee has a "Send kudos" link below the performance record form. Owner writes a short message; upserted one per shift per employee. Employees see kudos in their home feed.
-- **Owner profile** (`/dashboard/settings/profile`): owner sets display name, phone, business address, avatar (emoji + colour picker). Business name is editable here. Email is read-only. Avatar stored on `Business` model; shown in nav top-right (links to profile page). Also accessible via Settings → My profile dropdown.
+- **Owner profile** (`/dashboard/settings/profile`): owner sets display name, phone, business address, avatar (emoji + colour picker), and business logo (image upload). Business name is editable here. Email is read-only. Avatar/logo stored on `Business` model; shown in nav top-right (links to profile page). Also accessible via Settings → My profile dropdown. Logo uploaded via `POST /api/owner/logo` to Vercel Blob; filename includes timestamp (`logos/{id}-{timestamp}.ext`) to bust cache on replace. Old blob deleted on replace/remove.
 - **Dashboard greeting**: time-aware — "Good morning" 5am–11:59am, "Hello" at all other times. Name resolved from `Business.ownerName` → email prefix fallback.
 
 ### Employee-side features
@@ -141,6 +142,7 @@ model Business {
   ownerPhone      String?
   avatarEmoji     String?
   avatarColor     String?
+  logoUrl         String?            -- Vercel Blob public URL; takes priority over emoji avatar
   businessAddress String?
   createdAt       DateTime           @default(now())
   rosterMembers   RosterMembership[]
@@ -381,9 +383,6 @@ Gamification for employee motivation (no visible ratings). Three features built:
 - **Milestone badges**: 7 milestones (first shift, 5/10/25/50 shifts, 3/10 unique teammates), computed from existing data, displayed as yellow pill badges on employee home. Next upcoming milestone shown as a prompt.
 - **Shift history stats**: total completed shifts, total hours, total earned — inline in the profile card on employee home.
 - **Kudos feed**: owner writes a short positive message per employee per shift (upsert) on the completed shift detail. Employee sees a feed on their home page. Purely positive — no negative mechanism.
-
-### Phase 5
-Team-fit / pairing notes layer. Owner-customizable skill tags.
 
 ### Phase 5
 Team-fit / pairing notes layer. Owner-customizable skill tags.

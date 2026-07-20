@@ -34,9 +34,8 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = file.type.split("/")[1].replace("jpeg", "jpg");
-  const blob = await put(`logos/${business.id}.${ext}`, file, {
+  const blob = await put(`logos/${business.id}-${Date.now()}.${ext}`, file, {
     access: "public",
-    allowOverwrite: true,
   });
 
   await prisma.business.update({
