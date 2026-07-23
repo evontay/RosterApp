@@ -123,7 +123,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-sun-accent text-white py-2.5 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50"
+              className="w-full bg-sun-accent text-sun-ink py-2.5 rounded-full text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Creating your crew…" : "Create my crew"}
             </button>
