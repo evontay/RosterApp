@@ -13,6 +13,7 @@ Next.js 16 · Prisma v7 · NextAuth v5 · Tailwind v4.
 | Setting up, migrating, deploying, or debugging tooling | `docs/architecture.md` |
 | Touching staffing, status, interest, scoring, or activity | `docs/domain-logic.md` + `prisma/schema.prisma` |
 | Building or restyling any UI | `docs/design-system.md` + `visual design/` |
+| Making a surface work on phones | `docs/mobile-responsive.md` |
 | Writing user-facing words | `docs/brand-copy.md` |
 | Checking what already exists | `docs/state.md` |
 
