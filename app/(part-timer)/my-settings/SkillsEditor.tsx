@@ -51,7 +51,7 @@ export function SkillsEditor({
             key={s.id}
             type="button"
             onClick={() => toggle(s.id)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${
               selected.includes(s.id)
                 ? "bg-sun-accent text-sun-ink border-sun-accent"
                 : "bg-sun-card text-sun-mute border-sun-border hover:border-sun-accent hover:text-sun-accent-link"

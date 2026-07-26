@@ -64,7 +64,7 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
         <button
           onClick={withdraw}
           disabled={loading}
-          className="border border-pending-border text-pending-mute text-[11px] px-2.5 py-1 rounded-full disabled:opacity-50"
+          className="border border-pending-border text-pending-mute text-[11px] px-3 py-1.5 rounded-full disabled:opacity-50 shrink-0"
         >
           {loading ? "..." : "Withdraw"}
         </button>
@@ -92,17 +92,17 @@ export function InterestForm({ shiftId, currentStatus, currentComment }: Props) 
             rows={2}
             autoFocus
           />
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             <button
               onClick={submit}
               disabled={loading}
-              className="text-sm px-4 py-1.5 bg-sun-accent text-sun-ink rounded-full font-medium hover:opacity-90 disabled:opacity-50"
+              className="w-full md:w-auto text-sm px-4 py-2 bg-sun-accent text-sun-ink rounded-full font-medium hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Submitting..." : "I'm interested"}
             </button>
             <button
               onClick={() => { setOpen(false); setComment(""); }}
-              className="text-sm px-3 py-1.5 text-sun-mute hover:text-sun-body"
+              className="w-full md:w-auto text-sm px-3 py-2 text-sun-mute hover:text-sun-body"
             >
               Cancel
             </button>

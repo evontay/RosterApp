@@ -20,7 +20,7 @@ export function DashboardNavLinks({ unreadCount }: { unreadCount: number }) {
   const settingsActive = pathname.startsWith("/dashboard/settings");
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="hidden md:flex items-center gap-5">
       <Link href="/dashboard" className={pill("/dashboard")}>Dashboard</Link>
       <Link href="/dashboard/roster" className={pill("/dashboard/roster")}>Roster</Link>
       <Link href="/dashboard/shifts" className={pill("/dashboard/shifts")}>Shifts</Link>

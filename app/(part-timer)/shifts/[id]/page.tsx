@@ -104,7 +104,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <span className="text-sm text-sun-mute shrink-0">{label}</span>
-      <span className="text-sm text-sun-ink text-right">{value}</span>
+      <span className="text-sm text-sun-ink text-right min-w-0 break-words">{value}</span>
     </div>
   );
 }

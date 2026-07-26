@@ -139,7 +139,7 @@ export function ProfileForm({ partTimer, memberSince }: { partTimer: PartTimer; 
                       key={key}
                       type="button"
                       onClick={() => handleAvatarChange(avatarEmoji, key)}
-                      className={`w-7 h-7 rounded-full border-2 transition-transform ${
+                      className={`w-9 h-9 rounded-full border-2 transition-transform ${
                         selected ? "border-gray-700 scale-110" : "border-transparent hover:scale-105"
                       }`}
                       style={{ backgroundColor: bg }}

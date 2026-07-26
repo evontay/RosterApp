@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PartTimerNavLinks } from "./PartTimerNavLinks";
+import { PartTimerBottomNav } from "./PartTimerBottomNav";
 import { Avatar } from "@/components/Avatar";
 
 export default async function PartTimerLayout({
@@ -79,6 +80,7 @@ export default async function PartTimerLayout({
         </div>
       </nav>
       <main id="main-content" className="site-main">{children}</main>
+      <PartTimerBottomNav unreadCount={unreadCount} openShiftsCount={openShiftsCount} />
     </div>
   );
 }

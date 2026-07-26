@@ -138,7 +138,7 @@ export function AcceptInviteForm({
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-sun-mute text-xs"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-sun-mute text-xs p-2"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "🙈" : "👁"}
@@ -169,10 +169,10 @@ export function AcceptInviteForm({
                 type="button"
                 onClick={() => setEmoji(e)}
                 style={{
-                  width: 32, height: 32, borderRadius: 10,
+                  width: 44, height: 44, borderRadius: 12,
                   background: "#FFFBF2",
                   border: emoji === e ? "1.5px solid #F59E0B" : "1px solid #FDE8C8",
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, cursor: "pointer",
                 }}
               >
                 {e}
@@ -189,9 +189,9 @@ export function AcceptInviteForm({
                 type="button"
                 onClick={() => setColor(c)}
                 style={{
-                  width: 24, height: 24, borderRadius: "50%",
+                  width: 44, height: 44, borderRadius: "50%",
                   background: c,
-                  border: color === c ? "2px solid #F59E0B" : "2px solid transparent",
+                  border: color === c ? "3px solid #F59E0B" : "3px solid transparent",
                   cursor: "pointer",
                 }}
                 aria-label={`Select colour ${c}`}

@@ -124,38 +124,40 @@ export default async function EmployeeHomePage() {
     <div className="space-y-6 max-w-3xl">
       {/* Profile card */}
       <div className="bg-sun-card rounded-[16px] border border-sun-border p-4">
-        <div className="flex items-center gap-4">
-          {/* Avatar — decorative, name is in the heading */}
-          <div aria-hidden="true">
-            <Avatar
-              name={partTimer.name}
-              avatarEmoji={partTimer.avatarEmoji}
-              avatarColor={partTimer.avatarColor}
-              id={partTimer.id}
-              size="lg"
-            />
-          </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-start gap-4">
+            {/* Avatar — decorative, name is in the heading */}
+            <div aria-hidden="true">
+              <Avatar
+                name={partTimer.name}
+                avatarEmoji={partTimer.avatarEmoji}
+                avatarColor={partTimer.avatarColor}
+                id={partTimer.id}
+                size="lg"
+              />
+            </div>
 
-          {/* Name + subtitle + skills */}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-medium text-sun-ink">{partTimer.name}</h1>
-            {(businessName || joinedLabel) && (
-              <p className="text-xs text-sun-mute mt-0.5">
-                {[businessName, joinedLabel ? `joined ${joinedLabel}` : null].filter(Boolean).join(" · ")}
-              </p>
-            )}
-            {partTimer.skills.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {partTimer.skills.map((s, i) => (
-                  <span
-                    key={s.skillId}
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_PILL_CLASSES[i % ROLE_PILL_CLASSES.length]}`}
-                  >
-                    {s.skill.label}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Name + subtitle + skills */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base font-medium text-sun-ink">{partTimer.name}</h1>
+              {(businessName || joinedLabel) && (
+                <p className="text-xs text-sun-mute mt-0.5">
+                  {[businessName, joinedLabel ? `joined ${joinedLabel}` : null].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              {partTimer.skills.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {partTimer.skills.map((s, i) => (
+                    <span
+                      key={s.skillId}
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_PILL_CLASSES[i % ROLE_PILL_CLASSES.length]}`}
+                    >
+                      {s.skill.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Stats tiles */}
@@ -212,7 +214,7 @@ export default async function EmployeeHomePage() {
       )}
 
       {/* 2-column grid: Kudos + Upcoming shifts */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Kudos card */}
         <div className="bg-sun-card border border-sun-border rounded-[16px] p-4">
           <h2 className="text-sm font-medium text-sun-ink mb-3">Kudos from your bosses 💛</h2>

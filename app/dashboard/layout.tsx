@@ -5,6 +5,7 @@ import { signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Avatar, hashColor } from "@/components/Avatar";
 import { DashboardNavLinks } from "./DashboardNavLinks";
+import { DashboardBottomNav } from "./DashboardBottomNav";
 
 export default async function DashboardLayout({
   children,
@@ -64,6 +65,7 @@ export default async function DashboardLayout({
         </div>
       </nav>
       <main id="main-content" className="site-main">{children}</main>
+      <DashboardBottomNav unreadCount={unreadCount} />
     </div>
   );
 }

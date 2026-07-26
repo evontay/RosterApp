@@ -25,7 +25,7 @@ export function PartTimerNavLinks({
   const openShiftsActive = active("/open-shifts");
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="hidden md:flex items-center gap-5">
       <Link
         href="/open-shifts"
         className={`${pill("/open-shifts")} inline-flex items-center gap-1.5`}
