@@ -92,11 +92,11 @@ export function RolesEditor({
   return (
     <div className="space-y-2">
       {roles.map((role, i) => (
-        <div key={i} className="grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 items-center">
+        <div key={i} className="grid grid-cols-2 gap-2 md:grid-cols-[1fr_40px_100px_100px_auto] items-center">
           {/* Skill */}
           <select value={role.skillId} onChange={(e) => updateRole(i, "skillId", e.target.value)}
             aria-label={`Role ${i + 1}: skill`}
-            className="border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
+            className="col-span-2 md:col-span-1 border border-sun-border rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card">
             {skills.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
 
@@ -104,6 +104,7 @@ export function RolesEditor({
           <input type="number" min="1" max="99" value={role.count}
             onChange={(e) => updateRole(i, "count", parseInt(e.target.value) || 1)}
             aria-label={`Role ${i + 1}: number of slots`}
+            inputMode="numeric"
             className="border border-sun-border rounded-[10px] px-2 py-2 text-sm text-center w-full focus:outline-none focus:border-sun-accent bg-sun-card" />
 
           {/* Pay type */}
@@ -121,6 +122,7 @@ export function RolesEditor({
               onChange={(e) => updateRole(i, "payRate", e.target.value)}
               placeholder="0.00"
               aria-label={`Role ${i + 1}: pay rate in dollars`}
+              inputMode="decimal"
               className="w-full border border-sun-border rounded-[10px] pl-5 pr-2 py-2 text-sm focus:outline-none focus:border-sun-accent bg-sun-card" />
           </div>
 
@@ -135,7 +137,7 @@ export function RolesEditor({
       ))}
 
       {/* Column labels */}
-      <div className="grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 px-0.5">
+      <div className="hidden md:grid grid-cols-[1fr_40px_100px_100px_auto] gap-2 px-0.5">
         <span className="text-[10px] text-sun-mute">Role</span>
         <span className="text-[10px] text-sun-mute text-center">#</span>
         <span className="text-[10px] text-sun-mute">Pay type</span>

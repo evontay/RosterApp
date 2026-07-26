@@ -38,9 +38,12 @@ export function DashboardNavLinks({ unreadCount }: { unreadCount: number }) {
       </Link>
 
       {/* Settings dropdown */}
-      <div className="group relative">
-        <span className={`cursor-default select-none ${settingsActive ? "text-xs font-medium bg-sun-accent-soft text-sun-accent-text px-3 py-1 rounded-full" : "text-xs text-sun-mute hover:text-sun-ink"}`}>
-          Settings ▾
+      <div className="group relative flex items-center">
+        <span className={`inline-flex items-center gap-1 cursor-default select-none ${settingsActive ? "text-xs font-medium bg-sun-accent-soft text-sun-accent-text px-3 py-1 rounded-full" : "text-xs text-sun-mute hover:text-sun-ink"}`}>
+          Settings
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </span>
         <div className="absolute left-0 top-full pt-2 hidden group-hover:block z-20">
           <div className="bg-sun-card border border-sun-border rounded-[16px] shadow-lg py-1 w-44">

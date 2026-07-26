@@ -220,3 +220,14 @@ body {
   color: #1F2937;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Tailwind v4's preflight sets cursor: default on buttons (matching native
+   browser behaviour) — every clickable button in the app needs it overridden
+   back to pointer, and disabled ones flipped to not-allowed. Links already
+   get cursor: pointer natively, so this is the one gap. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}

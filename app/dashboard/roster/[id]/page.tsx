@@ -172,7 +172,7 @@ export default async function PartTimerProfilePage({
       )}
 
       {/* Skills & Availability */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-sun-card rounded-[16px] border border-sun-border p-4">
           <h2 className="text-sm font-semibold text-sun-body mb-3">Skills</h2>
           <SkillEditor

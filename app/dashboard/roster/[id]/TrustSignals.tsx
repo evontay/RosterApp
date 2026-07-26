@@ -48,7 +48,7 @@ export function TrustSignalsDisplay({ signals }: { signals: Signals }) {
         <h2 className="text-sm font-semibold text-sun-body">Performance</h2>
         <span className="text-xs text-sun-mute">Based on {recordCount} shift{recordCount !== 1 ? "s" : ""}</span>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Reliability */}
         <div>
           <div className="flex items-baseline justify-between">

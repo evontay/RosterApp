@@ -34,7 +34,7 @@ export function ArchivedRosterSection({ members }: { members: ArchivedMember[] }
 
       {open && (
         <div className="mt-2 bg-sun-card rounded-[16px] border border-sun-border overflow-hidden opacity-60">
-          <table className="w-full text-sm">
+          <table className="hidden md:table w-full text-sm">
             <tbody>
               {members.map((m) => (
                 <tr key={m.id} className="border-b border-sun-border last:border-0">
@@ -65,6 +65,32 @@ export function ArchivedRosterSection({ members }: { members: ArchivedMember[] }
               ))}
             </tbody>
           </table>
+
+          <div className="md:hidden divide-y divide-sun-border">
+            {members.map((m) => (
+              <div key={m.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar
+                    name={m.partTimer.name}
+                    avatarEmoji={m.partTimer.avatarEmoji}
+                    avatarColor={m.partTimer.avatarColor}
+                    id={m.partTimer.id}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <Link
+                      href={`/dashboard/roster/${m.partTimer.id}`}
+                      className="font-medium text-sun-ink hover:text-sun-accent-link block truncate"
+                    >
+                      {m.partTimer.name}
+                    </Link>
+                    <p className="text-xs text-sun-mute truncate">{m.partTimer.email}</p>
+                  </div>
+                </div>
+                <ArchiveRestoreButton membershipId={m.id} archived={true} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

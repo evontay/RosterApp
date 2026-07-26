@@ -66,7 +66,7 @@ export default async function RosterPage() {
         <InviteForm businessId={business.id} />
       </div>
 
-      <div className="bg-sun-card rounded-[16px] border border-sun-border overflow-hidden">
+      <div className="hidden md:block bg-sun-card rounded-[16px] border border-sun-border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-sun-inset border-b border-sun-border">
             <tr>
@@ -124,6 +124,44 @@ export default async function RosterPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="md:hidden space-y-3">
+        {active.map((m) => (
+          <div key={m.id} className="bg-sun-card rounded-[16px] border border-sun-border p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar
+                  name={m.partTimer.name}
+                  avatarEmoji={m.partTimer.avatarEmoji}
+                  avatarColor={m.partTimer.avatarColor}
+                  id={m.partTimer.id}
+                  size="sm"
+                />
+                <div className="min-w-0">
+                  <Link href={`/dashboard/roster/${m.partTimer.id}`} className="font-medium text-sun-ink hover:text-sun-accent-link block truncate">
+                    {m.partTimer.name}
+                  </Link>
+                  <p className="text-xs text-sun-mute truncate">{m.partTimer.email}</p>
+                </div>
+              </div>
+              <StatusBadge status={m.status} />
+            </div>
+            <p className="mt-3 text-xs text-sun-body">
+              {m.partTimer.skills.map((s) => s.skill.label).join(", ") || "—"}
+            </p>
+            <div className="mt-2 flex items-center justify-between text-xs text-sun-mute">
+              <span>{m.partTimer.assignments.length} jobs done</span>
+              <span>{nextAvailability(m.partTimer.availability)}</span>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <ArchiveRestoreButton membershipId={m.id} archived={false} />
+            </div>
+          </div>
+        ))}
+        {active.length === 0 && (
+          <p className="text-center text-sun-mute py-8">🌱 No employees yet. Invite someone to get started.</p>
+        )}
       </div>
 
       <ArchivedRosterSection

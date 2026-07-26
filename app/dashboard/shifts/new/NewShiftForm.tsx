@@ -87,7 +87,7 @@ export function NewShiftForm({
           required
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium text-sun-body mb-1">Start time</label>
           <input

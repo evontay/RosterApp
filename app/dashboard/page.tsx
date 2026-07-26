@@ -145,15 +145,17 @@ export default async function DashboardPage() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard label="Active employees" value={activeRosterCount} />
-        <StatCard
-          label="Shifts this month"
-          value={shiftsThisMonth}
-          href={`/dashboard/shifts?year=${now.getFullYear()}&month=${now.getMonth()}`}
-        />
-        <StatCard label="Owed to crew" value={owedTotal} money />
-        <div className="grid grid-cols-3 col-span-4 gap-3">
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard label="Active employees" value={activeRosterCount} />
+          <StatCard
+            label="Shifts this month"
+            value={shiftsThisMonth}
+            href={`/dashboard/shifts?year=${now.getFullYear()}&month=${now.getMonth()}`}
+          />
+          <StatCard label="Owed to crew" value={owedTotal} money />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
           {STATUS_ORDER.map((status) => {
             const count = statusCounts[status] ?? 0;
             const s = STATUS_STYLE[status];
