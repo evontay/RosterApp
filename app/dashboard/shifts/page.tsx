@@ -22,10 +22,11 @@ function getShiftIcon(title: string, id: string): { emoji: string; bg: string } 
 export default async function ShiftsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; year?: string; month?: string }>;
+  searchParams: Promise<{ sort?: string; year?: string; month?: string; view?: string }>;
 }) {
-  const { sort, year, month } = await searchParams;
+  const { sort, year, month, view } = await searchParams;
   const asc = sort === "asc";
+  const calendarView = view === "calendar";
 
   const now = new Date();
   const calYear = year ? parseInt(year) : now.getFullYear();
@@ -73,17 +74,45 @@ export default async function ShiftsPage({
   const active = shifts.filter((s) => !s.archived);
   const archived = shifts.filter((s) => s.archived);
 
-  // Sort toggle preserves calendar params
+  // Sort toggle preserves calendar + view params
   const sortParams = new URLSearchParams();
   if (!asc) sortParams.set("sort", "asc");
   if (year) sortParams.set("year", year);
   if (month !== undefined) sortParams.set("month", month);
+  if (view) sortParams.set("view", view);
+
+  // List/Calendar toggle preserves sort + calendar params
+  function buildViewUrl(nextView: "list" | "calendar") {
+    const params = new URLSearchParams();
+    if (sort) params.set("sort", sort);
+    if (year) params.set("year", year);
+    if (month !== undefined) params.set("month", month);
+    if (nextView === "calendar") params.set("view", "calendar");
+    return `/dashboard/shifts?${params}`;
+  }
+
+  const toggleActive = "bg-white text-sun-accent-text";
+  const toggleInactive = "text-sun-accent-link";
 
   return (
-    <div className="flex gap-6 items-start">
+    <div>
+      {/* Page title — mobile only; desktop keeps its own h1+sort inside the list column */}
+      <h1 className="md:hidden text-2xl font-bold text-sun-ink mb-3">Shifts</h1>
+
+      {/* List | Calendar toggle — mobile only */}
+      <div className="md:hidden inline-flex bg-sun-accent-soft rounded-full p-1 mb-4">
+        <Link href={buildViewUrl("list")} className={`px-4 py-1.5 rounded-full text-xs font-medium ${!calendarView ? toggleActive : toggleInactive}`}>
+          List
+        </Link>
+        <Link href={buildViewUrl("calendar")} className={`px-4 py-1.5 rounded-full text-xs font-medium ${calendarView ? toggleActive : toggleInactive}`}>
+          Calendar
+        </Link>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-6 items-start">
       {/* Left: Shifts list */}
-      <div className="w-96 shrink-0">
-        <div className="flex items-center justify-between mb-4">
+      <div className={`w-full md:w-96 md:shrink-0 ${calendarView ? "hidden md:block" : ""}`}>
+        <div className="hidden md:flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-sun-ink">Shifts</h1>
           <Link
             href={`/dashboard/shifts?${sortParams}`}
@@ -92,8 +121,14 @@ export default async function ShiftsPage({
             {asc ? "Oldest first ↑" : "Newest first ↓"}
           </Link>
         </div>
-
-
+        <div className="md:hidden flex justify-end mb-3">
+          <Link
+            href={`/dashboard/shifts?${sortParams}`}
+            className="text-xs border border-sun-border rounded-full px-3 py-1.5 text-sun-mute hover:border-sun-accent hover:text-sun-body"
+          >
+            {asc ? "Oldest first ↑" : "Newest first ↓"}
+          </Link>
+        </div>
 
         <div className="space-y-3">
           {active.map((shift) => {
@@ -165,8 +200,8 @@ export default async function ShiftsPage({
       </div>
 
       {/* Right: Calendar */}
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-end mb-0">
+      <div className={`flex-1 min-w-0 w-full ${calendarView ? "" : "hidden md:block"}`}>
+        <div className="hidden md:flex justify-end mb-0">
           <Link
             href="/dashboard/shifts/new"
             className="bg-sun-accent text-sun-ink px-4 py-2 rounded-full text-sm font-medium hover:opacity-90"
@@ -203,6 +238,18 @@ export default async function ShiftsPage({
           }))}
         />
       </div>
+      </div>
+
+      {/* Mobile FAB — page-level so it stays visible regardless of active view */}
+      <Link
+        href="/dashboard/shifts/new"
+        aria-label="New shift"
+        className="md:hidden fixed right-4 bottom-20 z-20 w-14 h-14 rounded-full bg-sun-accent flex items-center justify-center shadow-lg hover:opacity-90"
+      >
+        <svg className="w-6 h-6 text-sun-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </Link>
     </div>
   );
 }

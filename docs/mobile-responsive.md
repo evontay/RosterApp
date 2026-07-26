@@ -2,7 +2,11 @@
 
 How to make the existing web app adapt from phone to desktop. Medium-changing.
 
-Last verified: 2026-07-23 (planning doc — nothing here is built yet)
+Last verified: 2026-07-26. Shipped: globals.css shell fix, the owner/part-timer
+bottom-tab-bar swap, all Tier 1 part-timer routes, and the owner Tier 2 easy
+reflows (dashboard, roster, roster profile, new-shift form, RolesEditor).
+Remaining: swap components 2-3 (FAB, bottom sheet) and the `/dashboard/shifts`
++ `/dashboard/shifts/[id]` swap — see "Suggested build order" below, steps 4-5.
 
 Pairs with `docs/design-system.md` (unchanged by this work — the visual language
 is size-independent) and `docs/state.md` (route inventory).

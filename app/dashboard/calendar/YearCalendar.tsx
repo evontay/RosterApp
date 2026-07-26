@@ -50,6 +50,15 @@ export function YearCalendar({
   const [modal, setModal] = useState<{ dateStr: string; slot: Slot; shifts: Shift[] } | null>(null);
   const [editingShift, setEditingShift] = useState<Shift | null>(null);
   const [creating, setCreating] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const shiftMap = new Map<string, { AM: Shift[]; PM: Shift[] }>();
   const statusCounts: Record<string, number> = {};
@@ -92,8 +101,9 @@ export function YearCalendar({
     setCreating(false);
   }
 
-  // The 3 months to display (handles year boundaries)
-  const visibleMonths = [0, 1, 2].map((offset) => {
+  // The month(s) to display (handles year boundaries) — 1 on mobile, 3 on desktop
+  const monthOffsets = isDesktop ? [0, 1, 2] : [0];
+  const visibleMonths = monthOffsets.map((offset) => {
     const d = new Date(startYear, startMonth + offset, 1);
     return { year: d.getFullYear(), monthIdx: d.getMonth() };
   });
@@ -102,8 +112,29 @@ export function YearCalendar({
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 gap-4">
+      {/* Header — mobile: simple prev/label/next */}
+      <div className="flex md:hidden items-center justify-between mb-4 gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-body"
+          title="Previous month"
+        >
+          ←
+        </button>
+        <span className="text-sm font-semibold text-sun-ink">
+          {MONTHS[startMonth]} {startYear}
+        </span>
+        <button
+          onClick={() => navigate(1)}
+          className="px-3 py-1.5 text-sm border border-sun-border rounded-full hover:bg-sun-inset text-sun-body"
+          title="Next month"
+        >
+          →
+        </button>
+      </div>
+
+      {/* Header — desktop: selectors + Today + ±3 months */}
+      <div className="hidden md:flex items-center justify-between mb-4 gap-4">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-3)}
@@ -248,7 +279,7 @@ function MonthGrid({
               </div>
               <button
                 onClick={() => onSlotClick(dateStr, "AM")}
-                className={`h-2.5 rounded-sm w-full transition-colors ${
+                className={`h-3.5 md:h-2.5 rounded-sm w-full transition-colors ${
                   amShifts.length > 0
                     ? `${STATUS_DOT[amShifts[0].status]} opacity-70 hover:opacity-100`
                     : "bg-sun-faint hover:bg-sun-accent-soft"
@@ -257,7 +288,7 @@ function MonthGrid({
               />
               <button
                 onClick={() => onSlotClick(dateStr, "PM")}
-                className={`h-2.5 rounded-sm w-full transition-colors ${
+                className={`h-3.5 md:h-2.5 rounded-sm w-full transition-colors ${
                   pmShifts.length > 0
                     ? `${STATUS_DOT[pmShifts[0].status]} opacity-70 hover:opacity-100`
                     : "bg-sun-faint hover:bg-sun-accent-soft"
@@ -293,13 +324,14 @@ function SlotModal({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" aria-hidden="true">
+    <div className="fixed inset-0 bg-black/40 flex items-end md:items-center justify-center z-50 md:p-4" aria-hidden="true">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="slot-modal-title"
-        className="bg-sun-card rounded-[16px] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col"
+        className="bg-sun-card rounded-t-[20px] md:rounded-[16px] shadow-xl w-full max-w-md max-h-[85vh] md:max-h-[90vh] flex flex-col"
       >
+        <div className="md:hidden w-9 h-1 rounded-full bg-gray-300 mx-auto mt-2 mb-1" aria-hidden="true" />
         <div className="flex items-center justify-between p-4 border-b border-sun-border">
           <div>
             <p id="slot-modal-title" className="font-semibold text-sun-ink">{display}</p>
